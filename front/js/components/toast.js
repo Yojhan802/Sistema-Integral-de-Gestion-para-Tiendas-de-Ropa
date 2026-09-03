@@ -1,3 +1,5 @@
+import { escapeHtml } from '../core/format.js';
+
 const ICONS = {
   success: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 10.5l4 4 8-9" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   danger: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v5M10 14h.01" stroke-linecap="round"/></svg>',
@@ -23,8 +25,8 @@ export function showToast({ type = 'success', title, message, duration = 4000 })
   toast.innerHTML = `
     ${ICONS[type] || ICONS.success}
     <div class="toast-body">
-      <div class="toast-title">${title}</div>
-      ${message ? `<div class="toast-message">${message}</div>` : ''}
+      <div class="toast-title">${escapeHtml(title)}</div>
+      ${message ? `<div class="toast-message">${escapeHtml(message)}</div>` : ''}
     </div>
   `;
   region.appendChild(toast);

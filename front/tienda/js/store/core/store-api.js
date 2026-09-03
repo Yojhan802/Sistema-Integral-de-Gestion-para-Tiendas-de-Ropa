@@ -40,7 +40,7 @@ export async function refreshAccessToken() {
   return refreshPromise;
 }
 
-export async function storeApiRequest(path, { method = 'GET', body, auth = false, query, isRetry = false } = {}) {
+export async function storeApiRequest(path, { method = 'GET', body, auth = false, query, headers: extraHeaders = {}, isRetry = false } = {}) {
   const url = new URL(`${API_BASE}${path}`, window.location.origin);
   if (query) {
     Object.entries(query).forEach(([key, value]) => {
@@ -50,6 +50,7 @@ export async function storeApiRequest(path, { method = 'GET', body, auth = false
 
   const isFormData = body instanceof FormData;
   const headers = isFormData ? {} : { 'Content-Type': 'application/json' };
+  Object.assign(headers, extraHeaders);
   if (auth) {
     const session = getCustomerSession();
     if (session?.accessToken) headers.Authorization = `Bearer ${session.accessToken}`;
@@ -58,7 +59,12 @@ export async function storeApiRequest(path, { method = 'GET', body, auth = false
   let response;
   try {
     const requestBody = body === undefined ? undefined : isFormData ? body : JSON.stringify(body);
-    response = await fetch(url, { method, headers, body: requestBody });
+    response = await fetch(url, {
+      method,
+      headers,
+      body: requestBody,
+      cache: path === '/store/catalog/config' ? 'no-store' : 'default',
+    });
   } catch {
     throw new ApiError('No se pudo conectar con el servidor. Verifica tu conexión.', 0, null);
   }
@@ -66,7 +72,7 @@ export async function storeApiRequest(path, { method = 'GET', body, auth = false
   if (response.status === 401 && auth && !isRetry) {
     const refreshed = await refreshAccessToken();
     if (refreshed) {
-      return storeApiRequest(path, { method, body, auth, query, isRetry: true });
+      return storeApiRequest(path, { method, body, auth, query, headers: extraHeaders, isRetry: true });
     }
     clearCustomerSession();
     throw new ApiError('Tu sesión expiró, vuelve a iniciar sesión.', 401, null);

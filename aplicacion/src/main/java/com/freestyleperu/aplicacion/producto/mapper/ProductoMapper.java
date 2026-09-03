@@ -1,19 +1,25 @@
 package com.freestyleperu.aplicacion.producto.mapper;
 
 import com.freestyleperu.aplicacion.producto.domain.Product;
+import com.freestyleperu.aplicacion.producto.domain.ProductAttribute;
 import com.freestyleperu.aplicacion.producto.domain.ProductVariant;
 import com.freestyleperu.aplicacion.producto.dto.response.ProductoDetalleResponse;
 import com.freestyleperu.aplicacion.producto.dto.response.ProductoResumenResponse;
+import com.freestyleperu.aplicacion.producto.repository.ProductAttributeRepository;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ProductoMapper {
 
     private final VarianteMapper varianteMapper;
+    private final ProductAttributeRepository productAttributeRepository;
 
-    public ProductoMapper(VarianteMapper varianteMapper) {
+    public ProductoMapper(VarianteMapper varianteMapper, ProductAttributeRepository productAttributeRepository) {
         this.varianteMapper = varianteMapper;
+        this.productAttributeRepository = productAttributeRepository;
     }
 
     public ProductoResumenResponse toResumen(Product product, List<ProductVariant> variants) {
@@ -35,6 +41,7 @@ public class ProductoMapper {
     }
 
     public ProductoDetalleResponse toDetalle(Product product, List<ProductVariant> variants) {
+        Map<Long, Short> posiciones = posicionesDelProducto(product.getId());
         return new ProductoDetalleResponse(
                 product.getId(),
                 product.getInternalCode(),
@@ -54,8 +61,13 @@ public class ProductoMapper {
                 product.getStatus(),
                 product.getImageUrl(),
                 product.getSizeGuideImageUrl(),
-                variants.stream().map(varianteMapper::toResponse).toList(),
+                variants.stream().map(v -> varianteMapper.toResponse(v, posiciones)).toList(),
                 product.getCreatedAt(),
                 product.getUpdatedAt());
+    }
+
+    private Map<Long, Short> posicionesDelProducto(Long productId) {
+        return productAttributeRepository.findAllByProductIdOrderByPositionAsc(productId).stream()
+                .collect(Collectors.toMap(pa -> pa.getAttribute().getId(), ProductAttribute::getPosition));
     }
 }

@@ -1,0 +1,97 @@
+/* Superficies dinámicas propias de EDITORIAL. El contenido puede llegar de API,
+   pero su presentación pertenece a esta plantilla. */
+body[data-store-template='EDITORIAL'] .store-cart-item,
+body[data-store-template='EDITORIAL'] .store-summary,
+body[data-store-template='EDITORIAL'] .store-checkout-form,
+body[data-store-template='EDITORIAL'] .store-form-panel,
+body[data-store-template='EDITORIAL'] .store-checkout-summary,
+body[data-store-template='EDITORIAL'] .store-auth-form,
+body[data-store-template='EDITORIAL'] .store-order-card,
+body[data-store-template='EDITORIAL'] .store-order-drawer-panel {
+  border-color: var(--editorial-line, #d8d1c9);
+  border-radius: 0;
+  background: var(--editorial-surface, #fff);
+  color: var(--editorial-ink, #28231f);
+  box-shadow: none;
+}
+body[data-store-template='EDITORIAL'] .store-cart-item { border-width: 1px; padding: 1rem; }
+body[data-store-template='EDITORIAL'] .store-cart-item img,
+body[data-store-template='EDITORIAL'] .store-qr-box,
+body[data-store-template='EDITORIAL'] .store-payment-option,
+body[data-store-template='EDITORIAL'] .store-payment-account,
+body[data-store-template='EDITORIAL'] .store-proof-image { border-color: var(--editorial-line, #d8d1c9); border-radius: 0; }
+body[data-store-template='EDITORIAL'] .store-cart-item img,
+body[data-store-template='EDITORIAL'] .store-cart-controls,
+body[data-store-template='EDITORIAL'] .store-payment-account,
+body[data-store-template='EDITORIAL'] .store-qr-box { background: var(--editorial-surface-alt, #f2f0ed); }
+body[data-store-template='EDITORIAL'] .store-cart-product-name,
+body[data-store-template='EDITORIAL'] .store-cart-line-total,
+body[data-store-template='EDITORIAL'] .store-summary-row,
+body[data-store-template='EDITORIAL'] .store-summary-total,
+body[data-store-template='EDITORIAL'] .store-form-panel h2,
+body[data-store-template='EDITORIAL'] .store-checkout-summary h2,
+body[data-store-template='EDITORIAL'] .store-order-card { color: var(--editorial-ink, #28231f); }
+body[data-store-template='EDITORIAL'] .store-cart-variant,
+body[data-store-template='EDITORIAL'] .store-cart-unit-price,
+body[data-store-template='EDITORIAL'] .store-summary-note,
+body[data-store-template='EDITORIAL'] .store-checkout-intro,
+body[data-store-template='EDITORIAL'] .field-hint,
+body[data-store-template='EDITORIAL'] .store-order-card small,
+body[data-store-template='EDITORIAL'] .store-order-detail-meta { color: var(--editorial-muted, #82766c); }
+body[data-store-template='EDITORIAL'] .store-summary,
+body[data-store-template='EDITORIAL'] .store-checkout-summary { border-top-color: var(--editorial-accent, #9c4f35); }
+body[data-store-template='EDITORIAL'] .store-payment-option { background: var(--editorial-surface, #fff); }
+body[data-store-template='EDITORIAL'] .store-payment-option[data-selected='true'] { border-color: var(--editorial-accent, #9c4f35); background: color-mix(in srgb, var(--editorial-accent, #9c4f35) 11%, var(--editorial-surface, #fff)); }
+body[data-store-template='EDITORIAL'] .store-payment-provider,
+body[data-store-template='EDITORIAL'] .store-order-proof-section { border-color: var(--editorial-line, #d8d1c9); }
+body[data-store-template='EDITORIAL'] .store-form-panel .input,
+body[data-store-template='EDITORIAL'] .store-form-panel .select,
+body[data-store-template='EDITORIAL'] .store-checkout-summary .input,
+body[data-store-template='EDITORIAL'] .store-checkout-summary .select,
+body[data-store-template='EDITORIAL'] .store-auth-form .input { border-color: var(--editorial-line, #d8d1c9); border-radius: 0; background: var(--editorial-surface, #fff); color: var(--editorial-ink, #28231f); }
+body[data-store-template='EDITORIAL'] .store-form-panel .input:focus-visible,
+body[data-store-template='EDITORIAL'] .store-form-panel .select:focus-visible,
+body[data-store-template='EDITORIAL'] .store-checkout-summary .input:focus-visible,
+body[data-store-template='EDITORIAL'] .store-checkout-summary .select:focus-visible,
+body[data-store-template='EDITORIAL'] .store-auth-form .input:focus-visible { outline: 2px solid var(--editorial-accent, #9c4f35); outline-offset: 2px; }
+body[data-store-template='EDITORIAL'] .store-summary-total { border-top-color: var(--editorial-line, #d8d1c9); }
+body[data-store-template='EDITORIAL'] .store-summary-action,
+body[data-store-template='EDITORIAL'] .store-auth-form .btn { border-radius: 0; }
+@media (max-width: 760px) {
+  body[data-store-template='EDITORIAL'] .store-cart-item { padding: .85rem; }
+  body[data-store-template='EDITORIAL'] .store-checkout-form { border-radius: 0; }
+}
+/* Checkout nativo React de EDITORIAL: estos nodos son la plantilla que recibe los datos. */
+body[data-store-template='EDITORIAL'] .template-checkout { color: var(--template-ink); }
+body[data-store-template='EDITORIAL'] .template-checkout-eyebrow { border-bottom: 1px solid var(--template-line); color: var(--template-ink); }
+body[data-store-template='EDITORIAL'] .template-checkout-intro { color: var(--template-muted); }
+body[data-store-template='EDITORIAL'] .template-checkout-delivery,
+body[data-store-template='EDITORIAL'] .template-checkout-order { border: 1px solid var(--template-line); border-radius: var(--template-radius); background: var(--template-surface); box-shadow: var(--react-form-shadow, none); }
+body[data-store-template='EDITORIAL'] .template-checkout-order { border-top: 3px solid var(--brand-accent); }
+body[data-store-template='EDITORIAL'] .template-panel-kicker,
+body[data-store-template='EDITORIAL'] .template-payment-title { color: var(--brand-accent); }
+body[data-store-template='EDITORIAL'] .template-field > span { color: var(--template-ink); }
+body[data-store-template='EDITORIAL'] .template-field > span small,
+body[data-store-template='EDITORIAL'] .template-field small { color: var(--template-muted); }
+body[data-store-template='EDITORIAL'] .template-field input,
+body[data-store-template='EDITORIAL'] .template-field select,
+body[data-store-template='EDITORIAL'] .template-field textarea { border: 1px solid var(--template-line); border-radius: var(--template-card-radius); background: var(--template-surface); color: var(--template-ink); }
+body[data-store-template='EDITORIAL'] .template-field input:focus-visible,
+body[data-store-template='EDITORIAL'] .template-field select:focus-visible,
+body[data-store-template='EDITORIAL'] .template-field textarea:focus-visible { outline: 2px solid var(--brand-accent); outline-offset: 2px; }
+body[data-store-template='EDITORIAL'] .template-order-line,
+body[data-store-template='EDITORIAL'] .template-total-line { border-bottom: 1px solid var(--template-line); }
+body[data-store-template='EDITORIAL'] .template-order-line,
+body[data-store-template='EDITORIAL'] .template-total-line,
+body[data-store-template='EDITORIAL'] .template-grand-total { color: var(--template-ink); }
+body[data-store-template='EDITORIAL'] .template-grand-total { border-top: 1px solid var(--template-line); }
+body[data-store-template='EDITORIAL'] .template-payment-option { border: 1px solid var(--template-line); border-radius: var(--template-card-radius); background: var(--template-surface); color: var(--template-ink); }
+body[data-store-template='EDITORIAL'] .template-payment-option.is-selected { border-color: var(--brand-accent); background: color-mix(in srgb, var(--brand-accent) 11%, var(--template-surface)); }
+body[data-store-template='EDITORIAL'] .template-payment-qr,
+body[data-store-template='EDITORIAL'] .template-payment-account { border: 1px solid var(--template-line); border-radius: var(--template-card-radius); background: var(--template-surface-alt); color: var(--template-ink); }
+body[data-store-template='EDITORIAL'] .template-payment-qr img { border-radius: var(--template-card-radius); }
+body[data-store-template='EDITORIAL'] .template-provider-field { border-top: 1px solid var(--template-line); }
+body[data-store-template='EDITORIAL'] .template-error { border: 1px solid #d77; background: color-mix(in srgb, #d33 8%, var(--template-surface)); color: var(--template-ink); }
+body[data-store-template='EDITORIAL'] .template-submit { border-radius: var(--template-card-radius); background: var(--brand-accent); color: #fff; transition: transform .25s ease, filter .25s ease; }
+body[data-store-template='EDITORIAL'] .template-submit:hover:not(:disabled) { filter: brightness(.92); transform: translateY(-2px); }
+body[data-store-template='EDITORIAL'] .template-submit:focus-visible { outline: 2px solid var(--brand-accent); outline-offset: 3px; }

@@ -59,8 +59,9 @@ public class UsuarioController {
 
     @PutMapping("/api/users/{id}")
     @PreAuthorize("hasAuthority('" + Permisos.USUARIOS_EDITAR + "')")
-    public UsuarioResponse actualizar(@PathVariable Long id, @Valid @RequestBody ActualizarUsuarioRequest request) {
-        return usuarioService.actualizar(id, request);
+    public UsuarioResponse actualizar(@PathVariable Long id, @Valid @RequestBody ActualizarUsuarioRequest request,
+            @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        return usuarioService.actualizar(id, request, currentUser.id());
     }
 
     @PatchMapping("/api/users/{id}/status")
@@ -70,7 +71,7 @@ public class UsuarioController {
     }
 
     @PostMapping("/api/users/{id}/reset-password")
-    @PreAuthorize("hasAuthority('" + Permisos.USUARIOS_EDITAR + "')")
+    @PreAuthorize("hasAuthority('" + Permisos.USUARIOS_RESETEAR_CONTRASENA + "')")
     public PasswordTemporalResponse resetearPassword(@PathVariable Long id) {
         return usuarioService.resetPassword(id);
     }

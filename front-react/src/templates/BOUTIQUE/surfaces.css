@@ -1,0 +1,97 @@
+/* Superficies dinámicas propias de BOUTIQUE. El contenido puede llegar de API,
+   pero su presentación pertenece a esta plantilla. */
+body[data-store-template='BOUTIQUE'] .store-cart-item,
+body[data-store-template='BOUTIQUE'] .store-summary,
+body[data-store-template='BOUTIQUE'] .store-checkout-form,
+body[data-store-template='BOUTIQUE'] .store-form-panel,
+body[data-store-template='BOUTIQUE'] .store-checkout-summary,
+body[data-store-template='BOUTIQUE'] .store-auth-form,
+body[data-store-template='BOUTIQUE'] .store-order-card,
+body[data-store-template='BOUTIQUE'] .store-order-drawer-panel {
+  border-color: var(--boutique-line, #eed8c8);
+  border-radius: var(--boutique-radius, 20px);
+  background: var(--boutique-surface, #fff);
+  color: var(--boutique-ink, #51352d);
+  box-shadow: 0 12px 30px rgba(128,98,77,.14);
+}
+body[data-store-template='BOUTIQUE'] .store-cart-item { border-width: 1px; padding: 1rem; }
+body[data-store-template='BOUTIQUE'] .store-cart-item img,
+body[data-store-template='BOUTIQUE'] .store-qr-box,
+body[data-store-template='BOUTIQUE'] .store-payment-option,
+body[data-store-template='BOUTIQUE'] .store-payment-account,
+body[data-store-template='BOUTIQUE'] .store-proof-image { border-color: var(--boutique-line, #eed8c8); border-radius: var(--boutique-card-radius, 16px); }
+body[data-store-template='BOUTIQUE'] .store-cart-item img,
+body[data-store-template='BOUTIQUE'] .store-cart-controls,
+body[data-store-template='BOUTIQUE'] .store-payment-account,
+body[data-store-template='BOUTIQUE'] .store-qr-box { background: var(--boutique-surface-alt, #fff4ec); }
+body[data-store-template='BOUTIQUE'] .store-cart-product-name,
+body[data-store-template='BOUTIQUE'] .store-cart-line-total,
+body[data-store-template='BOUTIQUE'] .store-summary-row,
+body[data-store-template='BOUTIQUE'] .store-summary-total,
+body[data-store-template='BOUTIQUE'] .store-form-panel h2,
+body[data-store-template='BOUTIQUE'] .store-checkout-summary h2,
+body[data-store-template='BOUTIQUE'] .store-order-card { color: var(--boutique-ink, #51352d); }
+body[data-store-template='BOUTIQUE'] .store-cart-variant,
+body[data-store-template='BOUTIQUE'] .store-cart-unit-price,
+body[data-store-template='BOUTIQUE'] .store-summary-note,
+body[data-store-template='BOUTIQUE'] .store-checkout-intro,
+body[data-store-template='BOUTIQUE'] .field-hint,
+body[data-store-template='BOUTIQUE'] .store-order-card small,
+body[data-store-template='BOUTIQUE'] .store-order-detail-meta { color: var(--boutique-muted, #92766a); }
+body[data-store-template='BOUTIQUE'] .store-summary,
+body[data-store-template='BOUTIQUE'] .store-checkout-summary { border-top-color: var(--boutique-accent, #c66e4e); }
+body[data-store-template='BOUTIQUE'] .store-payment-option { background: var(--boutique-surface, #fff); }
+body[data-store-template='BOUTIQUE'] .store-payment-option[data-selected='true'] { border-color: var(--boutique-accent, #c66e4e); background: color-mix(in srgb, var(--boutique-accent, #c66e4e) 11%, var(--boutique-surface, #fff)); }
+body[data-store-template='BOUTIQUE'] .store-payment-provider,
+body[data-store-template='BOUTIQUE'] .store-order-proof-section { border-color: var(--boutique-line, #eed8c8); }
+body[data-store-template='BOUTIQUE'] .store-form-panel .input,
+body[data-store-template='BOUTIQUE'] .store-form-panel .select,
+body[data-store-template='BOUTIQUE'] .store-checkout-summary .input,
+body[data-store-template='BOUTIQUE'] .store-checkout-summary .select,
+body[data-store-template='BOUTIQUE'] .store-auth-form .input { border-color: var(--boutique-line, #eed8c8); border-radius: var(--boutique-card-radius, 16px); background: var(--boutique-surface, #fff); color: var(--boutique-ink, #51352d); }
+body[data-store-template='BOUTIQUE'] .store-form-panel .input:focus-visible,
+body[data-store-template='BOUTIQUE'] .store-form-panel .select:focus-visible,
+body[data-store-template='BOUTIQUE'] .store-checkout-summary .input:focus-visible,
+body[data-store-template='BOUTIQUE'] .store-checkout-summary .select:focus-visible,
+body[data-store-template='BOUTIQUE'] .store-auth-form .input:focus-visible { outline: 2px solid var(--boutique-accent, #c66e4e); outline-offset: 2px; }
+body[data-store-template='BOUTIQUE'] .store-summary-total { border-top-color: var(--boutique-line, #eed8c8); }
+body[data-store-template='BOUTIQUE'] .store-summary-action,
+body[data-store-template='BOUTIQUE'] .store-auth-form .btn { border-radius: var(--boutique-card-radius, 16px); }
+@media (max-width: 760px) {
+  body[data-store-template='BOUTIQUE'] .store-cart-item { padding: .85rem; }
+  body[data-store-template='BOUTIQUE'] .store-checkout-form { border-radius: var(--boutique-card-radius, 16px); }
+}
+/* Checkout nativo React de BOUTIQUE: estos nodos son la plantilla que recibe los datos. */
+body[data-store-template='BOUTIQUE'] .template-checkout { color: var(--template-ink); }
+body[data-store-template='BOUTIQUE'] .template-checkout-eyebrow { border-bottom: 1px solid var(--template-line); color: var(--template-ink); }
+body[data-store-template='BOUTIQUE'] .template-checkout-intro { color: var(--template-muted); }
+body[data-store-template='BOUTIQUE'] .template-checkout-delivery,
+body[data-store-template='BOUTIQUE'] .template-checkout-order { border: 1px solid var(--template-line); border-radius: var(--template-radius); background: var(--template-surface); box-shadow: var(--react-form-shadow, none); }
+body[data-store-template='BOUTIQUE'] .template-checkout-order { border-top: 3px solid var(--brand-accent); }
+body[data-store-template='BOUTIQUE'] .template-panel-kicker,
+body[data-store-template='BOUTIQUE'] .template-payment-title { color: var(--brand-accent); }
+body[data-store-template='BOUTIQUE'] .template-field > span { color: var(--template-ink); }
+body[data-store-template='BOUTIQUE'] .template-field > span small,
+body[data-store-template='BOUTIQUE'] .template-field small { color: var(--template-muted); }
+body[data-store-template='BOUTIQUE'] .template-field input,
+body[data-store-template='BOUTIQUE'] .template-field select,
+body[data-store-template='BOUTIQUE'] .template-field textarea { border: 1px solid var(--template-line); border-radius: var(--template-card-radius); background: var(--template-surface); color: var(--template-ink); }
+body[data-store-template='BOUTIQUE'] .template-field input:focus-visible,
+body[data-store-template='BOUTIQUE'] .template-field select:focus-visible,
+body[data-store-template='BOUTIQUE'] .template-field textarea:focus-visible { outline: 2px solid var(--brand-accent); outline-offset: 2px; }
+body[data-store-template='BOUTIQUE'] .template-order-line,
+body[data-store-template='BOUTIQUE'] .template-total-line { border-bottom: 1px solid var(--template-line); }
+body[data-store-template='BOUTIQUE'] .template-order-line,
+body[data-store-template='BOUTIQUE'] .template-total-line,
+body[data-store-template='BOUTIQUE'] .template-grand-total { color: var(--template-ink); }
+body[data-store-template='BOUTIQUE'] .template-grand-total { border-top: 1px solid var(--template-line); }
+body[data-store-template='BOUTIQUE'] .template-payment-option { border: 1px solid var(--template-line); border-radius: var(--template-card-radius); background: var(--template-surface); color: var(--template-ink); }
+body[data-store-template='BOUTIQUE'] .template-payment-option.is-selected { border-color: var(--brand-accent); background: color-mix(in srgb, var(--brand-accent) 11%, var(--template-surface)); }
+body[data-store-template='BOUTIQUE'] .template-payment-qr,
+body[data-store-template='BOUTIQUE'] .template-payment-account { border: 1px solid var(--template-line); border-radius: var(--template-card-radius); background: var(--template-surface-alt); color: var(--template-ink); }
+body[data-store-template='BOUTIQUE'] .template-payment-qr img { border-radius: var(--template-card-radius); }
+body[data-store-template='BOUTIQUE'] .template-provider-field { border-top: 1px solid var(--template-line); }
+body[data-store-template='BOUTIQUE'] .template-error { border: 1px solid #d77; background: color-mix(in srgb, #d33 8%, var(--template-surface)); color: var(--template-ink); }
+body[data-store-template='BOUTIQUE'] .template-submit { border-radius: var(--template-card-radius); background: var(--brand-accent); color: #fff; transition: transform .25s ease, filter .25s ease; }
+body[data-store-template='BOUTIQUE'] .template-submit:hover:not(:disabled) { filter: brightness(.92); transform: translateY(-2px); }
+body[data-store-template='BOUTIQUE'] .template-submit:focus-visible { outline: 2px solid var(--brand-accent); outline-offset: 3px; }

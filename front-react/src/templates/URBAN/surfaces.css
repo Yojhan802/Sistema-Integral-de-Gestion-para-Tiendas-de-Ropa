@@ -1,0 +1,97 @@
+/* Superficies dinámicas propias de URBAN. El contenido puede llegar de API,
+   pero su presentación pertenece a esta plantilla. */
+body[data-store-template='URBAN'] .store-cart-item,
+body[data-store-template='URBAN'] .store-summary,
+body[data-store-template='URBAN'] .store-checkout-form,
+body[data-store-template='URBAN'] .store-form-panel,
+body[data-store-template='URBAN'] .store-checkout-summary,
+body[data-store-template='URBAN'] .store-auth-form,
+body[data-store-template='URBAN'] .store-order-card,
+body[data-store-template='URBAN'] .store-order-drawer-panel {
+  border-color: var(--urban-line, #3f3f46);
+  border-radius: var(--urban-radius, 12px);
+  background: var(--urban-surface, #18181b);
+  color: var(--urban-ink, #f3f4f6);
+  box-shadow: none;
+}
+body[data-store-template='URBAN'] .store-cart-item { border-width: 1px; padding: 1rem; }
+body[data-store-template='URBAN'] .store-cart-item img,
+body[data-store-template='URBAN'] .store-qr-box,
+body[data-store-template='URBAN'] .store-payment-option,
+body[data-store-template='URBAN'] .store-payment-account,
+body[data-store-template='URBAN'] .store-proof-image { border-color: var(--urban-line, #3f3f46); border-radius: var(--urban-card-radius, 10px); }
+body[data-store-template='URBAN'] .store-cart-item img,
+body[data-store-template='URBAN'] .store-cart-controls,
+body[data-store-template='URBAN'] .store-payment-account,
+body[data-store-template='URBAN'] .store-qr-box { background: var(--urban-surface-alt, #27272a); }
+body[data-store-template='URBAN'] .store-cart-product-name,
+body[data-store-template='URBAN'] .store-cart-line-total,
+body[data-store-template='URBAN'] .store-summary-row,
+body[data-store-template='URBAN'] .store-summary-total,
+body[data-store-template='URBAN'] .store-form-panel h2,
+body[data-store-template='URBAN'] .store-checkout-summary h2,
+body[data-store-template='URBAN'] .store-order-card { color: var(--urban-ink, #f3f4f6); }
+body[data-store-template='URBAN'] .store-cart-variant,
+body[data-store-template='URBAN'] .store-cart-unit-price,
+body[data-store-template='URBAN'] .store-summary-note,
+body[data-store-template='URBAN'] .store-checkout-intro,
+body[data-store-template='URBAN'] .field-hint,
+body[data-store-template='URBAN'] .store-order-card small,
+body[data-store-template='URBAN'] .store-order-detail-meta { color: var(--urban-muted, #a1a1aa); }
+body[data-store-template='URBAN'] .store-summary,
+body[data-store-template='URBAN'] .store-checkout-summary { border-top-color: var(--urban-accent, #f97316); }
+body[data-store-template='URBAN'] .store-payment-option { background: var(--urban-surface, #18181b); }
+body[data-store-template='URBAN'] .store-payment-option[data-selected='true'] { border-color: var(--urban-accent, #f97316); background: color-mix(in srgb, var(--urban-accent, #f97316) 11%, var(--urban-surface, #18181b)); }
+body[data-store-template='URBAN'] .store-payment-provider,
+body[data-store-template='URBAN'] .store-order-proof-section { border-color: var(--urban-line, #3f3f46); }
+body[data-store-template='URBAN'] .store-form-panel .input,
+body[data-store-template='URBAN'] .store-form-panel .select,
+body[data-store-template='URBAN'] .store-checkout-summary .input,
+body[data-store-template='URBAN'] .store-checkout-summary .select,
+body[data-store-template='URBAN'] .store-auth-form .input { border-color: var(--urban-line, #3f3f46); border-radius: var(--urban-card-radius, 10px); background: var(--urban-surface, #18181b); color: var(--urban-ink, #f3f4f6); }
+body[data-store-template='URBAN'] .store-form-panel .input:focus-visible,
+body[data-store-template='URBAN'] .store-form-panel .select:focus-visible,
+body[data-store-template='URBAN'] .store-checkout-summary .input:focus-visible,
+body[data-store-template='URBAN'] .store-checkout-summary .select:focus-visible,
+body[data-store-template='URBAN'] .store-auth-form .input:focus-visible { outline: 2px solid var(--urban-accent, #f97316); outline-offset: 2px; }
+body[data-store-template='URBAN'] .store-summary-total { border-top-color: var(--urban-line, #3f3f46); }
+body[data-store-template='URBAN'] .store-summary-action,
+body[data-store-template='URBAN'] .store-auth-form .btn { border-radius: var(--urban-card-radius, 10px); }
+@media (max-width: 760px) {
+  body[data-store-template='URBAN'] .store-cart-item { padding: .85rem; }
+  body[data-store-template='URBAN'] .store-checkout-form { border-radius: var(--urban-card-radius, 10px); }
+}
+/* Checkout nativo React de URBAN: estos nodos son la plantilla que recibe los datos. */
+body[data-store-template='URBAN'] .template-checkout { color: var(--template-ink); }
+body[data-store-template='URBAN'] .template-checkout-eyebrow { border-bottom: 1px solid var(--template-line); color: var(--template-ink); }
+body[data-store-template='URBAN'] .template-checkout-intro { color: var(--template-muted); }
+body[data-store-template='URBAN'] .template-checkout-delivery,
+body[data-store-template='URBAN'] .template-checkout-order { border: 1px solid var(--template-line); border-radius: var(--template-radius); background: var(--template-surface); box-shadow: var(--react-form-shadow, none); }
+body[data-store-template='URBAN'] .template-checkout-order { border-top: 3px solid var(--brand-accent); }
+body[data-store-template='URBAN'] .template-panel-kicker,
+body[data-store-template='URBAN'] .template-payment-title { color: var(--brand-accent); }
+body[data-store-template='URBAN'] .template-field > span { color: var(--template-ink); }
+body[data-store-template='URBAN'] .template-field > span small,
+body[data-store-template='URBAN'] .template-field small { color: var(--template-muted); }
+body[data-store-template='URBAN'] .template-field input,
+body[data-store-template='URBAN'] .template-field select,
+body[data-store-template='URBAN'] .template-field textarea { border: 1px solid var(--template-line); border-radius: var(--template-card-radius); background: var(--template-surface); color: var(--template-ink); }
+body[data-store-template='URBAN'] .template-field input:focus-visible,
+body[data-store-template='URBAN'] .template-field select:focus-visible,
+body[data-store-template='URBAN'] .template-field textarea:focus-visible { outline: 2px solid var(--brand-accent); outline-offset: 2px; }
+body[data-store-template='URBAN'] .template-order-line,
+body[data-store-template='URBAN'] .template-total-line { border-bottom: 1px solid var(--template-line); }
+body[data-store-template='URBAN'] .template-order-line,
+body[data-store-template='URBAN'] .template-total-line,
+body[data-store-template='URBAN'] .template-grand-total { color: var(--template-ink); }
+body[data-store-template='URBAN'] .template-grand-total { border-top: 1px solid var(--template-line); }
+body[data-store-template='URBAN'] .template-payment-option { border: 1px solid var(--template-line); border-radius: var(--template-card-radius); background: var(--template-surface); color: var(--template-ink); }
+body[data-store-template='URBAN'] .template-payment-option.is-selected { border-color: var(--brand-accent); background: color-mix(in srgb, var(--brand-accent) 11%, var(--template-surface)); }
+body[data-store-template='URBAN'] .template-payment-qr,
+body[data-store-template='URBAN'] .template-payment-account { border: 1px solid var(--template-line); border-radius: var(--template-card-radius); background: var(--template-surface-alt); color: var(--template-ink); }
+body[data-store-template='URBAN'] .template-payment-qr img { border-radius: var(--template-card-radius); }
+body[data-store-template='URBAN'] .template-provider-field { border-top: 1px solid var(--template-line); }
+body[data-store-template='URBAN'] .template-error { border: 1px solid #d77; background: color-mix(in srgb, #d33 8%, var(--template-surface)); color: var(--template-ink); }
+body[data-store-template='URBAN'] .template-submit { border-radius: var(--template-card-radius); background: var(--brand-accent); color: #fff; transition: transform .25s ease, filter .25s ease; }
+body[data-store-template='URBAN'] .template-submit:hover:not(:disabled) { filter: brightness(.92); transform: translateY(-2px); }
+body[data-store-template='URBAN'] .template-submit:focus-visible { outline: 2px solid var(--brand-accent); outline-offset: 3px; }

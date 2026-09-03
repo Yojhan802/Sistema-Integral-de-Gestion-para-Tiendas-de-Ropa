@@ -604,13 +604,12 @@ vive en `src/main/resources/db/migration/`, que es la fuente de verdad.)
 
 ---
 
-## 15. Plan de suscripción (SaaS — un despliegue por cliente)
+## 15. Plan de suscripción (SaaS multi-tenant)
 
-`company_settings.plan` (V22) marca qué nivel de suscripción tiene **esta
-instalación**: `STARTER` < `PROFESIONAL` < `ECOMMERCE` < `IA` (jerarquía por
-orden ordinal). El modelo elegido para el SaaS es **un despliegue independiente
-por cliente** (no multi-tenant): cada instalación tiene su propia base de
-datos, y esta columna es la que le permite "saber" en qué plan está.
+`company_settings.plan` (V22) marca qué nivel de suscripción tiene cada tenant:
+`STARTER` < `PROFESIONAL` < `ECOMMERCE` < `IA` (jerarquía por orden ordinal).
+Todas las empresas comparten el despliegue, pero cada una tiene su propia fila
+de `company_settings`, configuración y datos aislados por `tenant_id`.
 
 **No es editable por el cliente.** `ActualizarCompanySettingsRequest` no
 incluye `plan` — a propósito, para que cambiar de plan (y por tanto lo que se

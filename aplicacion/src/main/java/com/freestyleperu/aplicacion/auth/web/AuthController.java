@@ -8,8 +8,10 @@ import com.freestyleperu.aplicacion.auth.dto.TokenResponse;
 import com.freestyleperu.aplicacion.auth.dto.UsuarioActualResponse;
 import com.freestyleperu.aplicacion.auth.service.AuthService;
 import com.freestyleperu.aplicacion.shared.security.AuthenticatedUser;
+import com.freestyleperu.aplicacion.shared.security.Permisos;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -47,10 +49,19 @@ public class AuthController {
     }
 
     @PostMapping("/api/auth/change-password")
+    @PreAuthorize("hasAuthority('" + Permisos.USUARIOS_CAMBIAR_CONTRASENA + "')")
     public ResponseEntity<Void> changePassword(
             @AuthenticationPrincipal AuthenticatedUser currentUser,
             @Valid @RequestBody ChangePasswordRequest request) {
         authService.changePassword(currentUser.id(), request.currentPassword(), request.newPassword());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/api/auth/complete-password-change")
+    public ResponseEntity<Void> completeForcedPasswordChange(
+            @AuthenticationPrincipal AuthenticatedUser currentUser,
+            @Valid @RequestBody ChangePasswordRequest request) {
+        authService.completeForcedPasswordChange(currentUser.id(), request.currentPassword(), request.newPassword());
         return ResponseEntity.noContent().build();
     }
 }

@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
  * dejar registrarse/loguearse a un cliente en una instalación que no tiene tienda online.
  */
 @RestController
-@PreAuthorize("@planGate.tienePlan('ECOMMERCE')")
+@PreAuthorize("@modulos.activo('TIENDA')")
 public class ClienteAuthController {
 
     private final ClienteAuthService clienteAuthService;
@@ -51,7 +51,7 @@ public class ClienteAuthController {
     }
 
     @GetMapping("/api/store/auth/me")
-    @PreAuthorize("hasAuthority('" + Permisos.ROLE_CUSTOMER + "') and @planGate.tienePlan('ECOMMERCE')")
+    @PreAuthorize("hasAuthority('" + Permisos.ROLE_CUSTOMER + "') and @modulos.activo('TIENDA')")
     public ClienteActualResponse me(@AuthenticationPrincipal AuthenticatedUser currentUser) {
         var customer = customerRepository.findById(currentUser.id())
                 .orElseThrow(() -> RecursoNoEncontradoException.de("Cliente", currentUser.id()));

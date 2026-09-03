@@ -233,3 +233,15 @@ CPU/RAM si el tráfico real termina siendo grande — conviene además hacer
 una prueba de carga externa (`k6` o `ab`) contra el VPS ya configurado, para
 saber de antemano cuántos usuarios concurrentes aguanta antes de necesitar
 subir de plan.
+
+**Scripts de carga ya escritos**: `aplicacion/loadtest/` (ver su
+`README.md`) — corren contra un stack Docker aislado (nunca contra datos
+reales), con un hallazgo real ya documentado ahí: la navegación sostenida
+escala limpio (150 VUs concurrentes, 0% errores, p95=35ms en pruebas
+locales), pero una ráfaga de logins simultáneos satura el pool de Hikari
+por deadlocks reales de InnoDB, no por falta de conexiones en sí — subir
+`DB_POOL_MAX` ayuda poco porque los reintentos de `AuthService.login()`
+amplifican la demanda de conexiones durante la ráfaga. Antes de un pico de
+tráfico grande, vale la pena volver a correr estos mismos scripts contra el
+VPS real (cambiando `BASE_URL`) para tener números representativos del
+hardware real, no solo de una laptop de desarrollo.

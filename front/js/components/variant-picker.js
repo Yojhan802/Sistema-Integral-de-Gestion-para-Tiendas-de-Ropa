@@ -1,5 +1,5 @@
 import { api } from '../core/api.js';
-import { formatCurrency, formatInteger } from '../core/format.js';
+import { formatCurrency, formatInteger, escapeHtml } from '../core/format.js';
 
 /**
  * Input de búsqueda de variante (por SKU, código de barras o nombre de
@@ -57,7 +57,7 @@ export function createVariantPicker({ placeholder = 'Buscar por SKU, código de 
         .map(
           (v) => `
           <button type="button" class="vp-result" data-id="${v.variantId}" style="display:flex; flex-direction:column; gap:2px; width:100%; text-align:left; padding:var(--space-3); border-bottom:1px solid var(--color-border);">
-            <span style="font-weight:600;">${v.productName} · ${v.sku}</span>
+            <span style="font-weight:600;">${escapeHtml(v.productName)} · ${escapeHtml(v.sku)}</span>
             <span style="font-size:var(--font-size-xs); color:var(--color-text-muted);">Stock: ${formatInteger(v.stock)} · ${formatCurrency(v.effectivePrice)}</span>
           </button>
         `
@@ -78,8 +78,8 @@ export function createVariantPicker({ placeholder = 'Buscar por SKU, código de 
     selectedBox.innerHTML = `
       <div style="display:flex; align-items:center; justify-content:space-between; gap:var(--space-3);">
         <div>
-          <div style="font-weight:600;">${variante.productName}</div>
-          <div class="mono" style="font-size:var(--font-size-xs); color:var(--color-text-muted);">${variante.sku} · Stock actual: ${formatInteger(variante.stock)}</div>
+          <div style="font-weight:600;">${escapeHtml(variante.productName)}</div>
+          <div class="mono" style="font-size:var(--font-size-xs); color:var(--color-text-muted);">${escapeHtml(variante.sku)} · Stock actual: ${formatInteger(variante.stock)}</div>
         </div>
         <button type="button" class="btn btn-ghost btn-sm" data-clear>Cambiar</button>
       </div>

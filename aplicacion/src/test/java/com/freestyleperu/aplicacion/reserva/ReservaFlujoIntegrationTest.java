@@ -9,11 +9,8 @@ import com.freestyleperu.aplicacion.caja.dto.response.SesionCajaResponse;
 import com.freestyleperu.aplicacion.caja.repository.CashRegisterRepository;
 import com.freestyleperu.aplicacion.caja.service.CajaService;
 import com.freestyleperu.aplicacion.catalogo.domain.Category;
-import com.freestyleperu.aplicacion.catalogo.domain.Color;
-import com.freestyleperu.aplicacion.catalogo.domain.Size;
+import com.freestyleperu.aplicacion.catalogo.domain.AttributeValue;
 import com.freestyleperu.aplicacion.catalogo.repository.CategoryRepository;
-import com.freestyleperu.aplicacion.catalogo.repository.ColorRepository;
-import com.freestyleperu.aplicacion.catalogo.repository.SizeRepository;
 import com.freestyleperu.aplicacion.cliente.domain.Customer;
 import com.freestyleperu.aplicacion.cliente.repository.CustomerRepository;
 import com.freestyleperu.aplicacion.combo.domain.ComboSelectorType;
@@ -32,6 +29,7 @@ import com.freestyleperu.aplicacion.inventario.repository.WarehouseRepository;
 import com.freestyleperu.aplicacion.pago.domain.PaymentMethod;
 import com.freestyleperu.aplicacion.pago.domain.PaymentMethodType;
 import com.freestyleperu.aplicacion.pago.repository.PaymentMethodRepository;
+import com.freestyleperu.aplicacion.producto.AtributoTestFixture;
 import com.freestyleperu.aplicacion.producto.dto.request.CrearProductoRequest;
 import com.freestyleperu.aplicacion.producto.dto.request.CrearVarianteRequest;
 import com.freestyleperu.aplicacion.producto.dto.response.ProductoDetalleResponse;
@@ -82,8 +80,7 @@ class ReservaFlujoIntegrationTest {
     @Autowired private UsuarioRepository usuarioRepository;
     @Autowired private RolRepository rolRepository;
     @Autowired private CategoryRepository categoryRepository;
-    @Autowired private ColorRepository colorRepository;
-    @Autowired private SizeRepository sizeRepository;
+    @Autowired private AtributoTestFixture atributos;
     @Autowired private PaymentMethodRepository paymentMethodRepository;
     @Autowired private CustomerRepository customerRepository;
     @Autowired private CompanySettingsRepository companySettingsRepository;
@@ -660,7 +657,7 @@ class ReservaFlujoIntegrationTest {
             return;
         }
         CompanySettings settings = new CompanySettings();
-        settings.setId(1L);
+        settings.setSlug("default");
         settings.setName("Freestyle Perú (semilla test)");
         settings.setCurrencyCode("PEN");
         settings.setCurrencySymbol("S/");
@@ -701,20 +698,13 @@ class ReservaFlujoIntegrationTest {
         categoria.setSlug((producto + "-cat" + producto.hashCode()).toLowerCase());
         categoryRepository.save(categoria);
 
-        Color colorEntity = new Color();
-        colorEntity.setName(color + "-" + producto);
-        colorEntity.setHexCode("#000000");
-        colorRepository.save(colorEntity);
-
-        Size sizeEntity = new Size();
-        sizeEntity.setName(talla + "-" + producto);
-        sizeEntity.setSortOrder((short) 1);
-        sizeRepository.save(sizeEntity);
+        AttributeValue colorEntity = atributos.color(color + "-" + producto);
+        AttributeValue sizeEntity = atributos.talla(talla + "-" + producto, (short) 1);
 
         ProductoDetalleResponse productoCreado = productoService.crear(new CrearProductoRequest(
                 null, null, producto, categoria.getId(), null, null, null, null, null, precio, null));
         return varianteService.crear(productoCreado.id(),
-                new CrearVarianteRequest(colorEntity.getId(), sizeEntity.getId(), null, null, stock, 1, false));
+                new CrearVarianteRequest(List.of(colorEntity.getId(), sizeEntity.getId()), null, null, stock, 1, false));
     }
 
     private PaymentMethod metodoPago(String code) {

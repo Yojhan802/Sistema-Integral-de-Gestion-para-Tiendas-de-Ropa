@@ -65,10 +65,24 @@ app:
     access-token-minutes: ${JWT_ACCESS_MINUTES:30}
     refresh-token-days: ${JWT_REFRESH_DAYS:7}
   cors:
-    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://127.0.0.1:5500}
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://127.0.0.1:5500,http://192.168.1.5:8321}
+    # El frontend multi-tenant puede vivir en cualquier subdominio de desarrollo
+    # o del dominio base. En producción los dominios propios se sirven por el
+    # mismo origen y no requieren CORS; si se separan, se agregan explícitamente.
+    allowed-origin-patterns: ${CORS_ALLOWED_ORIGIN_PATTERNS:http://*.localhost:[*],https://*.qynex.pe:[*]}
   security:
     max-failed-attempts: 5
     lock-duration-minutes: 15
+    # Llave privada para cifrar credenciales de pasarelas y facturación en la BD.
+    credentials-encryption-key: ${CREDENTIALS_ENCRYPTION_KEY:}
+  facturacion:
+    # Conciliación de comprobantes que Verifac/NubeFact dejaron en proceso.
+    status-poll-ms: ${BILLING_STATUS_POLL_MS:60000}
+    status-initial-delay-ms: ${BILLING_STATUS_INITIAL_DELAY_MS:30000}
+  openrouter:
+    api-key: ${OPENROUTER_API_KEY:}
+    base-url: ${OPENROUTER_BASE_URL:https://openrouter.ai/api/v1}
+    model: ${OPENROUTER_MODEL:}
 
 logging:
   pattern:
@@ -78,12 +92,30 @@ logging:
     com.freestyleperu.aplicacion: INFO
 
 ---
+# dev también expone el pool/hilos por variable de entorno (mismos nombres que prod) —
+# sin esto, HikariCP usa su default de 10 conexiones, que una prueba de carga local con
+# k6 agota enseguida (confirmado: 60 VUs concurrentes contra el default de 10 generaron
+# cientos de "Connection is not available, request timed out"). El default de acá (20)
+# es solo para que probar carga en la máquina de desarrollo sea representativo — no tiene
+# relación con el tamaño real del VPS de producción, que se ajusta aparte (ver perfil prod).
 spring:
   config:
     activate:
       on-profile: dev
   jpa:
     show-sql: true
+  datasource:
+    hikari:
+      maximum-pool-size: ${DB_POOL_MAX:20}
+      minimum-idle: ${DB_POOL_MIN:5}
+      connection-timeout: ${DB_POOL_TIMEOUT_MS:10000}
+
+server:
+  tomcat:
+    threads:
+      max: ${TOMCAT_MAX_THREADS:100}
+      min-spare: ${TOMCAT_MIN_THREADS:10}
+    accept-count: ${TOMCAT_ACCEPT_COUNT:100}
 
 logging:
   level:
@@ -113,3 +145,10 @@ server:
       max: ${TOMCAT_MAX_THREADS:50}
       min-spare: ${TOMCAT_MIN_THREADS:10}
     accept-count: ${TOMCAT_ACCEPT_COUNT:100}
+
+app:
+  tenant:
+    # Ver Javadoc de TenantResolutionFilter — apagar esto (false) solo si el perfil "prod" se usa
+    # por su tamaño de pool/hilos pero TODAVÍA no hay un subdominio real configurado (ej. una demo
+    # servida por IP/localhost). Con un subdominio real de por medio, dejar esto en true siempre.
+    strict-subdomain-resolution: ${TENANT_STRICT_SUBDOMAIN_RESOLUTION:true}

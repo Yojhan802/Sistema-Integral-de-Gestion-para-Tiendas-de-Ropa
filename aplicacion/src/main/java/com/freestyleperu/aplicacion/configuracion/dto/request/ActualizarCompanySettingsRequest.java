@@ -21,5 +21,20 @@ public record ActualizarCompanySettingsRequest(
         @Size(max = 255) String ticketFooter,
         @NotNull @DecimalMin("0") BigDecimal shippingFlatRate,
         @NotNull @DecimalMin("0") BigDecimal reservationDepositAmount,
-        @NotNull @Min(1) Integer reservationExpirationDays) {
+        @NotNull @Min(1) Integer reservationExpirationDays,
+        Boolean onlinePaymentsEnabled,
+        Boolean electronicInvoicingEnabled) {
+
+    /** Compatibilidad con llamadas internas y tests que aún no envían los flags opcionales. */
+    public ActualizarCompanySettingsRequest(
+            String currencyCode,
+            String currencySymbol,
+            BigDecimal igvRate,
+            String ticketFooter,
+            BigDecimal shippingFlatRate,
+                BigDecimal reservationDepositAmount,
+                Integer reservationExpirationDays) {
+        this(currencyCode, currencySymbol, igvRate, ticketFooter, shippingFlatRate,
+                reservationDepositAmount, reservationExpirationDays, null, null);
+    }
 }

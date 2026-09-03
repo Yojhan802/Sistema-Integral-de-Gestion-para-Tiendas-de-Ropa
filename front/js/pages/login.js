@@ -34,8 +34,11 @@ const submitButton = document.querySelector('#login-submit');
 const passwordInput = document.querySelector('#password');
 const togglePasswordButton = document.querySelector('#toggle-password');
 
-if (getSession()) {
-  window.location.href = 'dashboard.html';
+const existingSession = getSession();
+if (existingSession) {
+  window.location.href = existingSession.user?.mustChangePassword
+    ? 'cambiar-contrasena.html'
+    : 'dashboard.html';
 }
 
 togglePasswordButton?.addEventListener('click', () => {
@@ -58,8 +61,8 @@ form?.addEventListener('submit', async (event) => {
   submitButton.querySelector('.btn-label').textContent = 'Ingresando…';
 
   try {
-    await login(username, password);
-    window.location.href = 'dashboard.html';
+    const response = await login(username, password);
+    window.location.href = response.user.mustChangePassword ? 'cambiar-contrasena.html' : 'dashboard.html';
   } catch (error) {
     errorAlert.querySelector('.alert-message').textContent = error.message;
     errorAlert.hidden = false;

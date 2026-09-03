@@ -45,7 +45,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
         if (token != null) {
             AuthenticatedUser authenticatedUser = jwtService.parse(token);
-            if (authenticatedUser != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            Long tenantResuelto = TenantContext.get();
+            boolean tokenPerteneceAlTenantDeLaPeticion = authenticatedUser != null
+                    && (tenantResuelto == null || tenantResuelto.equals(authenticatedUser.tenantId()));
+            if (tokenPerteneceAlTenantDeLaPeticion
+                    && SecurityContextHolder.getContext().getAuthentication() == null) {
                 List<GrantedAuthority> authorities = authenticatedUser.authorities().stream()
                         .map(SimpleGrantedAuthority::new)
                         .map(GrantedAuthority.class::cast)

@@ -8,11 +8,8 @@ import com.freestyleperu.aplicacion.configuracion.domain.CompanySettings;
 import com.freestyleperu.aplicacion.configuracion.domain.Plan;
 import com.freestyleperu.aplicacion.configuracion.domain.SubscriptionStatus;
 import com.freestyleperu.aplicacion.configuracion.repository.CompanySettingsRepository;
-import com.freestyleperu.aplicacion.catalogo.domain.Color;
-import com.freestyleperu.aplicacion.catalogo.domain.Size;
+import com.freestyleperu.aplicacion.catalogo.domain.AttributeValue;
 import com.freestyleperu.aplicacion.catalogo.repository.CategoryRepository;
-import com.freestyleperu.aplicacion.catalogo.repository.ColorRepository;
-import com.freestyleperu.aplicacion.catalogo.repository.SizeRepository;
 import com.freestyleperu.aplicacion.cliente.domain.Customer;
 import com.freestyleperu.aplicacion.cliente.repository.CustomerRepository;
 import com.freestyleperu.aplicacion.inventario.domain.Branch;
@@ -29,6 +26,7 @@ import com.freestyleperu.aplicacion.pedido.dto.request.CrearPedidoRequest;
 import com.freestyleperu.aplicacion.pedido.dto.request.ItemPedidoRequest;
 import com.freestyleperu.aplicacion.pedido.dto.response.PedidoResponse;
 import com.freestyleperu.aplicacion.pedido.service.PedidoService;
+import com.freestyleperu.aplicacion.producto.AtributoTestFixture;
 import com.freestyleperu.aplicacion.producto.dto.request.CrearProductoRequest;
 import com.freestyleperu.aplicacion.producto.dto.request.CrearVarianteRequest;
 import com.freestyleperu.aplicacion.producto.dto.response.ProductoDetalleResponse;
@@ -71,8 +69,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 class PedidoFlujoIntegrationTest {
 
     @Autowired private CategoryRepository categoryRepository;
-    @Autowired private ColorRepository colorRepository;
-    @Autowired private SizeRepository sizeRepository;
+    @Autowired private AtributoTestFixture atributos;
     @Autowired private PaymentMethodRepository paymentMethodRepository;
     @Autowired private CustomerRepository customerRepository;
     @Autowired private RolRepository rolRepository;
@@ -88,6 +85,7 @@ class PedidoFlujoIntegrationTest {
     @Autowired private SaleDetailRepository saleDetailRepository;
     @Autowired private PaymentRepository paymentRepository;
     @Autowired private NotificacionService notificacionService;
+    @Autowired private jakarta.validation.Validator validator;
 
     /** PedidoService.resolverCostoEnvio exige una tarifa plana configurada (salvo contraentrega). */
     private void aseguraConfiguracionEmpresa() {
@@ -95,7 +93,7 @@ class PedidoFlujoIntegrationTest {
             return;
         }
         CompanySettings settings = new CompanySettings();
-        settings.setId(1L);
+        settings.setSlug("default");
         settings.setName("Freestyle Perú (semilla test)");
         settings.setCurrencyCode("PEN");
         settings.setCurrencySymbol("S/");
@@ -107,6 +105,23 @@ class PedidoFlujoIntegrationTest {
         settings.setSubscriptionStatus(SubscriptionStatus.ACTIVA);
         settings.setUpdatedAt(java.time.LocalDateTime.now());
         companySettingsRepository.save(settings);
+    }
+
+    /**
+     * PedidoService.crear() retiene stock a nombre del usuario técnico "sistema_tienda"
+     * (ver migración V37) — en producción lo siembra Flyway, pero los tests corren contra H2
+     * con Flyway deshabilitado (ver application-test.yml), así que hay que sembrarlo a mano.
+     */
+    private void aseguraUsuarioSistema() {
+        if (usuarioRepository.findByUsername("sistema_tienda").isPresent()) {
+            return;
+        }
+        Usuario sistema = new Usuario();
+        sistema.setUsername("sistema_tienda");
+        sistema.setPasswordHash("hash");
+        sistema.setFullName("Sistema (Tienda Online)");
+        sistema.setStatus(UsuarioEstado.INACTIVE);
+        usuarioRepository.save(sistema);
     }
 
     /** InventarioService.registrar exige un almacén activo — confirmarPago/cancelar pasan por ahí. */
@@ -124,9 +139,10 @@ class PedidoFlujoIntegrationTest {
     }
 
     @Test
-    void creaPedidoSinTocarStockYConfirmarPagoReciénLoDescuenta() throws Exception {
+    void creaPedidoRetieneStockDeInmediatoYConfirmarPagoNoLoVuelveATocar() throws Exception {
         aseguraConfiguracionEmpresa();
         aseguraAlmacenActivo("1");
+        aseguraUsuarioSistema();
         VarianteResponse variante = crearVarianteConStock("Polo Piqué", "Blanco", "M", new BigDecimal("80.00"), 5);
         PaymentMethod yape = metodoPago("YAPE");
         Long customerId = nuevoCliente("cliente1@test.com").getId();
@@ -150,8 +166,9 @@ class PedidoFlujoIntegrationTest {
         assertThat(pedido.shippingCost()).isEqualByComparingTo("15.00");
         assertThat(pedido.total()).isEqualByComparingTo("175.00");
         assertThat(pedido.items()).hasSize(1);
-        // El stock no se toca al crear el pedido — recién se confirma el pago manualmente.
-        assertThat(variantRepository.findById(variante.id()).orElseThrow().getStock()).isEqualTo(5);
+        // El stock se retiene de inmediato al crear el pedido (corrección ALTA PED-07) — ya no
+        // hace falta esperar a que el staff confirme el pago para que deje de estar disponible.
+        assertThat(variantRepository.findById(variante.id()).orElseThrow().getStock()).isEqualTo(3);
         assertThat(staffEmitter.eventosRecibidos).isEqualTo(1);
         assertThat(clienteEmitter.eventosRecibidos).isEqualTo(0);
 
@@ -160,6 +177,7 @@ class PedidoFlujoIntegrationTest {
         assertThat(confirmado.status()).isEqualTo(PedidoStatus.CONFIRMED);
         assertThat(confirmado.confirmedAt()).isNotNull();
         assertThat(confirmado.confirmedByUsername()).isEqualTo("staff.pedidos1");
+        // Confirmar el pago no vuelve a tocar el stock — ya estaba retenido desde crear().
         assertThat(variantRepository.findById(variante.id()).orElseThrow().getStock()).isEqualTo(3);
 
         // Confirmar el pago genera una Sale real (sin caja) para que el pedido aparezca en Ventas y tenga ticket.
@@ -178,10 +196,45 @@ class PedidoFlujoIntegrationTest {
                 .isInstanceOf(ReglaDeNegocioException.class);
     }
 
+    /**
+     * La contratación a distancia exige el consentimiento informado del comprador: el
+     * pedido guarda cuándo aceptó y qué versión del texto regía, y el borde HTTP no
+     * admite un cuerpo que no acepte (validado sobre el DTO, no sobre el servicio).
+     */
     @Test
-    void cancelarUnPedidoConfirmadoReingresaStockYUnoPendienteNoLoToca() {
+    void elPedidoSellaLaAceptacionDeTerminosYElBordeRechazaAQuienNoAcepta() {
+        aseguraConfiguracionEmpresa();
+        aseguraAlmacenActivo("terminos");
+        aseguraUsuarioSistema();
+        VarianteResponse variante = crearVarianteConStock("Polo Básico", "Negro", "S", new BigDecimal("49.90"), 3);
+        PaymentMethod yape = metodoPago("YAPE");
+        Long customerId = nuevoCliente("cliente.terminos@test.com").getId();
+
+        PedidoResponse pedido = pedidoService.crear(
+                new CrearPedidoRequest(
+                        List.of(new ItemPedidoRequest(variante.id(), 1)),
+                        yape.getId(), "OP-100", "45678914", "Lucía", "Ramos", "Vega", "922333444",
+                        "Av. Bolognesi 890", "Lima", "Lima", "Surco", null, null, null, null,
+                        Boolean.TRUE, "2026-09"),
+                customerId);
+
+        assertThat(pedido.termsAcceptedAt()).isNotNull();
+        assertThat(pedido.termsVersion()).isEqualTo("2026-09");
+
+        CrearPedidoRequest sinAceptar = new CrearPedidoRequest(
+                List.of(new ItemPedidoRequest(variante.id(), 1)),
+                yape.getId(), "OP-101", "45678915", "Diego", "Salas", "Ruiz", "933444555",
+                "Av. Bolognesi 891", "Lima", "Lima", "Surco", null, null, null, null,
+                Boolean.FALSE, "2026-09");
+        assertThat(validator.validate(sinAceptar))
+                .anyMatch(violation -> violation.getPropertyPath().toString().equals("acceptedTerms"));
+    }
+
+    @Test
+    void cancelarUnPedidoConfirmadoReingresaStockYUnoPendienteLiberaLaReserva() {
         aseguraConfiguracionEmpresa();
         aseguraAlmacenActivo("2");
+        aseguraUsuarioSistema();
         VarianteResponse variante = crearVarianteConStock("Casaca Jean", "Azul", "L", new BigDecimal("150.00"), 4);
         PaymentMethod yape = metodoPago("YAPE");
         Long customerId = nuevoCliente("cliente2@test.com").getId();
@@ -211,21 +264,24 @@ class PedidoFlujoIntegrationTest {
         assertThatThrownBy(() -> pedidoService.cancelar(cancelado.id(), new CancelarPedidoRequest("de nuevo"), staffUserId))
                 .isInstanceOf(ReglaDeNegocioException.class);
 
-        // Un pedido nunca confirmado no debe alterar el stock al cancelarse.
+        // Un pedido nunca confirmado SÍ retiene stock al crearse (corrección ALTA PED-07) y lo
+        // libera al cancelarse — no debe quedar "perdido" ni tampoco duplicarse.
         PedidoResponse pendiente = pedidoService.crear(
                 new CrearPedidoRequest(
                         List.of(new ItemPedidoRequest(variante.id(), 1)),
                         yape.getId(), null, "45678914", "Luis", "Ramos", "Díaz", "955666777", "Calle Sol 1",
                         "Lima", "Lima", "Surco", null),
                 customerId);
+        assertThat(variantRepository.findById(variante.id()).orElseThrow().getStock()).isEqualTo(3);
         pedidoService.cancelar(pendiente.id(), new CancelarPedidoRequest("No completó el pago"), staffUserId);
         assertThat(variantRepository.findById(variante.id()).orElseThrow().getStock()).isEqualTo(4);
     }
 
     @Test
-    void rechazaCrearPedidoSinStockYConfirmarSiElStockYaNoAlcanza() {
+    void rechazaCrearPedidoSinStockYElSegundoPedidoPorLaMismaUnidadYaNoPuedeCrearse() {
         aseguraConfiguracionEmpresa();
         aseguraAlmacenActivo("3");
+        aseguraUsuarioSistema();
         VarianteResponse variante = crearVarianteConStock("Gorra Trucker", "Negro", "Única", new BigDecimal("45.00"), 1);
         PaymentMethod yape = metodoPago("YAPE");
         Long customerId = nuevoCliente("cliente3@test.com").getId();
@@ -239,27 +295,36 @@ class PedidoFlujoIntegrationTest {
                 customerId))
                 .isInstanceOf(StockInsuficienteException.class);
 
-        // Dos pedidos piden la última unidad; el primero se confirma, el segundo ya no puede.
+        // Dos pedidos piden la última unidad: el primero la retiene al crearse (corrección ALTA
+        // PED-07); el segundo ya no puede ni siquiera crearse — antes del fix, ambos se creaban
+        // como PENDING_PAYMENT y el conflicto solo se detectaba al confirmar el segundo, cuando
+        // el cliente ya creía haber comprado con éxito.
         PedidoResponse pedidoA = pedidoService.crear(
                 new CrearPedidoRequest(
                         List.of(new ItemPedidoRequest(variante.id(), 1)),
                         yape.getId(), null, "45000002", "Cliente", "A", "Prueba", "900000001", "Dirección 1",
                         "Lima", "Lima", "Distrito", null),
                 customerId);
-        PedidoResponse pedidoB = pedidoService.crear(
+        assertThat(variantRepository.findById(variante.id()).orElseThrow().getStock()).isZero();
+
+        assertThatThrownBy(() -> pedidoService.crear(
                 new CrearPedidoRequest(
                         List.of(new ItemPedidoRequest(variante.id(), 1)),
                         yape.getId(), null, "45000003", "Cliente", "B", "Prueba", "900000002", "Dirección 2",
                         "Lima", "Lima", "Distrito", null),
-                customerId);
-
-        pedidoService.confirmarPago(pedidoA.id(), staffUserId);
-        assertThatThrownBy(() -> pedidoService.confirmarPago(pedidoB.id(), staffUserId))
+                customerId))
                 .isInstanceOf(StockInsuficienteException.class);
+
+        // El primer pedido, que sí retuvo el stock a tiempo, se confirma sin problema.
+        PedidoResponse confirmado = pedidoService.confirmarPago(pedidoA.id(), staffUserId);
+        assertThat(confirmado.status()).isEqualTo(PedidoStatus.CONFIRMED);
+        assertThat(variantRepository.findById(variante.id()).orElseThrow().getStock()).isZero();
     }
 
     @Test
     void contraentregaEsGratisSoloEnHuachoYSeRechazaEnCualquierOtroDistrito() {
+        aseguraAlmacenActivo("5");
+        aseguraUsuarioSistema();
         VarianteResponse variante = crearVarianteConStock("Buzo Canguro", "Gris", "L", new BigDecimal("90.00"), 3);
         PaymentMethod contraentrega = metodoPago("CONTRAENTREGA");
         Long customerId = nuevoCliente("cliente.huacho@test.com").getId();
@@ -286,6 +351,7 @@ class PedidoFlujoIntegrationTest {
     void comprobanteDePagoSoloLoSubeElDueñoYSoloMientrasEstaPendiente() {
         aseguraConfiguracionEmpresa();
         aseguraAlmacenActivo("4");
+        aseguraUsuarioSistema();
         VarianteResponse variante = crearVarianteConStock("Camisa Lino", "Blanco", "M", new BigDecimal("70.00"), 2);
         PaymentMethod yape = metodoPago("YAPE");
         Long customerId = nuevoCliente("cliente.comprobante@test.com").getId();
@@ -350,20 +416,13 @@ class PedidoFlujoIntegrationTest {
         categoria.setSlug((producto + "-cat").toLowerCase());
         categoryRepository.save(categoria);
 
-        Color colorEntity = new Color();
-        colorEntity.setName(color + "-" + producto);
-        colorEntity.setHexCode("#000000");
-        colorRepository.save(colorEntity);
-
-        Size sizeEntity = new Size();
-        sizeEntity.setName(talla + "-" + producto);
-        sizeEntity.setSortOrder((short) 1);
-        sizeRepository.save(sizeEntity);
+        AttributeValue colorEntity = atributos.color(color + "-" + producto);
+        AttributeValue sizeEntity = atributos.talla(talla + "-" + producto, (short) 1);
 
         ProductoDetalleResponse productoCreado = productoService.crear(new CrearProductoRequest(
                 null, null, producto, categoria.getId(), null, null, null, null, null, precio, null));
         return varianteService.crear(productoCreado.id(),
-                new CrearVarianteRequest(colorEntity.getId(), sizeEntity.getId(), null, null, stock, 1, false));
+                new CrearVarianteRequest(List.of(colorEntity.getId(), sizeEntity.getId()), null, null, stock, 1, false));
     }
 
     private PaymentMethod metodoPago(String code) {

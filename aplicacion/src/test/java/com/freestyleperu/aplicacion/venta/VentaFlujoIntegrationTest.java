@@ -10,17 +10,15 @@ import com.freestyleperu.aplicacion.caja.dto.response.SesionCajaResponse;
 import com.freestyleperu.aplicacion.caja.repository.CashRegisterRepository;
 import com.freestyleperu.aplicacion.caja.service.CajaService;
 import com.freestyleperu.aplicacion.catalogo.domain.Category;
-import com.freestyleperu.aplicacion.catalogo.domain.Color;
-import com.freestyleperu.aplicacion.catalogo.domain.Size;
+import com.freestyleperu.aplicacion.catalogo.domain.AttributeValue;
 import com.freestyleperu.aplicacion.catalogo.repository.CategoryRepository;
-import com.freestyleperu.aplicacion.catalogo.repository.ColorRepository;
-import com.freestyleperu.aplicacion.catalogo.repository.SizeRepository;
 import com.freestyleperu.aplicacion.inventario.domain.Branch;
 import com.freestyleperu.aplicacion.inventario.domain.Warehouse;
 import com.freestyleperu.aplicacion.inventario.repository.BranchRepository;
 import com.freestyleperu.aplicacion.inventario.repository.WarehouseRepository;
 import com.freestyleperu.aplicacion.pago.domain.PaymentMethod;
 import com.freestyleperu.aplicacion.pago.repository.PaymentMethodRepository;
+import com.freestyleperu.aplicacion.producto.AtributoTestFixture;
 import com.freestyleperu.aplicacion.producto.dto.request.CrearProductoRequest;
 import com.freestyleperu.aplicacion.producto.dto.request.CrearVarianteRequest;
 import com.freestyleperu.aplicacion.producto.dto.response.ProductoDetalleResponse;
@@ -72,8 +70,7 @@ class VentaFlujoIntegrationTest {
     @Autowired private UsuarioRepository usuarioRepository;
     @Autowired private RolRepository rolRepository;
     @Autowired private CategoryRepository categoryRepository;
-    @Autowired private ColorRepository colorRepository;
-    @Autowired private SizeRepository sizeRepository;
+    @Autowired private AtributoTestFixture atributos;
     @Autowired private PaymentMethodRepository paymentMethodRepository;
     @Autowired private ProductoService productoService;
     @Autowired private VarianteService varianteService;
@@ -214,8 +211,7 @@ class VentaFlujoIntegrationTest {
         detalle.setSubtotal(new BigDecimal("200.00"));
         detalle.setProductName("Zapatilla Running");
         detalle.setVariantSku(variante.sku());
-        detalle.setColorName("Blanco");
-        detalle.setSizeName("40");
+        detalle.setVariantLabel("Blanco / 40");
         saleDetailRepository.save(detalle);
 
         Payment pago = new Payment();
@@ -260,20 +256,13 @@ class VentaFlujoIntegrationTest {
         categoria.setSlug((producto + "-cat").toLowerCase());
         categoryRepository.save(categoria);
 
-        Color colorEntity = new Color();
-        colorEntity.setName(color + "-" + producto);
-        colorEntity.setHexCode("#000000");
-        colorRepository.save(colorEntity);
-
-        Size sizeEntity = new Size();
-        sizeEntity.setName(talla + "-" + producto);
-        sizeEntity.setSortOrder((short) 1);
-        sizeRepository.save(sizeEntity);
+        AttributeValue colorEntity = atributos.color(color + "-" + producto);
+        AttributeValue sizeEntity = atributos.talla(talla + "-" + producto, (short) 1);
 
         ProductoDetalleResponse productoCreado = productoService.crear(new CrearProductoRequest(
                 null, null, producto, categoria.getId(), null, null, null, null, null, precio, null));
         return varianteService.crear(productoCreado.id(),
-                new CrearVarianteRequest(colorEntity.getId(), sizeEntity.getId(), null, null, stock, 1, false));
+                new CrearVarianteRequest(List.of(colorEntity.getId(), sizeEntity.getId()), null, null, stock, 1, false));
     }
 
     private PaymentMethod metodoPago(String code) {

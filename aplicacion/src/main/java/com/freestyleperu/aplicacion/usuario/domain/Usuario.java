@@ -10,6 +10,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -17,19 +18,36 @@ import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.DynamicUpdate;
 
+/**
+ * {@code @DynamicUpdate}: sin esto, cada UPDATE (incluido el de cada login exitoso) toca las
+ * ~12 columnas de la fila, no solo las que cambiaron — bajo login concurrente eso amplía
+ * innecesariamente la ventana en la que InnoDB puede detectar un deadlock real entre dos
+ * transacciones que compiten por la misma fila (ver ALTA PERF-01, confirmado con una prueba
+ * de carga real con k6). No elimina el deadlock por sí solo — para eso está el reintento en
+ * {@code AuthService.login()} — pero lo hace menos probable.
+ */
 @Getter
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "users")
+@Table(name = "users", uniqueConstraints = {
+        @UniqueConstraint(columnNames = { "tenant_id", "username" }),
+        @UniqueConstraint(columnNames = { "tenant_id", "email" }),
+        @UniqueConstraint(columnNames = { "tenant_id", "dni" }) })
+@DynamicUpdate
 public class Usuario extends BaseEntity {
 
-    @Column(name = "username", nullable = false, unique = true, length = 50)
+    @Column(name = "username", nullable = false, length = 50)
     private String username;
 
-    @Column(name = "email", unique = true, length = 120)
+    @Column(name = "email", length = 120)
     private String email;
+
+    /** Solo el operador interno de la plataforma puede administrar empresas/tenants. */
+    @Column(name = "platform_operator", nullable = false)
+    private boolean platformOperator;
 
     @Column(name = "password_hash", nullable = false, length = 100)
     private String passwordHash;
@@ -37,7 +55,7 @@ public class Usuario extends BaseEntity {
     @Column(name = "full_name", nullable = false, length = 120)
     private String fullName;
 
-    @Column(name = "dni", unique = true, length = 15)
+    @Column(name = "dni", length = 15)
     private String dni;
 
     @Column(name = "phone", length = 20)

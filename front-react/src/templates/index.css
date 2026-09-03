@@ -1,0 +1,23 @@
+/* Punto de entrada visual exclusivo del storefront React. */
+@import './template-base.css';
+@import './CLASSIC/template.css';
+@import './MINIMAL/template.css';
+@import './FASHION/template.css';
+@import './SPORT/template.css';
+@import './LUXURY/template.css';
+@import './BOUTIQUE/template.css';
+@import './CATALOG/template.css';
+@import './MARKET/template.css';
+@import './EDITORIAL/template.css';
+@import './URBAN/template.css';
+@import './CLASSIC/surfaces.css';
+@import './MINIMAL/surfaces.css';
+@import './FASHION/surfaces.css';
+@import './SPORT/surfaces.css';
+@import './LUXURY/surfaces.css';
+@import './BOUTIQUE/surfaces.css';
+@import './CATALOG/surfaces.css';
+@import './MARKET/surfaces.css';
+@import './EDITORIAL/surfaces.css';
+@import './URBAN/surfaces.css';
+@import './surface-overrides.css';

@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cambiar contraseña · Qynex</title>
+  <link rel="icon" type="image/png" href="assets/brand/logo-mark-dark.png?v=qynex" />
+  <link rel="stylesheet" href="css/fonts.css" />
+  <link rel="stylesheet" href="css/tokens.css" />
+  <link rel="stylesheet" href="css/reset.css" />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/layout.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/pages.css" />
+  <link rel="stylesheet" href="css/responsive.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Saltar al contenido</a>
+  <div class="app-shell">
+    <div id="shell-sidebar" style="display:contents"></div>
+    <div id="shell-topbar" style="display:contents"></div>
+    <main class="content" id="main-content">
+      <div class="page-header">
+        <div>
+          <h1>Cambiar contraseña</h1>
+          <p>Actualiza la contraseña de tu propia cuenta.</p>
+        </div>
+      </div>
+      <div class="card" style="max-width:560px;">
+        <div class="card-body">
+          <form id="change-password-form" novalidate>
+          <div class="alert alert-danger" id="change-password-error" role="alert" hidden>
+            <span class="alert-message"></span>
+          </div>
+          <div class="field">
+            <label class="field-label" for="current-password">Contraseña actual</label>
+            <input class="input" type="password" id="current-password" autocomplete="current-password" required />
+          </div>
+          <div class="field">
+            <label class="field-label" for="new-password">Nueva contraseña</label>
+            <input class="input" type="password" id="new-password" autocomplete="new-password" minlength="8" required />
+            <span class="field-hint">Debe tener al menos 8 caracteres, incluyendo letras y números.</span>
+          </div>
+          <div class="field">
+            <label class="field-label" for="confirm-password">Repetir nueva contraseña</label>
+            <input class="input" type="password" id="confirm-password" autocomplete="new-password" minlength="8" required />
+          </div>
+          <div style="display:flex; justify-content:flex-end; margin-top:var(--space-5);">
+            <button class="btn btn-primary" type="submit" id="change-password-submit">Guardar nueva contraseña</button>
+          </div>
+          </form>
+        </div>
+      </div>
+    </main>
+  </div>
+  <script type="module" src="js/pages/cambiar-contrasena.js"></script>
+</body>
+</html>

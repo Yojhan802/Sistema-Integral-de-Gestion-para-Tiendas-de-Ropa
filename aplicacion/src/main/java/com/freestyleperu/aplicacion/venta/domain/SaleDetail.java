@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.TenantId;
 
 /**
  * Guarda una foto del nombre/SKU/precio en el momento de la venta (decisión
@@ -31,6 +32,10 @@ public class SaleDetail {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    /** Ver Javadoc de {@code BaseEntity.tenantId} — esta entidad no extiende BaseEntity pero también se aísla por tenant. */
+    @TenantId
+    private Long tenantId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "sale_id", nullable = false)
@@ -68,9 +73,6 @@ public class SaleDetail {
     @Column(name = "variant_sku", nullable = false, length = 60)
     private String variantSku;
 
-    @Column(name = "color_name", nullable = false, length = 40)
-    private String colorName;
-
-    @Column(name = "size_name", nullable = false, length = 20)
-    private String sizeName;
+    @Column(name = "variant_label", nullable = false, length = 150)
+    private String variantLabel;
 }

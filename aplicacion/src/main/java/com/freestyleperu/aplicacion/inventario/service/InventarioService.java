@@ -104,16 +104,6 @@ public class InventarioService {
         return registrar(variantId, null, MovementType.DEVOLUCION, quantity, ReferenceType.RETURN, referenceId, null, userId);
     }
 
-    /**
-     * Invocado por {@code PedidoService} cuando el staff confirma el pago de
-     * un pedido de la tienda (recién ahí se toca stock, no al crear el
-     * pedido — ver docs/03, sección "Fase 2").
-     */
-    @Transactional(propagation = Propagation.MANDATORY)
-    public MovimientoResponse registrarPorPedido(Long variantId, int quantity, Long orderId, Long staffUserId) {
-        return registrar(variantId, null, MovementType.VENTA, -quantity, ReferenceType.ORDER, orderId, null, staffUserId);
-    }
-
     /** Invocado por {@code PedidoService} al cancelar un pedido que ya tenía el pago confirmado (reingresa stock). */
     @Transactional(propagation = Propagation.MANDATORY)
     public MovimientoResponse registrarPorCancelacionPedido(Long variantId, int quantity, Long orderId, Long staffUserId) {
@@ -121,9 +111,8 @@ public class InventarioService {
     }
 
     /**
-     * Invocado por {@code ReservaService} al crear una separación — a
-     * diferencia de un pedido online, la separación retira stock de
-     * inmediato (la prenda queda físicamente apartada).
+     * Invocado por {@code ReservaService} al crear una separación — la
+     * prenda queda físicamente apartada de inmediato.
      */
     @Transactional(propagation = Propagation.MANDATORY)
     public MovimientoResponse registrarPorReserva(Long variantId, int quantity, Long reservationId, Long userId) {
@@ -134,6 +123,25 @@ public class InventarioService {
     @Transactional(propagation = Propagation.MANDATORY)
     public MovimientoResponse registrarPorLiberacionReserva(Long variantId, int quantity, Long reservationId, Long userId) {
         return registrar(variantId, null, MovementType.RESERVA_LIBERADA, quantity, ReferenceType.RESERVATION, reservationId, null, userId);
+    }
+
+    /**
+     * Invocado por {@code PedidoService} al crear un pedido online — el stock se retiene de
+     * inmediato (mismo criterio que una separación física) para que dos pedidos concurrentes
+     * por la última unidad no puedan pasar ambos a "pendiente de pago" sobre el mismo stock
+     * (corrección del hallazgo ALTA PED-07: antes el stock no se tocaba hasta confirmar el
+     * pago, lo que permitía sobreventa entre pedidos pendientes — crítico bajo alta demanda
+     * simultánea, ej. lanzamientos o campañas).
+     */
+    @Transactional(propagation = Propagation.MANDATORY)
+    public MovimientoResponse registrarReservaPorPedido(Long variantId, int quantity, Long orderId, Long userId) {
+        return registrar(variantId, null, MovementType.RESERVA, -quantity, ReferenceType.ORDER, orderId, null, userId);
+    }
+
+    /** Invocado por {@code PedidoService} al anular un pedido que aún no tenía el pago confirmado (libera el stock retenido). */
+    @Transactional(propagation = Propagation.MANDATORY)
+    public MovimientoResponse registrarLiberacionReservaPorPedido(Long variantId, int quantity, Long orderId, Long userId) {
+        return registrar(variantId, null, MovementType.RESERVA_LIBERADA, quantity, ReferenceType.ORDER, orderId, null, userId);
     }
 
     private MovimientoResponse registrar(Long variantId, Long warehouseId, MovementType type, int delta,
@@ -176,8 +184,7 @@ public class InventarioService {
                 variant.getProduct().getName(),
                 variant.getSku(),
                 variant.getBarcode(),
-                variant.getColor().getName(),
-                variant.getSize().getName(),
+                variant.getVariantLabel(),
                 variant.getStock(),
                 variant.getMinStock(),
                 variant.getStatus());

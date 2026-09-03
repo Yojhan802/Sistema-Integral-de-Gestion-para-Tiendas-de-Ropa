@@ -3,7 +3,7 @@ import { api, ApiError } from '../core/api.js';
 import { renderShell } from '../components/shell.js';
 import { openModal, closeModal } from '../components/modal.js';
 import { showToast } from '../components/toast.js';
-import { formatCurrency } from '../core/format.js';
+import { formatCurrency, escapeHtml } from '../core/format.js';
 import { debounce } from '../core/debounce.js';
 
 let combosCache = [];
@@ -18,9 +18,9 @@ function init() {
 
 function itemTexto(it) {
   if (it.selectorType === 'CATEGORY') {
-    return `${it.quantity} × cualquier producto de ${it.categoryName}${it.brandName ? ` (marca ${it.brandName})` : ''}`;
+    return `${it.quantity} × cualquier producto de ${escapeHtml(it.categoryName)}${it.brandName ? ` (marca ${escapeHtml(it.brandName)})` : ''}`;
   }
-  return `${it.quantity} × ${it.productName}`;
+  return `${it.quantity} × ${escapeHtml(it.productName)}`;
 }
 
 async function cargarCombos() {
@@ -32,8 +32,8 @@ async function cargarCombos() {
           .map(
             (c) => `
         <tr>
-          <td class="table-cell-primary mono">${c.code}</td>
-          <td>${c.name}</td>
+          <td class="table-cell-primary mono">${escapeHtml(c.code)}</td>
+          <td>${escapeHtml(c.name)}</td>
           <td class="table-cell-muted">${c.items.map(itemTexto).join(', ')}</td>
           <td class="mono" style="text-decoration:line-through; color:var(--color-text-muted);">${c.normalTotal != null ? formatCurrency(c.normalTotal) : '—'}</td>
           <td class="mono">${formatCurrency(c.price)}</td>
@@ -108,11 +108,11 @@ async function abrirFormularioCombo(combo) {
         <div class="form-grid">
           <div class="field">
             <label class="field-label" for="cf-code">Código</label>
-            <input class="input mono" id="cf-code" maxlength="30" required value="${combo?.code ?? ''}" />
+            <input class="input mono" id="cf-code" maxlength="30" required value="${escapeHtml(combo?.code ?? '')}" />
           </div>
           <div class="field">
             <label class="field-label" for="cf-name">Nombre</label>
-            <input class="input" id="cf-name" maxlength="150" required value="${combo?.name ?? ''}" />
+            <input class="input" id="cf-name" maxlength="150" required value="${escapeHtml(combo?.name ?? '')}" />
           </div>
           <div class="field field-span-2">
             <label class="field-label" for="cf-price">Precio fijo del combo (S/)</label>
@@ -137,14 +137,14 @@ async function abrirFormularioCombo(combo) {
             <div class="field">
               <label class="field-label" for="cf-categoria">Categoría</label>
               <select class="select" id="cf-categoria">
-                ${categorias.map((c) => `<option value="${c.id}">${c.name}</option>`).join('')}
+                ${categorias.map((c) => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('')}
               </select>
             </div>
             <div class="field">
               <label class="field-label" for="cf-marca">Marca (opcional)</label>
               <select class="select" id="cf-marca">
                 <option value="">Cualquier marca</option>
-                ${marcas.map((m) => `<option value="${m.id}">${m.name}</option>`).join('')}
+                ${marcas.map((m) => `<option value="${m.id}">${escapeHtml(m.name)}</option>`).join('')}
               </select>
             </div>
             <div class="field">
@@ -221,8 +221,8 @@ async function abrirFormularioCombo(combo) {
         ? page.content
             .map(
               (p) => `
-          <button type="button" class="vp-result" data-product="${p.id}" data-name="${p.name}" style="display:block; width:100%; text-align:left; padding:var(--space-3); border-bottom:1px solid var(--color-border);">
-            <div style="font-weight:600;">${p.name}</div>
+          <button type="button" class="vp-result" data-product="${p.id}" data-name="${escapeHtml(p.name)}" style="display:block; width:100%; text-align:left; padding:var(--space-3); border-bottom:1px solid var(--color-border);">
+            <div style="font-weight:600;">${escapeHtml(p.name)}</div>
             <div style="font-size:var(--font-size-xs); color:var(--color-text-muted);">${formatCurrency(p.promoPrice ?? p.price)}</div>
           </button>
         `

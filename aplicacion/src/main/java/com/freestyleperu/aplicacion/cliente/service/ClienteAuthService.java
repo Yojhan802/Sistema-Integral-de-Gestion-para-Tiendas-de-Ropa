@@ -92,7 +92,8 @@ public class ClienteAuthService {
     }
 
     private ClienteAuthResponse construirRespuesta(Customer customer) {
-        String accessToken = jwtService.generateAccessToken(customer.getId(), customer.getEmail(), Set.of(Permisos.ROLE_CUSTOMER));
+        String accessToken = jwtService.generateAccessToken(
+                customer.getId(), customer.getEmail(), Set.of(Permisos.ROLE_CUSTOMER), customer.getTenantId());
         String rawRefreshToken = crearRefreshToken(customer);
         ClienteActualResponse actual = new ClienteActualResponse(
                 customer.getId(), customer.getFullName(), customer.getEmail(), customer.getPhone());

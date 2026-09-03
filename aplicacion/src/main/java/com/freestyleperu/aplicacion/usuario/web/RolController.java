@@ -1,5 +1,6 @@
 package com.freestyleperu.aplicacion.usuario.web;
 
+import com.freestyleperu.aplicacion.shared.security.AuthenticatedUser;
 import com.freestyleperu.aplicacion.shared.security.Permisos;
 import com.freestyleperu.aplicacion.usuario.dto.request.ActualizarRolRequest;
 import com.freestyleperu.aplicacion.usuario.dto.request.AsignarPermisosRequest;
@@ -11,6 +12,7 @@ import java.net.URI;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -51,15 +53,17 @@ public class RolController {
 
     @PostMapping("/api/roles")
     @PreAuthorize("hasAuthority('" + Permisos.ROLES_GESTIONAR + "')")
-    public ResponseEntity<RolResponse> crear(@Valid @RequestBody CrearRolRequest request) {
-        RolResponse creado = rolService.crear(request);
+    public ResponseEntity<RolResponse> crear(@Valid @RequestBody CrearRolRequest request,
+            @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        RolResponse creado = rolService.crear(request, currentUser.id());
         return ResponseEntity.created(URI.create("/api/roles/" + creado.id())).body(creado);
     }
 
     @PutMapping("/api/roles/{id}")
     @PreAuthorize("hasAuthority('" + Permisos.ROLES_GESTIONAR + "')")
-    public RolResponse actualizar(@PathVariable Long id, @Valid @RequestBody ActualizarRolRequest request) {
-        return rolService.actualizar(id, request);
+    public RolResponse actualizar(@PathVariable Long id, @Valid @RequestBody ActualizarRolRequest request,
+            @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        return rolService.actualizar(id, request, currentUser.id());
     }
 
     @PutMapping("/api/roles/{id}/permissions")

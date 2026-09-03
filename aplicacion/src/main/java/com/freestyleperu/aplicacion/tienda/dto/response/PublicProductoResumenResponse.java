@@ -12,5 +12,6 @@ public record PublicProductoResumenResponse(
         String categoryName,
         String brandName,
         List<PublicColorSwatchResponse> colors,
-        boolean inStock) {
+        boolean inStock,
+        List<PublicProductImageResponse> images) {
 }

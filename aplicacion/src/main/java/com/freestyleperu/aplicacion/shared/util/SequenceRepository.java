@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface SequenceRepository extends JpaRepository<Sequence, String> {
+public interface SequenceRepository extends JpaRepository<Sequence, Long> {
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT s FROM Sequence s WHERE s.name = :name")

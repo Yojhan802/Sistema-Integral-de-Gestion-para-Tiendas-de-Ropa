@@ -41,3 +41,13 @@ export function formatDateTime(isoDate) {
     minute: '2-digit',
   }).format(new Date(isoDate));
 }
+
+/** Escapa texto antes de interpolarlo en innerHTML/document.write — nunca confiar en datos que vienen del backend (p. ej. nombres de cliente). */
+export function escapeHtml(texto) {
+  return String(texto ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}

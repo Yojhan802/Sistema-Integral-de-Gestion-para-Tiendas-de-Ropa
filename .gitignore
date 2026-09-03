@@ -9,6 +9,30 @@ aplicacion/uploads/
 aplicacion/.env
 aplicacion/.env.local
 
+# Volcados de la base de datos: contienen datos reales de clientes y hashes de
+# contraseñas. Se guardan fuera del repositorio.
+backups/
+*.sql.gz
+*.dump
+
+# Basura de herramientas locales (perfil de navegador de pruebas, logs del GPU).
+.browser-profile/
+debug.log
+
+# Prompts y notas de trabajo: contexto para desarrollar, no parte del producto.
+documento.txt
+PROMPT_*.md
+prompt-maestro-*.md
+prueba.html
+
+# Material de trabajo (logos sueltos, fotos de muestra). Los assets que la
+# aplicación sirve viven en front/assets.
+recursos/
+
+# Capturas para la landing: pertenecen al proyecto qynex-landing.
+sale-*.png
+pos-mobile-audit.png
+
 # Editor / SO
 .idea/
 .vscode/

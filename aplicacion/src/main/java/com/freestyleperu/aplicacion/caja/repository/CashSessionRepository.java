@@ -24,7 +24,7 @@ public interface CashSessionRepository extends JpaRepository<CashSession, Long> 
             SELECT s FROM CashSession s
             WHERE (:cashRegisterId IS NULL OR s.cashRegister.id = :cashRegisterId)
               AND (:status IS NULL OR s.status = :status)
-            ORDER BY s.openedAt DESC
+            ORDER BY s.openedAt DESC, s.id DESC
             """)
     Page<CashSession> buscar(@Param("cashRegisterId") Long cashRegisterId, @Param("status") CashSessionStatus status, Pageable pageable);
 
@@ -33,6 +33,6 @@ public interface CashSessionRepository extends JpaRepository<CashSession, Long> 
     Optional<CashSession> findById(Long id);
 
     @EntityGraph(attributePaths = { "cashRegister", "openedBy", "closedBy" })
-    @Query("SELECT s FROM CashSession s WHERE s.status = 'CLOSED' AND s.closedAt >= :from AND s.closedAt < :to ORDER BY s.closedAt DESC")
+    @Query("SELECT s FROM CashSession s WHERE s.status = 'CLOSED' AND s.closedAt >= :from AND s.closedAt < :to ORDER BY s.closedAt DESC, s.id DESC")
     List<CashSession> sesionesCerradasEntre(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
 }

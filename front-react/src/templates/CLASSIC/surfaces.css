@@ -1,0 +1,97 @@
+/* Superficies dinámicas propias de CLASSIC. El contenido puede llegar de API,
+   pero su presentación pertenece a esta plantilla. */
+body[data-store-template='CLASSIC'] .store-cart-item,
+body[data-store-template='CLASSIC'] .store-summary,
+body[data-store-template='CLASSIC'] .store-checkout-form,
+body[data-store-template='CLASSIC'] .store-form-panel,
+body[data-store-template='CLASSIC'] .store-checkout-summary,
+body[data-store-template='CLASSIC'] .store-auth-form,
+body[data-store-template='CLASSIC'] .store-order-card,
+body[data-store-template='CLASSIC'] .store-order-drawer-panel {
+  border-color: var(--classic-line, #d8e0e5);
+  border-radius: var(--classic-radius, 18px);
+  background: var(--classic-surface, #fff);
+  color: var(--classic-ink, #13283b);
+  box-shadow: 0 14px 36px rgba(19,40,59,.10);
+}
+body[data-store-template='CLASSIC'] .store-cart-item { border-width: 1px; padding: 1rem; }
+body[data-store-template='CLASSIC'] .store-cart-item img,
+body[data-store-template='CLASSIC'] .store-qr-box,
+body[data-store-template='CLASSIC'] .store-payment-option,
+body[data-store-template='CLASSIC'] .store-payment-account,
+body[data-store-template='CLASSIC'] .store-proof-image { border-color: var(--classic-line, #d8e0e5); border-radius: var(--classic-card-radius, 14px); }
+body[data-store-template='CLASSIC'] .store-cart-item img,
+body[data-store-template='CLASSIC'] .store-cart-controls,
+body[data-store-template='CLASSIC'] .store-payment-account,
+body[data-store-template='CLASSIC'] .store-qr-box { background: var(--classic-paper, #f5f3ee); }
+body[data-store-template='CLASSIC'] .store-cart-product-name,
+body[data-store-template='CLASSIC'] .store-cart-line-total,
+body[data-store-template='CLASSIC'] .store-summary-row,
+body[data-store-template='CLASSIC'] .store-summary-total,
+body[data-store-template='CLASSIC'] .store-form-panel h2,
+body[data-store-template='CLASSIC'] .store-checkout-summary h2,
+body[data-store-template='CLASSIC'] .store-order-card { color: var(--classic-ink, #13283b); }
+body[data-store-template='CLASSIC'] .store-cart-variant,
+body[data-store-template='CLASSIC'] .store-cart-unit-price,
+body[data-store-template='CLASSIC'] .store-summary-note,
+body[data-store-template='CLASSIC'] .store-checkout-intro,
+body[data-store-template='CLASSIC'] .field-hint,
+body[data-store-template='CLASSIC'] .store-order-card small,
+body[data-store-template='CLASSIC'] .store-order-detail-meta { color: var(--classic-muted, #708295); }
+body[data-store-template='CLASSIC'] .store-summary,
+body[data-store-template='CLASSIC'] .store-checkout-summary { border-top-color: var(--classic-signature, var(--brand-accent, #c66b43)); }
+body[data-store-template='CLASSIC'] .store-payment-option { background: var(--classic-surface, #fff); }
+body[data-store-template='CLASSIC'] .store-payment-option[data-selected='true'] { border-color: var(--classic-signature, var(--brand-accent, #c66b43)); background: color-mix(in srgb, var(--classic-signature, var(--brand-accent, #c66b43)) 11%, var(--classic-surface, #fff)); }
+body[data-store-template='CLASSIC'] .store-payment-provider,
+body[data-store-template='CLASSIC'] .store-order-proof-section { border-color: var(--classic-line, #d8e0e5); }
+body[data-store-template='CLASSIC'] .store-form-panel .input,
+body[data-store-template='CLASSIC'] .store-form-panel .select,
+body[data-store-template='CLASSIC'] .store-checkout-summary .input,
+body[data-store-template='CLASSIC'] .store-checkout-summary .select,
+body[data-store-template='CLASSIC'] .store-auth-form .input { border-color: var(--classic-line, #d8e0e5); border-radius: var(--classic-card-radius, 14px); background: var(--classic-surface, #fff); color: var(--classic-ink, #13283b); }
+body[data-store-template='CLASSIC'] .store-form-panel .input:focus-visible,
+body[data-store-template='CLASSIC'] .store-form-panel .select:focus-visible,
+body[data-store-template='CLASSIC'] .store-checkout-summary .input:focus-visible,
+body[data-store-template='CLASSIC'] .store-checkout-summary .select:focus-visible,
+body[data-store-template='CLASSIC'] .store-auth-form .input:focus-visible { outline: 2px solid var(--classic-signature, var(--brand-accent, #c66b43)); outline-offset: 2px; }
+body[data-store-template='CLASSIC'] .store-summary-total { border-top-color: var(--classic-line, #d8e0e5); }
+body[data-store-template='CLASSIC'] .store-summary-action,
+body[data-store-template='CLASSIC'] .store-auth-form .btn { border-radius: var(--classic-card-radius, 14px); }
+@media (max-width: 760px) {
+  body[data-store-template='CLASSIC'] .store-cart-item { padding: .85rem; }
+  body[data-store-template='CLASSIC'] .store-checkout-form { border-radius: var(--classic-card-radius, 14px); }
+}
+/* Checkout nativo React de CLASSIC: estos nodos son la plantilla que recibe los datos. */
+body[data-store-template='CLASSIC'] .template-checkout { color: var(--template-ink); }
+body[data-store-template='CLASSIC'] .template-checkout-eyebrow { border-bottom: 1px solid var(--template-line); color: var(--template-ink); }
+body[data-store-template='CLASSIC'] .template-checkout-intro { color: var(--template-muted); }
+body[data-store-template='CLASSIC'] .template-checkout-delivery,
+body[data-store-template='CLASSIC'] .template-checkout-order { border: 1px solid var(--template-line); border-radius: var(--template-radius); background: var(--template-surface); box-shadow: var(--react-form-shadow, none); }
+body[data-store-template='CLASSIC'] .template-checkout-order { border-top: 3px solid var(--brand-accent); }
+body[data-store-template='CLASSIC'] .template-panel-kicker,
+body[data-store-template='CLASSIC'] .template-payment-title { color: var(--brand-accent); }
+body[data-store-template='CLASSIC'] .template-field > span { color: var(--template-ink); }
+body[data-store-template='CLASSIC'] .template-field > span small,
+body[data-store-template='CLASSIC'] .template-field small { color: var(--template-muted); }
+body[data-store-template='CLASSIC'] .template-field input,
+body[data-store-template='CLASSIC'] .template-field select,
+body[data-store-template='CLASSIC'] .template-field textarea { border: 1px solid var(--template-line); border-radius: var(--template-card-radius); background: var(--template-surface); color: var(--template-ink); }
+body[data-store-template='CLASSIC'] .template-field input:focus-visible,
+body[data-store-template='CLASSIC'] .template-field select:focus-visible,
+body[data-store-template='CLASSIC'] .template-field textarea:focus-visible { outline: 2px solid var(--brand-accent); outline-offset: 2px; }
+body[data-store-template='CLASSIC'] .template-order-line,
+body[data-store-template='CLASSIC'] .template-total-line { border-bottom: 1px solid var(--template-line); }
+body[data-store-template='CLASSIC'] .template-order-line,
+body[data-store-template='CLASSIC'] .template-total-line,
+body[data-store-template='CLASSIC'] .template-grand-total { color: var(--template-ink); }
+body[data-store-template='CLASSIC'] .template-grand-total { border-top: 1px solid var(--template-line); }
+body[data-store-template='CLASSIC'] .template-payment-option { border: 1px solid var(--template-line); border-radius: var(--template-card-radius); background: var(--template-surface); color: var(--template-ink); }
+body[data-store-template='CLASSIC'] .template-payment-option.is-selected { border-color: var(--brand-accent); background: color-mix(in srgb, var(--brand-accent) 11%, var(--template-surface)); }
+body[data-store-template='CLASSIC'] .template-payment-qr,
+body[data-store-template='CLASSIC'] .template-payment-account { border: 1px solid var(--template-line); border-radius: var(--template-card-radius); background: var(--template-surface-alt); color: var(--template-ink); }
+body[data-store-template='CLASSIC'] .template-payment-qr img { border-radius: var(--template-card-radius); }
+body[data-store-template='CLASSIC'] .template-provider-field { border-top: 1px solid var(--template-line); }
+body[data-store-template='CLASSIC'] .template-error { border: 1px solid #d77; background: color-mix(in srgb, #d33 8%, var(--template-surface)); color: var(--template-ink); }
+body[data-store-template='CLASSIC'] .template-submit { border-radius: var(--template-card-radius); background: var(--brand-accent); color: #fff; transition: transform .25s ease, filter .25s ease; }
+body[data-store-template='CLASSIC'] .template-submit:hover:not(:disabled) { filter: brightness(.92); transform: translateY(-2px); }
+body[data-store-template='CLASSIC'] .template-submit:focus-visible { outline: 2px solid var(--brand-accent); outline-offset: 3px; }

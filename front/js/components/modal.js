@@ -4,6 +4,8 @@
 // nuevo antes de que el que lo invocó termine de cerrarse, el cierre
 // "atrasado" del modal viejo no debe llevarse por delante al nuevo.
 
+import { escapeHtml } from '../core/format.js';
+
 let activeModal = null;
 let lastFocused = null;
 let nextToken = 0;
@@ -30,8 +32,8 @@ export function openModal({ title, subtitle = '', body, footer = '', maxWidth = 
     <div class="modal" style="--modal-max-width:${maxWidth};" role="dialog" aria-modal="true" aria-labelledby="modal-title">
       <div class="modal-header">
         <div>
-          <h3 id="modal-title">${title}</h3>
-          ${subtitle ? `<p>${subtitle}</p>` : ''}
+          <h3 id="modal-title">${escapeHtml(title)}</h3>
+          ${subtitle ? `<p>${escapeHtml(subtitle)}</p>` : ''}
         </div>
         <button class="modal-close" type="button" data-modal-close aria-label="Cerrar">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg>

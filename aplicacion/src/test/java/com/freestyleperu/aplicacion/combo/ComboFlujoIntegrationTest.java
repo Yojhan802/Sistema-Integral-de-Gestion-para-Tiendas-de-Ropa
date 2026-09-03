@@ -8,14 +8,11 @@ import com.freestyleperu.aplicacion.caja.dto.request.AbrirCajaRequest;
 import com.freestyleperu.aplicacion.caja.dto.response.SesionCajaResponse;
 import com.freestyleperu.aplicacion.caja.repository.CashRegisterRepository;
 import com.freestyleperu.aplicacion.caja.service.CajaService;
+import com.freestyleperu.aplicacion.catalogo.domain.AttributeValue;
 import com.freestyleperu.aplicacion.catalogo.domain.Brand;
 import com.freestyleperu.aplicacion.catalogo.domain.Category;
-import com.freestyleperu.aplicacion.catalogo.domain.Color;
-import com.freestyleperu.aplicacion.catalogo.domain.Size;
 import com.freestyleperu.aplicacion.catalogo.repository.BrandRepository;
 import com.freestyleperu.aplicacion.catalogo.repository.CategoryRepository;
-import com.freestyleperu.aplicacion.catalogo.repository.ColorRepository;
-import com.freestyleperu.aplicacion.catalogo.repository.SizeRepository;
 import com.freestyleperu.aplicacion.combo.domain.ComboSelectorType;
 import com.freestyleperu.aplicacion.combo.dto.request.ComboItemRequest;
 import com.freestyleperu.aplicacion.combo.dto.request.ComboRequest;
@@ -30,6 +27,7 @@ import com.freestyleperu.aplicacion.pago.domain.PaymentMethodType;
 import com.freestyleperu.aplicacion.pago.repository.PaymentMethodRepository;
 import com.freestyleperu.aplicacion.producto.dto.request.CrearProductoRequest;
 import com.freestyleperu.aplicacion.producto.dto.request.CrearVarianteRequest;
+import com.freestyleperu.aplicacion.producto.AtributoTestFixture;
 import com.freestyleperu.aplicacion.producto.dto.response.ProductoDetalleResponse;
 import com.freestyleperu.aplicacion.producto.dto.response.VarianteResponse;
 import com.freestyleperu.aplicacion.producto.repository.ProductVariantRepository;
@@ -69,8 +67,7 @@ class ComboFlujoIntegrationTest {
     @Autowired private RolRepository rolRepository;
     @Autowired private CategoryRepository categoryRepository;
     @Autowired private BrandRepository brandRepository;
-    @Autowired private ColorRepository colorRepository;
-    @Autowired private SizeRepository sizeRepository;
+    @Autowired private AtributoTestFixture atributos;
     @Autowired private PaymentMethodRepository paymentMethodRepository;
     @Autowired private ProductoService productoService;
     @Autowired private VarianteService varianteService;
@@ -316,39 +313,25 @@ class ComboFlujoIntegrationTest {
         categoria.setSlug((producto + "-cat" + producto.hashCode()).toLowerCase());
         categoryRepository.save(categoria);
 
-        Color colorEntity = new Color();
-        colorEntity.setName(color + "-" + producto);
-        colorEntity.setHexCode("#000000");
-        colorRepository.save(colorEntity);
-
-        Size sizeEntity = new Size();
-        sizeEntity.setName(talla + "-" + producto);
-        sizeEntity.setSortOrder((short) 1);
-        sizeRepository.save(sizeEntity);
+        AttributeValue colorEntity = atributos.color(color + "-" + producto);
+        AttributeValue sizeEntity = atributos.talla(talla + "-" + producto, (short) 1);
 
         ProductoDetalleResponse productoCreado = productoService.crear(new CrearProductoRequest(
                 null, null, producto, categoria.getId(), null, null, null, null, null, precio, null));
         return varianteService.crear(productoCreado.id(),
-                new CrearVarianteRequest(colorEntity.getId(), sizeEntity.getId(), null, null, stock, 1, false));
+                new CrearVarianteRequest(List.of(colorEntity.getId(), sizeEntity.getId()), null, null, stock, 1, false));
     }
 
     /** A diferencia de crearVarianteConStock, reutiliza una categoría (y opcionalmente una marca) ya existente. */
     private VarianteResponse crearVarianteEnCategoria(
             Long categoryId, Long brandId, String producto, String color, String talla, BigDecimal precio, int stock) {
-        Color colorEntity = new Color();
-        colorEntity.setName(color + "-" + producto);
-        colorEntity.setHexCode("#000000");
-        colorRepository.save(colorEntity);
-
-        Size sizeEntity = new Size();
-        sizeEntity.setName(talla + "-" + producto);
-        sizeEntity.setSortOrder((short) 1);
-        sizeRepository.save(sizeEntity);
+        AttributeValue colorEntity = atributos.color(color + "-" + producto);
+        AttributeValue sizeEntity = atributos.talla(talla + "-" + producto, (short) 1);
 
         ProductoDetalleResponse productoCreado = productoService.crear(new CrearProductoRequest(
                 null, null, producto, categoryId, null, brandId, null, null, null, precio, null));
         return varianteService.crear(productoCreado.id(),
-                new CrearVarianteRequest(colorEntity.getId(), sizeEntity.getId(), null, null, stock, 1, false));
+                new CrearVarianteRequest(List.of(colorEntity.getId(), sizeEntity.getId()), null, null, stock, 1, false));
     }
 
     private PaymentMethod metodoPago(String code) {

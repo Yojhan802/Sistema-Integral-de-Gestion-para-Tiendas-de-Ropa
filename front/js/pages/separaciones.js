@@ -11,7 +11,7 @@ import { openPagoModal } from '../components/pago-modal.js';
 import { openAbrirCajaModal } from '../components/abrir-caja.js';
 import { fetchCurrentSession } from '../core/cash-session.js';
 import { fetchCompanySettings } from '../core/settings.js';
-import { formatCurrency, formatDateTime } from '../core/format.js';
+import { formatCurrency, formatDateTime, escapeHtml } from '../core/format.js';
 import { debounce } from '../core/debounce.js';
 
 const STATUS_LABELS = { RESERVADO: 'Reservado', COMPLETADO: 'Completado', CANCELADO: 'Cancelado', VENCIDO: 'Vencido' };
@@ -72,10 +72,10 @@ async function cargarSeparaciones() {
           .map(
             (r) => `
         <tr>
-          <td>${r.status === 'RESERVADO' ? `<input type="checkbox" data-select="${r.id}" data-buyer="${r.customerName}" data-guest="${r.guest}" />` : ''}</td>
-          <td class="table-cell-primary mono">${r.reservationNumber}</td>
-          <td>${r.customerName}${r.guest ? ' <span class="table-cell-muted" style="font-size:var(--font-size-xs);">(ocasional)</span>' : ''}</td>
-          <td>${r.itemsSummary}</td>
+          <td>${r.status === 'RESERVADO' ? `<input type="checkbox" data-select="${r.id}" data-buyer="${escapeHtml(r.customerName)}" data-guest="${r.guest}" />` : ''}</td>
+          <td class="table-cell-primary mono">${escapeHtml(r.reservationNumber)}</td>
+          <td>${escapeHtml(r.customerName)}${r.guest ? ' <span class="table-cell-muted" style="font-size:var(--font-size-xs);">(ocasional)</span>' : ''}</td>
+          <td>${escapeHtml(r.itemsSummary)}</td>
           <td class="mono">${r.totalQuantity}</td>
           <td>${formatCurrency(r.total)}</td>
           <td>${formatCurrency(r.depositAmount)}</td>
@@ -397,8 +397,7 @@ function agregarProductoSuelto(variante, cantidad) {
     reservaCart.push({
       variantId: variante.variantId,
       productName: variante.productName,
-      colorName: variante.colorName,
-      sizeName: variante.sizeName,
+      variantLabel: variante.variantLabel,
       sku: variante.sku,
       unitPrice: variante.effectivePrice,
       stock: variante.stock,
@@ -439,8 +438,8 @@ function quitarGrupoComboReserva(comboId, comboGroup) {
 
 function comboItemTextoReserva(it) {
   return it.selectorType === 'CATEGORY'
-    ? `${it.quantity} × cualquier producto de ${it.categoryName}${it.brandName ? ` (marca ${it.brandName})` : ''}`
-    : `${it.quantity} × ${it.productName}`;
+    ? `${it.quantity} × cualquier producto de ${escapeHtml(it.categoryName)}${it.brandName ? ` (marca ${escapeHtml(it.brandName)})` : ''}`
+    : `${it.quantity} × ${escapeHtml(it.productName)}`;
 }
 
 async function abrirVistaCombosReserva() {
@@ -461,7 +460,7 @@ async function abrirVistaCombosReserva() {
       (c) => `
     <button type="button" class="vp-result" data-combo="${c.id}" style="display:block; width:100%; text-align:left; padding:var(--space-3); border-bottom:1px solid var(--color-border);">
       <div style="display:flex; justify-content:space-between; font-weight:600;">
-        <span>${c.name}</span><span class="mono">${formatCurrency(c.price)}</span>
+        <span>${escapeHtml(c.name)}</span><span class="mono">${formatCurrency(c.price)}</span>
       </div>
       <div style="font-size:var(--font-size-xs); color:var(--color-text-muted);">
         ${c.items.map(comboItemTextoReserva).join(' + ')}
@@ -539,8 +538,7 @@ function abrirVistaSlotsComboReserva(combo) {
       reservaCart.push({
         variantId: variante.variantId,
         productName: variante.productName,
-        colorName: variante.colorName,
-        sizeName: variante.sizeName,
+        variantLabel: variante.variantLabel,
         sku: variante.sku,
         unitPrice: variante.effectivePrice,
         stock: variante.stock,
@@ -574,8 +572,8 @@ function itemSueltoHtmlReserva(item) {
   return `
     <div style="display:flex; gap:var(--space-3); padding:var(--space-3) 0; border-bottom:1px solid var(--color-border);">
       <div style="flex:1; min-width:0;">
-        <div style="font-weight:600; font-size:var(--font-size-sm);">${item.productName}</div>
-        <div class="table-cell-muted mono">${item.colorName} / ${item.sizeName}</div>
+        <div style="font-weight:600; font-size:var(--font-size-sm);">${escapeHtml(item.productName)}</div>
+        <div class="table-cell-muted mono">${escapeHtml(item.variantLabel)}</div>
         <div style="display:flex; align-items:center; gap:var(--space-2); margin-top:var(--space-2);">
           <button class="btn btn-ghost btn-sm" type="button" data-qty-down="${item.variantId}" style="width:28px; padding:0;">−</button>
           <span class="mono" style="min-width:24px; text-align:center;">${item.quantity}</span>
@@ -597,7 +595,7 @@ function grupoComboHtmlReserva(comboId, comboGroup, items) {
   return `
     <div style="border-radius: var(--radius-md); background: var(--color-surface-sunken); margin: var(--space-2) 0; padding: var(--space-3);">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-2);">
-        <span class="badge badge-info">Combo · ${items[0].comboName}</span>
+        <span class="badge badge-info">Combo · ${escapeHtml(items[0].comboName)}</span>
         <button class="btn btn-ghost btn-sm" type="button" data-remove-grupo="${comboId}::${comboGroup}" aria-label="Quitar combo">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg>
         </button>
@@ -606,7 +604,7 @@ function grupoComboHtmlReserva(comboId, comboGroup, items) {
         .map(
           (item) => `
         <div style="display:flex; justify-content:space-between; font-size:var(--font-size-sm); padding: 2px 0;">
-          <span>${item.quantity} × ${item.productName} <span class="table-cell-muted mono">${item.colorName}/${item.sizeName}</span></span>
+          <span>${item.quantity} × ${escapeHtml(item.productName)} <span class="table-cell-muted mono">${escapeHtml(item.variantLabel)}</span></span>
         </div>
       `
         )
@@ -674,10 +672,10 @@ function abrirModalDetalle(reserva) {
   body.innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: var(--space-4);">
       <div>
-        <div style="font-weight:600;">${reserva.customerName}${reserva.guest ? ' <span class="badge badge-neutral" style="font-weight:400;">Comprador ocasional</span>' : ''}</div>
-        ${reserva.guest && reserva.guestPhone ? `<div style="color: var(--color-text-secondary); font-size: var(--font-size-sm);">Tel.: ${reserva.guestPhone}</div>` : ''}
-        ${reserva.promoterName ? `<div style="color: var(--color-text-secondary); font-size: var(--font-size-sm);">Promotor: ${reserva.promoterName}</div>` : ''}
-        ${reserva.notes ? `<div style="color: var(--color-text-muted); font-size: var(--font-size-sm); margin-top:4px;">Nota: ${reserva.notes}</div>` : ''}
+        <div style="font-weight:600;">${escapeHtml(reserva.customerName)}${reserva.guest ? ' <span class="badge badge-neutral" style="font-weight:400;">Comprador ocasional</span>' : ''}</div>
+        ${reserva.guest && reserva.guestPhone ? `<div style="color: var(--color-text-secondary); font-size: var(--font-size-sm);">Tel.: ${escapeHtml(reserva.guestPhone)}</div>` : ''}
+        ${reserva.promoterName ? `<div style="color: var(--color-text-secondary); font-size: var(--font-size-sm);">Promotor: ${escapeHtml(reserva.promoterName)}</div>` : ''}
+        ${reserva.notes ? `<div style="color: var(--color-text-muted); font-size: var(--font-size-sm); margin-top:4px;">Nota: ${escapeHtml(reserva.notes)}</div>` : ''}
       </div>
       ${reservaStatusBadge(reserva.status)}
     </div>
@@ -687,7 +685,7 @@ function abrirModalDetalle(reserva) {
         .map(
           (item) => `
         <div style="display:flex; justify-content:space-between;">
-          <span>${item.quantity} × ${item.productName} <span class="table-cell-muted mono">${item.colorName}/${item.sizeName}</span>${item.comboName ? ` <span class="badge badge-info" style="font-weight:400;">${item.comboName}</span>` : ''}</span>
+          <span>${item.quantity} × ${escapeHtml(item.productName)} <span class="table-cell-muted mono">${escapeHtml(item.variantLabel)}</span>${item.comboName ? ` <span class="badge badge-info" style="font-weight:400;">${escapeHtml(item.comboName)}</span>` : ''}</span>
           <span class="mono">${formatCurrency(item.subtotal)}</span>
         </div>
       `

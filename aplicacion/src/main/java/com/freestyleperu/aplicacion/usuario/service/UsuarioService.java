@@ -100,7 +100,7 @@ public class UsuarioService {
     }
 
     @Transactional
-    public UsuarioResponse actualizar(Long id, ActualizarUsuarioRequest request) {
+    public UsuarioResponse actualizar(Long id, ActualizarUsuarioRequest request, Long currentUserId) {
         Usuario usuario = buscarOFallar(id);
         if (request.email() != null && !request.email().equalsIgnoreCase(usuario.getEmail())
                 && usuarioRepository.existsByEmail(request.email())) {
@@ -111,11 +111,14 @@ public class UsuarioService {
             throw new RecursoDuplicadoException("El DNI " + request.dni() + " ya está registrado");
         }
 
+        List<Rol> rolesSolicitados = resolverRoles(request.roleIds());
+        validarTechoDeAsignacion(currentUserId, rolesSolicitados);
+
         usuario.setEmail(request.email());
         usuario.setFullName(request.fullName());
         usuario.setDni(request.dni());
         usuario.setPhone(request.phone());
-        usuario.setRoles(new HashSet<>(resolverRoles(request.roleIds())));
+        usuario.setRoles(new HashSet<>(rolesSolicitados));
 
         auditService.log("USUARIO_ACTUALIZADO", "USUARIO", usuario.getId(), null, request, AuditResult.SUCCESS);
         return usuarioMapper.toResponse(usuario);

@@ -19,9 +19,12 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long> {
      * compradores ocasionales (RN-27) — para ubicar rápido a alguien que llega
      * a recoger en persona, sin importar si se registró como cliente o no.
      */
+    // "details.variant.attributeValues..." NO se agrega acá a propósito: es una colección
+    // (List) igual que "details" mismo, y Hibernate no permite fetch-join simultáneo de dos
+    // colecciones tipo List (MultipleBagFetchException) — pero tampoco hace falta: variant.
+    // variantLabel ya es una columna plana, no requiere cargar attributeValues.
     @EntityGraph(attributePaths = {
-            "customer", "details", "details.variant", "details.variant.product", "details.variant.color",
-            "details.variant.size", "details.combo", "promoter" })
+            "customer", "details", "details.variant", "details.variant.product", "details.combo", "promoter" })
     @Query("""
             SELECT r FROM Reserva r
             LEFT JOIN r.customer c
@@ -38,8 +41,7 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long> {
 
     @Override
     @EntityGraph(attributePaths = {
-            "customer", "details", "details.variant", "details.variant.product", "details.variant.color",
-            "details.variant.size", "details.combo", "promoter", "createdBy" })
+            "customer", "details", "details.variant", "details.variant.product", "details.combo", "promoter", "createdBy" })
     Optional<Reserva> findById(Long id);
 
     /** Usado por ReservaScheduler para vencer separaciones cuyo plazo ya pasó. */

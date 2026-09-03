@@ -30,38 +30,38 @@ public class PromocionController {
     }
 
     @GetMapping("/api/promotions")
-    @PreAuthorize("hasAuthority('" + Permisos.PROMOCIONES_CONSULTAR + "') and @planGate.tienePlan('PROFESIONAL')")
+    @PreAuthorize("hasAuthority('" + Permisos.PROMOCIONES_CONSULTAR + "') and @modulos.activo('PROMOCIONES')")
     public List<PromocionResponse> listar() {
         return promocionService.listar();
     }
 
     @GetMapping("/api/promotions/applicable")
-    @PreAuthorize("hasAuthority('" + Permisos.PROMOCIONES_CONSULTAR + "') and @planGate.tienePlan('PROFESIONAL')")
+    @PreAuthorize("hasAuthority('" + Permisos.PROMOCIONES_CONSULTAR + "') and @modulos.activo('PROMOCIONES')")
     public List<PromocionResponse> vigentesParaVariante(@RequestParam Long variantId) {
         return promocionService.listarVigentesParaVariante(variantId);
     }
 
     @GetMapping("/api/promotions/{id}")
-    @PreAuthorize("hasAuthority('" + Permisos.PROMOCIONES_CONSULTAR + "') and @planGate.tienePlan('PROFESIONAL')")
+    @PreAuthorize("hasAuthority('" + Permisos.PROMOCIONES_CONSULTAR + "') and @modulos.activo('PROMOCIONES')")
     public PromocionResponse obtener(@PathVariable Long id) {
         return promocionService.obtener(id);
     }
 
     @PostMapping("/api/promotions")
-    @PreAuthorize("hasAuthority('" + Permisos.PROMOCIONES_GESTIONAR + "') and @planGate.tienePlan('PROFESIONAL')")
+    @PreAuthorize("hasAuthority('" + Permisos.PROMOCIONES_GESTIONAR + "') and @modulos.activo('PROMOCIONES')")
     public ResponseEntity<PromocionResponse> crear(@Valid @RequestBody PromocionRequest request) {
         PromocionResponse creada = promocionService.crear(request);
         return ResponseEntity.created(URI.create("/api/promotions/" + creada.id())).body(creada);
     }
 
     @PutMapping("/api/promotions/{id}")
-    @PreAuthorize("hasAuthority('" + Permisos.PROMOCIONES_GESTIONAR + "') and @planGate.tienePlan('PROFESIONAL')")
+    @PreAuthorize("hasAuthority('" + Permisos.PROMOCIONES_GESTIONAR + "') and @modulos.activo('PROMOCIONES')")
     public PromocionResponse actualizar(@PathVariable Long id, @Valid @RequestBody PromocionRequest request) {
         return promocionService.actualizar(id, request);
     }
 
     @PatchMapping("/api/promotions/{id}/status")
-    @PreAuthorize("hasAuthority('" + Permisos.PROMOCIONES_GESTIONAR + "') and @planGate.tienePlan('PROFESIONAL')")
+    @PreAuthorize("hasAuthority('" + Permisos.PROMOCIONES_GESTIONAR + "') and @modulos.activo('PROMOCIONES')")
     public PromocionResponse cambiarEstado(@PathVariable Long id, @Valid @RequestBody CambiarEstadoRequest request) {
         return promocionService.cambiarEstado(id, request.status());
     }

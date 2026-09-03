@@ -7,6 +7,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDate;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,7 +17,9 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "customers")
+@Table(name = "customers", uniqueConstraints = {
+        @UniqueConstraint(columnNames = { "tenant_id", "doc_number" }),
+        @UniqueConstraint(columnNames = { "tenant_id", "email" }) })
 public class Customer extends BaseEntity {
 
     @Column(name = "full_name", nullable = false, length = 150)
@@ -26,7 +29,7 @@ public class Customer extends BaseEntity {
     @Column(name = "doc_type", nullable = false, length = 20)
     private TipoDocumento docType = TipoDocumento.SIN_DOCUMENTO;
 
-    @Column(name = "doc_number", unique = true, length = 15)
+    @Column(name = "doc_number", length = 15)
     private String docNumber;
 
     @Column(name = "phone", length = 20)

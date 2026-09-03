@@ -34,6 +34,25 @@
       <section class="card" style="margin-top: var(--space-6);">
         <div class="card-header">
           <div>
+            <h3>Galería del producto</h3>
+            <p>Agrega varias imágenes, elige la portada y define el orden en que se mostrarán en la tienda.</p>
+          </div>
+          <div class="page-actions">
+            <label id="product-gallery-add-label" class="btn btn-primary btn-sm" for="product-gallery-input" style="cursor:pointer;">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
+              Agregar imágenes
+            </label>
+            <input type="file" id="product-gallery-input" accept="image/png,image/jpeg,image/webp,image/svg+xml" multiple hidden />
+          </div>
+        </div>
+        <div id="product-gallery-body" class="card-body">
+          <div class="skeleton" style="height:150px;"></div>
+        </div>
+      </section>
+
+      <section class="card" style="margin-top: var(--space-6);">
+        <div class="card-header">
+          <div>
             <h3>Variantes</h3>
             <p>Combinaciones de color y talla, cada una con su propio SKU, código de barras y stock.</p>
           </div>
@@ -47,10 +66,9 @@
         </div>
         <div class="table-scroll">
           <table class="data-table">
-            <thead>
+            <thead id="variants-head">
               <tr>
-                <th>Color</th>
-                <th>Talla</th>
+                <th>Variante</th>
                 <th>SKU</th>
                 <th>Código de barras</th>
                 <th>Stock</th>

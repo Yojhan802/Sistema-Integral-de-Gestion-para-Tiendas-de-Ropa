@@ -7,6 +7,7 @@ import com.freestyleperu.aplicacion.catalogo.repository.BrandRepository;
 import com.freestyleperu.aplicacion.shared.domain.EstadoGeneral;
 import com.freestyleperu.aplicacion.shared.exception.RecursoDuplicadoException;
 import com.freestyleperu.aplicacion.shared.exception.RecursoNoEncontradoException;
+import com.freestyleperu.aplicacion.tienda.service.StoreCatalogSyncService;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,9 +17,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class BrandService {
 
     private final BrandRepository brandRepository;
+    private final StoreCatalogSyncService storeCatalogSyncService;
 
-    public BrandService(BrandRepository brandRepository) {
+    public BrandService(BrandRepository brandRepository, StoreCatalogSyncService storeCatalogSyncService) {
         this.brandRepository = brandRepository;
+        this.storeCatalogSyncService = storeCatalogSyncService;
     }
 
     public List<BrandResponse> listar() {
@@ -36,7 +39,9 @@ public class BrandService {
         }
         Brand brand = new Brand();
         brand.setName(request.name());
-        return toResponse(brandRepository.save(brand));
+        BrandResponse response = toResponse(brandRepository.save(brand));
+        storeCatalogSyncService.requestRefresh();
+        return response;
     }
 
     @Transactional
@@ -46,14 +51,18 @@ public class BrandService {
             throw new RecursoDuplicadoException("Ya existe una marca llamada " + request.name());
         }
         brand.setName(request.name());
-        return toResponse(brand);
+        BrandResponse response = toResponse(brand);
+        storeCatalogSyncService.requestRefresh();
+        return response;
     }
 
     @Transactional
     public BrandResponse cambiarEstado(Long id, EstadoGeneral status) {
         Brand brand = buscarOFallar(id);
         brand.setStatus(status);
-        return toResponse(brand);
+        BrandResponse response = toResponse(brand);
+        storeCatalogSyncService.requestRefresh();
+        return response;
     }
 
     private Brand buscarOFallar(Long id) {

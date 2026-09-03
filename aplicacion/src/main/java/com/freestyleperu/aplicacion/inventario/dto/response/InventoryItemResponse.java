@@ -7,8 +7,7 @@ public record InventoryItemResponse(
         String productName,
         String sku,
         String barcode,
-        String colorName,
-        String sizeName,
+        String variantLabel,
         int stock,
         int minStock,
         EstadoGeneral status) {

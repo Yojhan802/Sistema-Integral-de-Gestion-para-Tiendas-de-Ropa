@@ -6,14 +6,13 @@ let cache = null;
 
 export async function loadCatalog({ force = false } = {}) {
   if (cache && !force) return cache;
-  const [categories, subcategories, brands, colors, sizes] = await Promise.all([
+  const [categories, subcategories, brands, attributes] = await Promise.all([
     api.get('/categories'),
     api.get('/subcategories'),
     api.get('/brands'),
-    api.get('/colors'),
-    api.get('/sizes'),
+    api.get('/attributes'),
   ]);
-  cache = { categories, subcategories, brands, colors, sizes };
+  cache = { categories, subcategories, brands, attributes };
   return cache;
 }
 

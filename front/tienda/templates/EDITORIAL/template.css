@@ -1,0 +1,33 @@
+body[data-store-template='EDITORIAL'] {
+  --template-ink: #202020;
+  --template-muted: #747474;
+  --template-surface-alt: #f0eee8;
+  --template-line: #d7d3ca;
+  --template-radius: 0;
+  --template-card-radius: 0;
+  --template-heading: Georgia, 'Times New Roman', serif;
+  --template-container: 1420px;
+}
+
+body[data-store-template='EDITORIAL'] .store-promo-bar { background:#202020; text-transform:uppercase; letter-spacing:.15em; font-size:10px; }
+body[data-store-template='EDITORIAL'] .store-header { border-bottom:1px solid #202020; }
+body[data-store-template='EDITORIAL'] .store-brand { font-family:Georgia,serif; font-size:1.5rem; }
+body[data-store-template='EDITORIAL'] .store-hero { min-height:640px; border-radius:0; background:linear-gradient(135deg,#8f9688,#d6d2c6); clip-path:polygon(0 0,100% 0,100% 90%,94% 100%,0 100%); }
+body[data-store-template='EDITORIAL'] .store-hero::before { content:''; position:absolute; inset:0 0 0 56%; background:rgba(255,255,255,.16); transform:skewX(-12deg); }
+body[data-store-template='EDITORIAL'] .store-hero-badge { color:#202020; border-color:#202020; background:transparent; }
+body[data-store-template='EDITORIAL'] .store-hero h1 { color:#202020; }
+body[data-store-template='EDITORIAL'] .store-hero h1 { font-family:Georgia,serif; font-weight:400; font-size:clamp(3.5rem,8vw,8rem); }
+body[data-store-template='EDITORIAL'] .store-hero p { color:#343434; }
+body[data-store-template='EDITORIAL'] .store-hero .btn-primary { background:#202020; color:#fff; border-radius:0; }
+body[data-store-template='EDITORIAL'] .store-category-banners { grid-template-columns:repeat(10,minmax(0,1fr)); }
+body[data-store-template='EDITORIAL'] .store-category-banner,
+body[data-store-template='EDITORIAL'] .store-category-banner:nth-child(1),
+body[data-store-template='EDITORIAL'] .store-category-banner:nth-child(2),
+body[data-store-template='EDITORIAL'] .store-category-banner:nth-child(3) { grid-column:span 2; min-height:280px; border-radius:0; }
+body[data-store-template='EDITORIAL'] .store-category-banner:nth-child(2n) { transform:translateY(2rem); }
+body[data-store-template='EDITORIAL'] .store-product-card { background:transparent; box-shadow:none; }
+body[data-store-template='EDITORIAL'] .store-product-card:hover { transform:none; box-shadow:none; }
+body[data-store-template='EDITORIAL'] .store-product-image { border-radius:0; }
+body[data-store-template='EDITORIAL'] .store-product-body { padding:1rem 0; }
+body[data-store-template='EDITORIAL'] .store-product-name { font-family:Georgia,serif; font-weight:400; font-size:1.1rem; }
+body[data-store-template='EDITORIAL'] .store-footer { background:#202020; }

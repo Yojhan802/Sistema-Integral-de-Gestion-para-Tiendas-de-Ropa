@@ -2,7 +2,7 @@ import { getCart, updateCartQuantity, removeFromCart, cartTotal } from './core/c
 import { renderStoreShell, actualizarContadorCarrito } from './components/store-shell.js';
 import { renderStoreSteps } from './components/store-steps.js';
 import { API_ORIGIN } from './core/store-api.js';
-import { formatCurrency } from '../../../js/core/format.js';
+import { formatCurrency, escapeHtml } from '../../../js/core/format.js';
 
 function placeholderImage() {
   return `data:image/svg+xml;utf8,${encodeURIComponent(
@@ -23,7 +23,7 @@ function render() {
           <path d="M2 3h2l2.4 12.4a2 2 0 002 1.6h8.7a2 2 0 002-1.6L21 8H6" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
         <div>
-          <h3 style="margin-bottom: var(--space-1);">Tu carrito está vacío</h3>
+          <h3 class="store-empty-cart-title">Tu carrito está vacío</h3>
           <p>Explora el catálogo y agrega tus prendas favoritas.</p>
         </div>
         <a class="btn btn-primary" href="index.html">Ver catálogo</a>
@@ -37,12 +37,12 @@ function render() {
     .map(
       (it) => `
     <div class="store-cart-item">
-      <img src="${it.imageUrl ? `${API_ORIGIN}${it.imageUrl}` : placeholderImage()}" alt="${it.productName}" />
-      <div>
-        <div style="font-weight:600;">${it.productName}</div>
-        <div class="store-product-meta">${it.colorName} / ${it.sizeName}</div>
-        <div class="store-product-meta">${formatCurrency(it.unitPrice)} c/u</div>
-        <div style="display:flex; align-items:center; gap: var(--space-4); margin-top: var(--space-2);">
+      <img src="${it.imageUrl ? `${API_ORIGIN}${it.imageUrl}` : placeholderImage()}" alt="${escapeHtml(it.productName)}" />
+      <div class="store-cart-product">
+        <div class="store-cart-product-name">${escapeHtml(it.productName)}</div>
+        <div class="store-product-meta">${escapeHtml(it.variantLabel)}</div>
+        <div class="store-cart-unit-price">${formatCurrency(it.unitPrice)} c/u</div>
+        <div class="store-cart-controls">
           <div class="store-qty-stepper">
             <button type="button" data-qty-down="${it.variantId}" aria-label="Restar una unidad">−</button>
             <span>${it.quantity}</span>
@@ -54,7 +54,7 @@ function render() {
           Quitar
         </button>
       </div>
-      <div style="font-weight:600;">${formatCurrency(it.unitPrice * it.quantity)}</div>
+      <div class="store-cart-line-total">${formatCurrency(it.unitPrice * it.quantity)}</div>
     </div>
   `
     )
@@ -77,9 +77,9 @@ function render() {
   summaryEl.innerHTML = `
     <div class="store-summary">
       <div class="store-summary-row"><span>Subtotal</span><span>${formatCurrency(cartTotal(items))}</span></div>
-      <p class="store-product-meta" style="margin: var(--space-2) 0;">El costo de envío se calcula en el siguiente paso.</p>
+      <p class="store-product-meta store-summary-note">El costo de envío se calcula en el siguiente paso.</p>
       <div class="store-summary-total"><span>Total</span><span>${formatCurrency(cartTotal(items))}</span></div>
-      <a class="btn btn-primary btn-lg btn-block" href="checkout.html" style="margin-top: var(--space-4);">Continuar al pago</a>
+      <a class="btn btn-primary btn-lg btn-block store-summary-action" href="checkout.html">Continuar al pago</a>
     </div>
   `;
 }

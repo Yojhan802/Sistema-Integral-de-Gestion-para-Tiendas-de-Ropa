@@ -19,11 +19,17 @@ import com.freestyleperu.aplicacion.usuario.domain.UsuarioEstado;
 import com.freestyleperu.aplicacion.usuario.repository.UsuarioRepository;
 import java.time.LocalDateTime;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.dao.CannotAcquireLockException;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -40,18 +46,29 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuditService auditService;
     private final AccountLockProperties lockProperties;
+    private final AuthService self;
 
     public AuthService(UsuarioRepository usuarioRepository, RefreshTokenRepository refreshTokenRepository,
             JwtService jwtService, PasswordEncoder passwordEncoder, AuditService auditService,
-            AccountLockProperties lockProperties) {
+            AccountLockProperties lockProperties, @Lazy AuthService self) {
         this.usuarioRepository = usuarioRepository;
         this.refreshTokenRepository = refreshTokenRepository;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
         this.auditService = auditService;
         this.lockProperties = lockProperties;
+        this.self = self;
     }
 
+    /**
+     * Reintenta ante un deadlock transitorio de MySQL (confirmado con una prueba de carga
+     * real: bajo login concurrente, InnoDB puede matar una de dos transacciones que compiten
+     * por el lock de la misma fila de usuario — ver ALTA PERF-01 en la auditoría). Cada
+     * reintento vuelve a ejecutar login() completo en una transacción nueva (@Retryable
+     * envuelve a @Transactional, no al revés), así que es seguro repetirlo entero.
+     */
+    @Retryable(retryFor = CannotAcquireLockException.class, maxAttempts = 6,
+            backoff = @Backoff(delay = 30, multiplier = 2, random = true))
     public LoginResponse login(String username, String rawPassword) {
         Usuario usuario = usuarioRepository.findByUsername(username).orElse(null);
 
@@ -78,8 +95,8 @@ public class AuthService {
         usuario.setLockedUntil(null);
         usuario.setLastLoginAt(LocalDateTime.now());
 
-        Set<String> authorities = usuario.permisosEfectivos();
-        String accessToken = jwtService.generateAccessToken(usuario.getId(), usuario.getUsername(), authorities);
+        Set<String> authorities = authoritiesOf(usuario);
+        String accessToken = jwtService.generateAccessToken(usuario.getId(), usuario.getUsername(), authorities, usuario.getTenantId());
         String rawRefreshToken = crearRefreshToken(usuario);
 
         auditService.logAs(usuario.getId(), username, "LOGIN", "USUARIO", usuario.getId(), null, null, AuditResult.SUCCESS);
@@ -104,7 +121,7 @@ public class AuthService {
 
         token.setRevokedAt(LocalDateTime.now());
         String nuevoRawRefreshToken = crearRefreshToken(usuario);
-        String accessToken = jwtService.generateAccessToken(usuario.getId(), usuario.getUsername(), usuario.permisosEfectivos());
+        String accessToken = jwtService.generateAccessToken(usuario.getId(), usuario.getUsername(), authoritiesOf(usuario), usuario.getTenantId());
 
         return new TokenResponse(accessToken, nuevoRawRefreshToken, TOKEN_TYPE, jwtService.getAccessTokenSeconds());
     }
@@ -122,13 +139,28 @@ public class AuthService {
     public UsuarioActualResponse me(Long usuarioId) {
         Usuario usuario = usuarioRepository.findWithRolesById(usuarioId)
                 .orElseThrow(() -> RecursoNoEncontradoException.de("Usuario", usuarioId));
-        return aRespuestaActual(usuario, usuario.permisosEfectivos());
+        return aRespuestaActual(usuario, authoritiesOf(usuario));
     }
 
     public void changePassword(Long usuarioId, String currentPassword, String newPassword) {
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> RecursoNoEncontradoException.de("Usuario", usuarioId));
 
+        validarYActualizarPassword(usuario, currentPassword, newPassword);
+    }
+
+    public void completeForcedPasswordChange(Long usuarioId, String currentPassword, String newPassword) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> RecursoNoEncontradoException.de("Usuario", usuarioId));
+
+        if (!usuario.isMustChangePassword()) {
+            throw new ReglaDeNegocioException("No hay un cambio obligatorio de contraseña pendiente");
+        }
+
+        validarYActualizarPassword(usuario, currentPassword, newPassword);
+    }
+
+    private void validarYActualizarPassword(Usuario usuario, String currentPassword, String newPassword) {
         if (!passwordEncoder.matches(currentPassword, usuario.getPasswordHash())) {
             throw new AutenticacionException("La contraseña actual es incorrecta");
         }
@@ -145,10 +177,34 @@ public class AuthService {
 
     private void registrarIntentoFallido(Usuario usuario) {
         short intentos = (short) (usuario.getFailedAttempts() + 1);
-        usuario.setFailedAttempts(intentos);
-        if (intentos >= lockProperties.getMaxFailedAttempts()) {
-            usuario.setLockedUntil(LocalDateTime.now().plusMinutes(lockProperties.getLockDurationMinutes()));
+        LocalDateTime lockedUntil = intentos >= lockProperties.getMaxFailedAttempts()
+                ? LocalDateTime.now().plusMinutes(lockProperties.getLockDurationMinutes())
+                : null;
+        self.persistirIntentoFallido(usuario.getId(), intentos, lockedUntil);
+    }
+
+    private Set<String> authoritiesOf(Usuario usuario) {
+        Set<String> authorities = new HashSet<>(usuario.permisosEfectivos());
+        if (usuario.isPlatformOperator()) {
+            authorities.add(com.freestyleperu.aplicacion.shared.security.Permisos.PLATAFORMA_EMPRESAS_GESTIONAR);
         }
+        return Set.copyOf(authorities);
+    }
+
+    /**
+     * Transacción independiente (REQUIRES_NEW): el intento fallido debe persistirse aunque
+     * login() termine lanzando una excepción y revirtiendo su propia transacción. Solo tiene
+     * efecto porque se invoca a través de {@code self} — una auto-invocación (this.metodo(...))
+     * omitiría el proxy de Spring y la anotación @Transactional se ignoraría en silencio.
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    protected void persistirIntentoFallido(Long usuarioId, short intentos, LocalDateTime lockedUntil) {
+        usuarioRepository.findById(usuarioId).ifPresent(u -> {
+            u.setFailedAttempts(intentos);
+            if (lockedUntil != null) {
+                u.setLockedUntil(lockedUntil);
+            }
+        });
     }
 
     private String crearRefreshToken(Usuario usuario) {

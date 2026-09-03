@@ -2,6 +2,7 @@ package com.freestyleperu.aplicacion.configuracion.web;
 
 import com.freestyleperu.aplicacion.configuracion.dto.request.ActualizarCompanySettingsRequest;
 import com.freestyleperu.aplicacion.configuracion.dto.request.ActualizarIdentidadEmpresaRequest;
+import com.freestyleperu.aplicacion.configuracion.dto.request.ActualizarStorefrontRequest;
 import com.freestyleperu.aplicacion.configuracion.dto.request.ActualizarSuscripcionRequest;
 import com.freestyleperu.aplicacion.configuracion.dto.response.BrandingResponse;
 import com.freestyleperu.aplicacion.configuracion.dto.response.CompanySettingsResponse;
@@ -58,6 +59,14 @@ public class ConfiguracionController {
             @RequestParam("file") MultipartFile file,
             @AuthenticationPrincipal AuthenticatedUser currentUser) {
         return configuracionService.actualizarLogo(file, currentUser.id());
+    }
+
+    @PutMapping("/api/settings/company/storefront")
+    @PreAuthorize("hasAuthority('" + Permisos.CONFIGURACION_EDITAR + "') and @modulos.activo('TIENDA')")
+    public CompanySettingsResponse publicarTienda(
+            @Valid @RequestBody ActualizarStorefrontRequest request,
+            @AuthenticationPrincipal AuthenticatedUser currentUser) {
+        return configuracionService.publicarTienda(request, currentUser.id());
     }
 
     /**

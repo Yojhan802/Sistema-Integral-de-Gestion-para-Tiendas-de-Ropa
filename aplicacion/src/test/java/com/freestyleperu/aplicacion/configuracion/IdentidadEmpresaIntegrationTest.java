@@ -103,6 +103,7 @@ class IdentidadEmpresaIntegrationTest {
         identidad.put("address", "Otra dirección");
         identidad.put("phone", "900000000");
         identidad.put("email", "otro@test.com");
+        identidad.put("businessVertical", "CLOTHING");
         ResponseEntity<String> respIdentidad = restTemplate.exchange(
                 "/api/settings/company/identity", HttpMethod.PUT, new HttpEntity<>(identidad, headers), String.class);
         assertThat(respIdentidad.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
@@ -144,7 +145,7 @@ class IdentidadEmpresaIntegrationTest {
             return;
         }
         CompanySettings settings = new CompanySettings();
-        settings.setId(1L);
+        settings.setSlug("default");
         settings.setName("Freestyle Perú (semilla test)");
         settings.setCurrencyCode("PEN");
         settings.setCurrencySymbol("S/");

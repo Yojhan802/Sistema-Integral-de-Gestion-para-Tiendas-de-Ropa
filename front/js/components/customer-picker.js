@@ -1,4 +1,5 @@
 import { api } from '../core/api.js';
+import { escapeHtml } from '../core/format.js';
 
 /** Selector de cliente opcional para el POS. Devuelve { root, getSelected(), clear() }. */
 export function createCustomerPicker({ onSelect } = {}) {
@@ -46,8 +47,8 @@ export function createCustomerPicker({ onSelect } = {}) {
           .map(
             (c) => `
             <button type="button" class="vp-result" data-id="${c.id}" style="display:block; width:100%; text-align:left; padding:var(--space-3); border-bottom:1px solid var(--color-border);">
-              <div style="font-weight:600;">${c.fullName}</div>
-              ${c.docNumber ? `<div style="font-size:var(--font-size-xs); color:var(--color-text-muted);">${c.docNumber}</div>` : ''}
+              <div style="font-weight:600;">${escapeHtml(c.fullName)}</div>
+              ${c.docNumber ? `<div style="font-size:var(--font-size-xs); color:var(--color-text-muted);">${escapeHtml(c.docNumber)}</div>` : ''}
             </button>
           `
           )
@@ -65,7 +66,7 @@ export function createCustomerPicker({ onSelect } = {}) {
     input.value = '';
     input.style.display = 'none';
     selectedBox.style.display = 'flex';
-    selectedBox.innerHTML = `<span>${customer.fullName}</span><button type="button" class="btn btn-ghost btn-sm" data-clear>Quitar</button>`;
+    selectedBox.innerHTML = `<span>${escapeHtml(customer.fullName)}</span><button type="button" class="btn btn-ghost btn-sm" data-clear>Quitar</button>`;
     selectedBox.querySelector('[data-clear]').addEventListener('click', clear);
     onSelect?.(customer);
   }

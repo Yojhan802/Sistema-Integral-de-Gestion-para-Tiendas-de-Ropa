@@ -6,6 +6,7 @@ import { statusBadge } from '../components/status-badge.js';
 import { openClienteForm } from '../components/cliente-form.js';
 import { showToast } from '../components/toast.js';
 import { debounce } from '../core/debounce.js';
+import { escapeHtml } from '../core/format.js';
 
 const DOC_LABELS = { DNI: 'DNI', RUC: 'RUC', CE: 'CE', SIN_DOCUMENTO: '' };
 
@@ -40,10 +41,10 @@ async function cargarClientes() {
           .map(
             (c) => `
         <tr>
-          <td class="table-cell-primary">${c.fullName}</td>
-          <td class="mono">${c.docNumber ? `${DOC_LABELS[c.docType]} ${c.docNumber}` : '—'}</td>
-          <td>${c.phone ?? '—'}</td>
-          <td>${c.email ?? '—'}</td>
+          <td class="table-cell-primary">${escapeHtml(c.fullName)}</td>
+          <td class="mono">${c.docNumber ? `${DOC_LABELS[c.docType]} ${escapeHtml(c.docNumber)}` : '—'}</td>
+          <td>${c.phone ? escapeHtml(c.phone) : '—'}</td>
+          <td>${c.email ? escapeHtml(c.email) : '—'}</td>
           <td>${statusBadge(c.status)}</td>
           <td>
             <div class="table-actions">

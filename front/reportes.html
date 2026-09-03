@@ -47,6 +47,20 @@
         <button class="tab" type="button" role="tab" data-tab="caja" aria-selected="false">Caja</button>
       </div>
 
+      <section class="card" id="card-asistente-reportes" style="margin-bottom: var(--space-5);">
+        <div class="card-header">
+          <div>
+            <h3>Pregúntale a tus datos</h3>
+            <p>Sobre el reporte que ves ahora mismo (respeta la pestaña y el rango de fechas activos).</p>
+          </div>
+        </div>
+        <form id="form-asistente-reportes" style="display:flex; gap: var(--space-3);">
+          <input class="input" type="text" id="input-pregunta-reporte" placeholder="Ej: ¿cuál fue mi producto más vendido?" style="flex:1;" maxlength="300" />
+          <button class="btn btn-primary" type="submit">Preguntar</button>
+        </form>
+        <div id="respuesta-asistente-reportes" style="margin-top: var(--space-3);"></div>
+      </section>
+
       <div id="panel-ventas">
         <section class="stat-grid" aria-label="Resumen del período" style="margin-bottom: var(--space-5);">
           <div class="card stat-card">

@@ -56,7 +56,7 @@ class UsuarioRolFlujoIntegrationTest {
             return;
         }
         CompanySettings settings = new CompanySettings();
-        settings.setId(1L);
+        settings.setSlug("default");
         settings.setName("Freestyle Perú (semilla test)");
         settings.setCurrencyCode("PEN");
         settings.setCurrencySymbol("S/");
@@ -95,10 +95,10 @@ class UsuarioRolFlujoIntegrationTest {
         Permiso permiso = permisoRepository.save(Permiso.builder()
                 .code("TEST_PERMISO_USUARIO").module("TEST").description("Permiso de prueba").build());
 
-        RolResponse rol = rolService.crear(new CrearRolRequest("VENDEDOR_TEST", "Vendedor de prueba", null, null));
+        RolResponse rol = rolService.crear(new CrearRolRequest("VENDEDOR_TEST", "Vendedor de prueba", null, null), actorId);
 
         // No se puede repetir el código de un rol.
-        assertThatThrownBy(() -> rolService.crear(new CrearRolRequest("VENDEDOR_TEST", "Otro nombre", null, null)))
+        assertThatThrownBy(() -> rolService.crear(new CrearRolRequest("VENDEDOR_TEST", "Otro nombre", null, null), actorId))
                 .isInstanceOf(RecursoDuplicadoException.class);
 
         UsuarioResponse usuario = usuarioService.crear(new CrearUsuarioRequest(
@@ -120,7 +120,7 @@ class UsuarioRolFlujoIntegrationTest {
 
         // Actualizar datos y roles.
         UsuarioResponse actualizado = usuarioService.actualizar(usuario.id(), new ActualizarUsuarioRequest(
-                "nuevo.correo@test.com", "Usuario Flujo Actualizado", null, "999888777", List.of(rol.id())));
+                "nuevo.correo@test.com", "Usuario Flujo Actualizado", null, "999888777", List.of(rol.id())), actorId);
         assertThat(actualizado.fullName()).isEqualTo("Usuario Flujo Actualizado");
         assertThat(actualizado.email()).isEqualTo("nuevo.correo@test.com");
 
@@ -144,7 +144,7 @@ class UsuarioRolFlujoIntegrationTest {
         assertThat(rolConPermiso.permisos()).extracting("id").containsExactly(permiso.getId());
 
         // Editar nombre/descripción de un rol normal funciona.
-        RolResponse rolRenombrado = rolService.actualizar(rol.id(), new ActualizarRolRequest("Vendedor Renombrado", "Nueva descripción", null));
+        RolResponse rolRenombrado = rolService.actualizar(rol.id(), new ActualizarRolRequest("Vendedor Renombrado", "Nueva descripción", null), actorId);
         assertThat(rolRenombrado.name()).isEqualTo("Vendedor Renombrado");
 
         // El rol de sistema ADMINISTRADOR no puede perder sus permisos.

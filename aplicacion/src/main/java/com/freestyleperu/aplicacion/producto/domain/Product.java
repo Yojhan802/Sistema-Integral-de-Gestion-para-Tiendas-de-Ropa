@@ -13,6 +13,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.math.BigDecimal;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,13 +23,15 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "products")
+@Table(name = "products", uniqueConstraints = {
+        @UniqueConstraint(columnNames = { "tenant_id", "internal_code" }),
+        @UniqueConstraint(columnNames = { "tenant_id", "sku" }) })
 public class Product extends BaseEntity {
 
-    @Column(name = "internal_code", nullable = false, unique = true, length = 30)
+    @Column(name = "internal_code", nullable = false, length = 30)
     private String internalCode;
 
-    @Column(name = "sku", nullable = false, unique = true, length = 40)
+    @Column(name = "sku", nullable = false, length = 40)
     private String sku;
 
     @Column(name = "name", nullable = false, length = 150)

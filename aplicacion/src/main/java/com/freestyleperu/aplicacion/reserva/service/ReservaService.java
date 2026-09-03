@@ -462,8 +462,7 @@ public class ReservaService {
         detail.setCombo(combo);
         detail.setProductName(variant.getProduct().getName());
         detail.setVariantSku(variant.getSku());
-        detail.setColorName(variant.getColor().getName());
-        detail.setSizeName(variant.getSize().getName());
+        detail.setVariantLabel(variant.getVariantLabel());
         saleDetailRepository.save(detail);
     }
 
@@ -683,8 +682,8 @@ public class ReservaService {
 
     private String itemsSummary(Reserva r) {
         return r.getDetails().stream()
-                .map(d -> String.format("%s %s/%s ×%d", d.getVariant().getProduct().getName(),
-                        d.getVariant().getColor().getName(), d.getVariant().getSize().getName(), d.getQuantity()))
+                .map(d -> String.format("%s %s ×%d", d.getVariant().getProduct().getName(),
+                        d.getVariant().getVariantLabel(), d.getQuantity()))
                 .reduce((a, b) -> a + ", " + b)
                 .orElse("");
     }
@@ -700,7 +699,7 @@ public class ReservaService {
     private ReservaItemResponse toItemResponse(ReservaDetail d) {
         return new ReservaItemResponse(
                 d.getVariant().getId(), d.getVariant().getProduct().getName(), d.getVariant().getSku(),
-                d.getVariant().getColor().getName(), d.getVariant().getSize().getName(), d.getQuantity(), d.getUnitPrice(),
+                d.getVariant().getVariantLabel(), d.getQuantity(), d.getUnitPrice(),
                 d.getDiscountAmount(), d.getSubtotal(), d.getCombo() != null ? d.getCombo().getId() : null,
                 d.getCombo() != null ? d.getCombo().getName() : null, d.getComboGroup());
     }

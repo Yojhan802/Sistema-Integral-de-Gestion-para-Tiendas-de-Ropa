@@ -1,6 +1,6 @@
 import { fetchCompanySettings } from '../core/settings.js';
 import { API_ORIGIN } from '../core/api.js';
-import { formatCurrency, formatDateTime } from '../core/format.js';
+import { formatCurrency, formatDateTime, escapeHtml } from '../core/format.js';
 
 /** Abre una ventana aparte con el ticket listo para imprimir (docs §63 "Fase 1.5 — POS"). */
 export async function imprimirTicket(venta) {
@@ -26,7 +26,7 @@ function construirHtml(venta, settings) {
       (item) => `
     <tr>
       <td>${item.quantity}</td>
-      <td>${item.productName}<br><span class="muted">${item.colorName} / ${item.sizeName}</span></td>
+      <td>${escapeHtml(item.productName)}<br><span class="muted">${escapeHtml(item.variantLabel)}</span></td>
       <td class="num">${formatCurrency(item.subtotal)}</td>
     </tr>
   `
@@ -34,7 +34,7 @@ function construirHtml(venta, settings) {
     .join('');
 
   const filasPagos = venta.payments
-    .map((p) => `<div class="fila"><span>${p.paymentMethodName}${p.reference ? ` (${p.reference})` : ''}</span><span>${formatCurrency(p.amount)}</span></div>`)
+    .map((p) => `<div class="fila"><span>${escapeHtml(p.paymentMethodName)}${p.reference ? ` (${escapeHtml(p.reference)})` : ''}</span><span>${formatCurrency(p.amount)}</span></div>`)
     .join('');
 
   return `
@@ -42,7 +42,7 @@ function construirHtml(venta, settings) {
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
-<title>${venta.saleNumber}</title>
+<title>${escapeHtml(venta.saleNumber)}</title>
 <style>
   @page { size: 80mm auto; margin: 4mm; }
   * { box-sizing: border-box; }
@@ -67,16 +67,16 @@ function construirHtml(venta, settings) {
 <body>
   <div class="center">
     ${settings?.logoUrl ? `<img class="logo" src="${API_ORIGIN}${settings.logoUrl}" alt="" />` : ''}
-    <h1>${settings?.name ?? 'Qynex'}</h1>
-    ${settings?.ruc ? `<div class="muted">RUC ${settings.ruc}</div>` : ''}
-    ${settings?.address ? `<div class="muted">${settings.address}</div>` : ''}
-    ${settings?.phone ? `<div class="muted">${settings.phone}</div>` : ''}
+    <h1>${escapeHtml(settings?.name ?? 'Qynex')}</h1>
+    ${settings?.ruc ? `<div class="muted">RUC ${escapeHtml(settings.ruc)}</div>` : ''}
+    ${settings?.address ? `<div class="muted">${escapeHtml(settings.address)}</div>` : ''}
+    ${settings?.phone ? `<div class="muted">${escapeHtml(settings.phone)}</div>` : ''}
   </div>
   <hr />
-  <div class="fila"><span>N° venta</span><span>${venta.saleNumber}</span></div>
+  <div class="fila"><span>N° venta</span><span>${escapeHtml(venta.saleNumber)}</span></div>
   <div class="fila"><span>Fecha</span><span>${formatDateTime(venta.createdAt)}</span></div>
-  <div class="fila"><span>Vendedor</span><span>${venta.sellerName}</span></div>
-  ${venta.customerName ? `<div class="fila"><span>Cliente</span><span>${venta.customerName}</span></div>` : ''}
+  <div class="fila"><span>Vendedor</span><span>${escapeHtml(venta.sellerName)}</span></div>
+  ${venta.customerName ? `<div class="fila"><span>Cliente</span><span>${escapeHtml(venta.customerName)}</span></div>` : ''}
   <hr />
   <table>
     <thead><tr><th>Cant</th><th>Descripción</th><th class="num">Importe</th></tr></thead>
@@ -89,7 +89,7 @@ function construirHtml(venta, settings) {
   <div class="fila total"><span>TOTAL</span><span>${formatCurrency(venta.total)}</span></div>
   <hr />
   ${filasPagos}
-  ${settings?.ticketFooter ? `<div class="footer">${settings.ticketFooter}</div>` : ''}
+  ${settings?.ticketFooter ? `<div class="footer">${escapeHtml(settings.ticketFooter)}</div>` : ''}
   <div class="print-actions">
     <button type="button" onclick="window.print()">Imprimir</button>
     <button type="button" onclick="window.close()">Cerrar</button>

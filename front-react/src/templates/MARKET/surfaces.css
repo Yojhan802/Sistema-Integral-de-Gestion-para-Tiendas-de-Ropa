@@ -1,0 +1,97 @@
+/* Superficies dinámicas propias de MARKET. El contenido puede llegar de API,
+   pero su presentación pertenece a esta plantilla. */
+body[data-store-template='MARKET'] .store-cart-item,
+body[data-store-template='MARKET'] .store-summary,
+body[data-store-template='MARKET'] .store-checkout-form,
+body[data-store-template='MARKET'] .store-form-panel,
+body[data-store-template='MARKET'] .store-checkout-summary,
+body[data-store-template='MARKET'] .store-auth-form,
+body[data-store-template='MARKET'] .store-order-card,
+body[data-store-template='MARKET'] .store-order-drawer-panel {
+  border-color: var(--market-line, #d5e2da);
+  border-radius: var(--market-radius, 12px);
+  background: var(--market-surface, #fff);
+  color: var(--market-ink, #1e3329);
+  box-shadow: 0 10px 24px rgba(24,70,45,.10);
+}
+body[data-store-template='MARKET'] .store-cart-item { border-width: 1px; padding: 1rem; }
+body[data-store-template='MARKET'] .store-cart-item img,
+body[data-store-template='MARKET'] .store-qr-box,
+body[data-store-template='MARKET'] .store-payment-option,
+body[data-store-template='MARKET'] .store-payment-account,
+body[data-store-template='MARKET'] .store-proof-image { border-color: var(--market-line, #d5e2da); border-radius: var(--market-card-radius, 10px); }
+body[data-store-template='MARKET'] .store-cart-item img,
+body[data-store-template='MARKET'] .store-cart-controls,
+body[data-store-template='MARKET'] .store-payment-account,
+body[data-store-template='MARKET'] .store-qr-box { background: var(--market-surface-alt, #eef5f1); }
+body[data-store-template='MARKET'] .store-cart-product-name,
+body[data-store-template='MARKET'] .store-cart-line-total,
+body[data-store-template='MARKET'] .store-summary-row,
+body[data-store-template='MARKET'] .store-summary-total,
+body[data-store-template='MARKET'] .store-form-panel h2,
+body[data-store-template='MARKET'] .store-checkout-summary h2,
+body[data-store-template='MARKET'] .store-order-card { color: var(--market-ink, #1e3329); }
+body[data-store-template='MARKET'] .store-cart-variant,
+body[data-store-template='MARKET'] .store-cart-unit-price,
+body[data-store-template='MARKET'] .store-summary-note,
+body[data-store-template='MARKET'] .store-checkout-intro,
+body[data-store-template='MARKET'] .field-hint,
+body[data-store-template='MARKET'] .store-order-card small,
+body[data-store-template='MARKET'] .store-order-detail-meta { color: var(--market-muted, #6c8275); }
+body[data-store-template='MARKET'] .store-summary,
+body[data-store-template='MARKET'] .store-checkout-summary { border-top-color: var(--market-accent, #287a58); }
+body[data-store-template='MARKET'] .store-payment-option { background: var(--market-surface, #fff); }
+body[data-store-template='MARKET'] .store-payment-option[data-selected='true'] { border-color: var(--market-accent, #287a58); background: color-mix(in srgb, var(--market-accent, #287a58) 11%, var(--market-surface, #fff)); }
+body[data-store-template='MARKET'] .store-payment-provider,
+body[data-store-template='MARKET'] .store-order-proof-section { border-color: var(--market-line, #d5e2da); }
+body[data-store-template='MARKET'] .store-form-panel .input,
+body[data-store-template='MARKET'] .store-form-panel .select,
+body[data-store-template='MARKET'] .store-checkout-summary .input,
+body[data-store-template='MARKET'] .store-checkout-summary .select,
+body[data-store-template='MARKET'] .store-auth-form .input { border-color: var(--market-line, #d5e2da); border-radius: var(--market-card-radius, 10px); background: var(--market-surface, #fff); color: var(--market-ink, #1e3329); }
+body[data-store-template='MARKET'] .store-form-panel .input:focus-visible,
+body[data-store-template='MARKET'] .store-form-panel .select:focus-visible,
+body[data-store-template='MARKET'] .store-checkout-summary .input:focus-visible,
+body[data-store-template='MARKET'] .store-checkout-summary .select:focus-visible,
+body[data-store-template='MARKET'] .store-auth-form .input:focus-visible { outline: 2px solid var(--market-accent, #287a58); outline-offset: 2px; }
+body[data-store-template='MARKET'] .store-summary-total { border-top-color: var(--market-line, #d5e2da); }
+body[data-store-template='MARKET'] .store-summary-action,
+body[data-store-template='MARKET'] .store-auth-form .btn { border-radius: var(--market-card-radius, 10px); }
+@media (max-width: 760px) {
+  body[data-store-template='MARKET'] .store-cart-item { padding: .85rem; }
+  body[data-store-template='MARKET'] .store-checkout-form { border-radius: var(--market-card-radius, 10px); }
+}
+/* Checkout nativo React de MARKET: estos nodos son la plantilla que recibe los datos. */
+body[data-store-template='MARKET'] .template-checkout { color: var(--template-ink); }
+body[data-store-template='MARKET'] .template-checkout-eyebrow { border-bottom: 1px solid var(--template-line); color: var(--template-ink); }
+body[data-store-template='MARKET'] .template-checkout-intro { color: var(--template-muted); }
+body[data-store-template='MARKET'] .template-checkout-delivery,
+body[data-store-template='MARKET'] .template-checkout-order { border: 1px solid var(--template-line); border-radius: var(--template-radius); background: var(--template-surface); box-shadow: var(--react-form-shadow, none); }
+body[data-store-template='MARKET'] .template-checkout-order { border-top: 3px solid var(--brand-accent); }
+body[data-store-template='MARKET'] .template-panel-kicker,
+body[data-store-template='MARKET'] .template-payment-title { color: var(--brand-accent); }
+body[data-store-template='MARKET'] .template-field > span { color: var(--template-ink); }
+body[data-store-template='MARKET'] .template-field > span small,
+body[data-store-template='MARKET'] .template-field small { color: var(--template-muted); }
+body[data-store-template='MARKET'] .template-field input,
+body[data-store-template='MARKET'] .template-field select,
+body[data-store-template='MARKET'] .template-field textarea { border: 1px solid var(--template-line); border-radius: var(--template-card-radius); background: var(--template-surface); color: var(--template-ink); }
+body[data-store-template='MARKET'] .template-field input:focus-visible,
+body[data-store-template='MARKET'] .template-field select:focus-visible,
+body[data-store-template='MARKET'] .template-field textarea:focus-visible { outline: 2px solid var(--brand-accent); outline-offset: 2px; }
+body[data-store-template='MARKET'] .template-order-line,
+body[data-store-template='MARKET'] .template-total-line { border-bottom: 1px solid var(--template-line); }
+body[data-store-template='MARKET'] .template-order-line,
+body[data-store-template='MARKET'] .template-total-line,
+body[data-store-template='MARKET'] .template-grand-total { color: var(--template-ink); }
+body[data-store-template='MARKET'] .template-grand-total { border-top: 1px solid var(--template-line); }
+body[data-store-template='MARKET'] .template-payment-option { border: 1px solid var(--template-line); border-radius: var(--template-card-radius); background: var(--template-surface); color: var(--template-ink); }
+body[data-store-template='MARKET'] .template-payment-option.is-selected { border-color: var(--brand-accent); background: color-mix(in srgb, var(--brand-accent) 11%, var(--template-surface)); }
+body[data-store-template='MARKET'] .template-payment-qr,
+body[data-store-template='MARKET'] .template-payment-account { border: 1px solid var(--template-line); border-radius: var(--template-card-radius); background: var(--template-surface-alt); color: var(--template-ink); }
+body[data-store-template='MARKET'] .template-payment-qr img { border-radius: var(--template-card-radius); }
+body[data-store-template='MARKET'] .template-provider-field { border-top: 1px solid var(--template-line); }
+body[data-store-template='MARKET'] .template-error { border: 1px solid #d77; background: color-mix(in srgb, #d33 8%, var(--template-surface)); color: var(--template-ink); }
+body[data-store-template='MARKET'] .template-submit { border-radius: var(--template-card-radius); background: var(--brand-accent); color: #fff; transition: transform .25s ease, filter .25s ease; }
+body[data-store-template='MARKET'] .template-submit:hover:not(:disabled) { filter: brightness(.92); transform: translateY(-2px); }
+body[data-store-template='MARKET'] .template-submit:focus-visible { outline: 2px solid var(--brand-accent); outline-offset: 3px; }

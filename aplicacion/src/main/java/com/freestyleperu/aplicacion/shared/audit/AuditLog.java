@@ -15,6 +15,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.TenantId;
 import org.hibernate.type.SqlTypes;
 
 @Getter
@@ -29,6 +30,14 @@ public class AuditLog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    /**
+     * Ver Javadoc de {@code BaseEntity.tenantId} — esta entidad no extiende BaseEntity pero
+     * también se aísla por tenant. Hibernate lo llena solo al insertar; el builder de esta
+     * clase no debe usarse para asignarlo a mano.
+     */
+    @TenantId
+    private Long tenantId;
 
     @Column(name = "user_id")
     private Long userId;

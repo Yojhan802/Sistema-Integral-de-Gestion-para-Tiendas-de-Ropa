@@ -213,6 +213,7 @@ class PlanGateIntegrationTest {
         HttpHeaders headers = new HttpHeaders();
         if (opsKey != null) headers.set("X-Ops-Key", opsKey);
         Map<String, Object> body = new HashMap<>();
+        body.put("tenantId", 1L);
         body.put("subscriptionStatus", status);
         body.put("nextPaymentDue", nextPaymentDue);
         return restTemplate.exchange(
@@ -228,7 +229,7 @@ class PlanGateIntegrationTest {
     private void establecerPlan(Plan plan) {
         CompanySettings settings = companySettingsRepository.findById(1L).orElseGet(() -> {
             CompanySettings nuevo = new CompanySettings();
-            nuevo.setId(1L);
+            nuevo.setSlug("default");
             nuevo.setName("Freestyle Perú (semilla test)");
             nuevo.setCurrencyCode("PEN");
             nuevo.setCurrencySymbol("S/");

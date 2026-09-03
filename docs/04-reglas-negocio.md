@@ -436,6 +436,8 @@ Ver docs/03-modelo-datos.md §18 para el modelo de datos completo.
 | `USUARIOS_CREAR` | ✔ | ✔ | | |
 | `USUARIOS_EDITAR` | ✔ | ✔ | | |
 | `USUARIOS_BLOQUEAR` | ✔ | ✔ | | |
+| `USUARIOS_CAMBIAR_CONTRASENA` | ✔ | ✔ | ✔ | ✔ |
+| `USUARIOS_RESETEAR_CONTRASENA` | ✔ | | | |
 | `ROLES_GESTIONAR` | ✔ | | | |
 | `CONFIGURACION_VER` | ✔ | ✔ | | |
 | `CONFIGURACION_EDITAR` | ✔ | | | |

@@ -57,7 +57,7 @@ async function cargarUsuarios() {
   try {
     const page = await api.get('/users', { query: { size: 100, sort: 'fullName,asc' } });
     const select = document.querySelector('#filter-user');
-    page.content.forEach((u) => select.insertAdjacentHTML('beforeend', `<option value="${u.id}">${u.fullName}</option>`));
+    page.content.forEach((u) => select.insertAdjacentHTML('beforeend', `<option value="${u.id}">${escapeHtml(u.fullName)}</option>`));
   } catch {
     // El filtro de usuario es un extra — si falla, la auditoría sigue consultable sin él.
   }

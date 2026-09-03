@@ -3,6 +3,7 @@ import { api, ApiError } from '../core/api.js';
 import { renderShell } from '../components/shell.js';
 import { openModal, closeModal } from '../components/modal.js';
 import { showToast } from '../components/toast.js';
+import { escapeHtml } from '../core/format.js';
 
 let roles = [];
 let permisos = [];
@@ -32,7 +33,7 @@ function renderListaRoles() {
     .map(
       (r) => `
       <button type="button" class="nav-item" data-role-id="${r.id}" style="width:100%; justify-content:space-between; ${r.id === selectedRoleId ? 'background: var(--color-primary-bg); color: var(--color-primary);' : ''}">
-        <span>${r.name}</span>
+        <span>${escapeHtml(r.name)}</span>
         ${r.isSystem ? '<span class="badge badge-neutral">Sistema</span>' : ''}
       </button>
     `
@@ -66,9 +67,9 @@ function renderDetalleRol() {
   detail.innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:flex-start; gap: var(--space-4); margin-bottom: var(--space-5);">
       <div>
-        <h2 style="margin:0;">${rol.name}</h2>
-        <p class="mono" style="color: var(--color-text-muted); margin: var(--space-1) 0 0;">${rol.code}</p>
-        ${rol.description ? `<p style="color: var(--color-text-secondary); margin: var(--space-2) 0 0;">${rol.description}</p>` : ''}
+        <h2 style="margin:0;">${escapeHtml(rol.name)}</h2>
+        <p class="mono" style="color: var(--color-text-muted); margin: var(--space-1) 0 0;">${escapeHtml(rol.code)}</p>
+        ${rol.description ? `<p style="color: var(--color-text-secondary); margin: var(--space-2) 0 0;">${escapeHtml(rol.description)}</p>` : ''}
         <p class="table-cell-muted" style="margin: var(--space-2) 0 0;" title="Al crear usuarios, este rol solo puede asignar roles con techo de asignación igual o menor">
           Techo de asignación: <strong>${rol.hierarchyLevel}</strong>
         </p>
@@ -87,7 +88,7 @@ function renderDetalleRol() {
               .map(
                 (p) => `
               <label class="checkbox-field">
-                <input type="checkbox" name="permiso" value="${p.id}" ${asignados.has(p.id) ? 'checked' : ''} />
+                <input type="checkbox" name="permiso" value="${p.id}" ${asignados.has(p.id) ? 'checked' : ''} ${p.code === 'USUARIOS_CAMBIAR_CONTRASENA' ? 'disabled title="Habilitado para todos los roles"' : ''} ${p.code === 'USUARIOS_RESETEAR_CONTRASENA' ? 'disabled title="Reservado al rol Administrador"' : ''} />
                 ${p.description || p.code}
               </label>
             `

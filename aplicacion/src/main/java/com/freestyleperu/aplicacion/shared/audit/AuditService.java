@@ -5,6 +5,7 @@ import com.freestyleperu.aplicacion.shared.util.RequestContextUtils;
 import java.time.LocalDateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,11 @@ import tools.jackson.databind.ObjectMapper;
  * Se ejecuta en una transacción independiente (REQUIRES_NEW) para que el
  * registro de auditoría sobreviva aunque la operación principal se revierta:
  * un intento denegado o fallido es precisamente lo que más interesa dejar constancia.
+ *
+ * El REQUIRES_NEW solo tiene efecto si la llamada pasa por el proxy de Spring, así que
+ * log()/logAs() invocan write() a través de {@code self} (auto-inyección perezosa) en vez
+ * de una llamada directa — una auto-invocación (this.write(...)) omite el proxy AOP por
+ * completo y la anotación @Transactional se ignora en silencio.
  */
 @Service
 public class AuditService {
@@ -24,22 +30,24 @@ public class AuditService {
 
     private final AuditLogRepository auditLogRepository;
     private final ObjectMapper objectMapper;
+    private final AuditService self;
 
-    public AuditService(AuditLogRepository auditLogRepository, ObjectMapper objectMapper) {
+    public AuditService(AuditLogRepository auditLogRepository, ObjectMapper objectMapper, @Lazy AuditService self) {
         this.auditLogRepository = auditLogRepository;
         this.objectMapper = objectMapper;
+        this.self = self;
     }
 
     public void log(String action, String entity, Long entityId, Object oldValue, Object newValue, AuditResult result) {
         AuthenticatedUser current = currentUser();
         Long userId = current == null ? null : current.id();
         String username = current == null ? "anonimo" : current.username();
-        write(userId, username, action, entity, entityId, oldValue, newValue, result);
+        self.write(userId, username, action, entity, entityId, oldValue, newValue, result);
     }
 
     public void logAs(Long userId, String username, String action, String entity, Long entityId,
             Object oldValue, Object newValue, AuditResult result) {
-        write(userId, username, action, entity, entityId, oldValue, newValue, result);
+        self.write(userId, username, action, entity, entityId, oldValue, newValue, result);
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)

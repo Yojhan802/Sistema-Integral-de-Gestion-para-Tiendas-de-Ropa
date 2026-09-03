@@ -4,10 +4,25 @@ import { renderShell } from '../components/shell.js';
 import { openModal, closeModal } from '../components/modal.js';
 import { statusBadge } from '../components/status-badge.js';
 import { showToast } from '../components/toast.js';
-import { formatDateTime } from '../core/format.js';
+import { escapeHtml, formatDateTime } from '../core/format.js';
 
 const TIPO_LABELS = { CASH: 'Efectivo', DIGITAL_WALLET: 'Billetera digital', CARD: 'Tarjeta', TRANSFER: 'Transferencia' };
-
+const STORE_TEMPLATE_LABELS = {
+  CLASSIC: 'Clasica', MINIMAL: 'Minimalista', FASHION: 'Moda', SPORT: 'Deportiva', LUXURY: 'Premium',
+  BOUTIQUE: 'Boutique', CATALOG: 'Catalogo', MARKET: 'Marketplace', EDITORIAL: 'Editorial', URBAN: 'Urbana',
+};
+const STORE_TEMPLATE_DESCRIPTIONS = {
+  CLASSIC: 'Equilibrada y corporativa para cualquier negocio.',
+  MINIMAL: 'Mucho espacio en blanco y foco en el producto.',
+  FASHION: 'Editorial y visual para marcas de moda.',
+  SPORT: 'Energetica, contrastada y rapida para catalogos grandes.',
+  LUXURY: 'Sobria y premium para productos de alto valor.',
+  BOUTIQUE: 'Calida y cercana para marcas independientes.',
+  CATALOG: 'Densa y practica para comparar productos.',
+  MARKET: 'Pensada para varias categorias y familias.',
+  EDITORIAL: 'Narrativa, con banners y bloques destacados.',
+  URBAN: 'Moderna y juvenil, priorizando el movil.',
+};
 const PLAN_ORDER = ['STARTER', 'PROFESIONAL', 'ECOMMERCE', 'IA'];
 const PLAN_LABELS = { STARTER: 'Starter', PROFESIONAL: 'Profesional', ECOMMERCE: 'Ecommerce', IA: 'IA' };
 const PLAN_BADGE_CLASS = { STARTER: 'badge-neutral', PROFESIONAL: 'badge-info', ECOMMERCE: 'badge-success', IA: 'badge-warning' };
@@ -42,6 +57,7 @@ function init() {
       document.querySelectorAll('.tab').forEach((t) => t.setAttribute('aria-selected', String(t.dataset.tab === activeTab)));
       document.querySelector('#panel-empresa').hidden = activeTab !== 'empresa';
       document.querySelector('#panel-pagos').hidden = activeTab !== 'pagos';
+      document.querySelector('#panel-tienda').hidden = activeTab !== 'tienda';
       cargarPanelActivo();
     });
   });
@@ -51,7 +67,8 @@ function init() {
 
 function cargarPanelActivo() {
   if (activeTab === 'empresa') cargarEmpresa();
-  else cargarMetodosPago();
+  else if (activeTab === 'pagos') cargarMetodosPago();
+  else cargarTienda();
 }
 
 async function cargarEmpresa() {
@@ -187,6 +204,19 @@ function renderIdentidadForm(settings) {
           <label class="field-label" for="ef-email">Email</label>
           <input class="input" type="email" id="ef-email" maxlength="120" value="${settings.email ?? ''}" />
         </div>
+        <div class="field">
+          <label class="field-label" for="ef-vertical">Rubro del negocio</label>
+          <select class="select" id="ef-vertical">
+            <option value="CLOTHING" ${settings.businessVertical === 'CLOTHING' ? 'selected' : ''}>Ropa</option>
+            <option value="GENERAL" ${settings.businessVertical === 'GENERAL' ? 'selected' : ''}>Otro (general)</option>
+          </select>
+          <span class="field-hint">Ajusta cómo responde el asistente de IA de la tienda.</span>
+        </div>
+        <div class="field field-span-2">
+          <label class="field-label" for="ef-vertical-desc">Descripción del negocio (opcional)</label>
+          <input class="input" id="ef-vertical-desc" maxlength="255" placeholder="Ej. una ferretería en Perú" value="${settings.businessDescription ?? ''}" />
+          <span class="field-hint">Cómo se presenta el asistente de IA al cliente. Si lo dejas vacío, se usa un texto genérico según el rubro.</span>
+        </div>
       </div>
 
       <div style="display:flex; justify-content:space-between; align-items:center; padding-top: var(--space-4); border-top: 1px solid var(--color-border);">
@@ -214,6 +244,8 @@ function renderIdentidadForm(settings) {
         address: document.querySelector('#ef-address').value.trim() || null,
         phone: document.querySelector('#ef-phone').value.trim() || null,
         email: document.querySelector('#ef-email').value.trim() || null,
+        businessVertical: document.querySelector('#ef-vertical').value,
+        businessDescription: document.querySelector('#ef-vertical-desc').value.trim() || null,
       });
       showToast({ type: 'success', title: 'Configuración guardada' });
       renderIdentidadForm(actualizado);
@@ -278,6 +310,17 @@ function renderOperativoForm(settings) {
           <input class="input" type="number" id="ef-reservation-days" required min="1" step="1" value="${settings.reservationExpirationDays ?? 3}" />
           <span class="field-hint">Pasado este plazo se libera el stock y la seña se pierde.</span>
         </div>
+        <div class="field field-span-2" style="display:grid; gap: var(--space-3);">
+          <span class="field-label">Integraciones opcionales por empresa</span>
+          <label style="display:flex; align-items:flex-start; gap: var(--space-2);">
+            <input type="checkbox" id="ef-online-payments" ${settings.onlinePaymentsEnabled === true ? 'checked' : ''} />
+            <span><strong>Pagos online</strong><br /><span class="field-hint">Habilita el uso de Niubiz, Culqi o Izipay para esta empresa. Los pagos manuales no se desactivan.</span></span>
+          </label>
+          <label style="display:flex; align-items:flex-start; gap: var(--space-2);">
+            <input type="checkbox" id="ef-electronic-invoicing" ${settings.electronicInvoicingEnabled === true ? 'checked' : ''} />
+            <span><strong>Facturación electrónica</strong><br /><span class="field-hint">Habilita la emisión mediante el proveedor configurado para esta empresa.</span></span>
+          </label>
+        </div>
       </div>
 
       <div style="display:flex; justify-content:space-between; align-items:center; padding-top: var(--space-4); border-top: 1px solid var(--color-border);">
@@ -302,6 +345,8 @@ function renderOperativoForm(settings) {
         shippingFlatRate: Number(document.querySelector('#ef-shipping').value),
         reservationDepositAmount: Number(document.querySelector('#ef-reservation-deposit').value),
         reservationExpirationDays: Number(document.querySelector('#ef-reservation-days').value),
+        onlinePaymentsEnabled: document.querySelector('#ef-online-payments').checked,
+        electronicInvoicingEnabled: document.querySelector('#ef-electronic-invoicing').checked,
       });
       showToast({ type: 'success', title: 'Configuración guardada' });
       renderOperativoForm(actualizado);
@@ -312,8 +357,114 @@ function renderOperativoForm(settings) {
   });
 }
 
+async function cargarTienda() {
+  const content = document.querySelector('#storefront-content');
+  try {
+    const settings = await api.get('/settings/company');
+    renderTiendaBuilder(settings);
+  } catch (error) {
+    content.innerHTML = `<div class="empty-state"><span>${error instanceof ApiError ? error.message : 'No se pudo cargar la configuracion de la tienda'}</span></div>`;
+  }
+}
+
+function renderTiendaBuilder(settings) {
+  const content = document.querySelector('#storefront-content');
+  const puedePlantillas = PLAN_ORDER.indexOf(settings.plan) >= PLAN_ORDER.indexOf('ECOMMERCE');
+  let selectedTemplate = settings.storeTemplate || 'CLASSIC';
+  const initialPrimary = settings.storePrimaryColor || '#17324D';
+  const initialAccent = settings.storeAccentColor || '#17324D';
+  const initialBackground = settings.storeBackgroundColor || '#F5F7FA';
+
+  const previewUrl = () => {
+    const url = new URL('tienda/index.html', window.location.href);
+    url.searchParams.set('previewTemplate', selectedTemplate);
+    url.searchParams.set('previewPrimaryColor', document.querySelector('#store-primary-color')?.value || initialPrimary);
+    url.searchParams.set('previewAccentColor', document.querySelector('#store-accent-color')?.value || initialAccent);
+    url.searchParams.set('previewBackgroundColor', document.querySelector('#store-background-color')?.value || initialBackground);
+    return url.toString();
+  };
+
+  content.innerHTML = `
+    <div class="table-card" style="padding:var(--space-5);">
+      <div style="display:flex; justify-content:space-between; gap:var(--space-4); align-items:flex-start; flex-wrap:wrap;">
+        <div>
+          <p class="table-cell-muted" style="margin-bottom:var(--space-1);">Diseño publicado</p>
+          <h2 id="storefront-current-title" style="margin:0;">${STORE_TEMPLATE_LABELS[settings.storeTemplate || 'CLASSIC'] || 'Clasica'}</h2>
+          <p class="table-cell-muted" style="margin-top:var(--space-2);">${puedePlantillas ? 'Personaliza la apariencia sin modificar catalogo, carrito ni pedidos.' : 'Requiere el plan Ecommerce o superior.'}</p>
+        </div>
+        <button class="btn btn-secondary" type="button" id="storefront-preview" ${puedePlantillas ? '' : 'disabled'}>Vista previa</button>
+      </div>
+    </div>
+
+    <div class="table-card" style="padding:var(--space-5);">
+      <div style="display:flex; justify-content:space-between; align-items:baseline; gap:var(--space-3); flex-wrap:wrap; margin-bottom:var(--space-4);">
+        <div>
+          <h3 style="margin:0;">Elegir plantilla</h3>
+          <p class="table-cell-muted" style="margin-top:var(--space-1);">Selecciona una propuesta y revisala antes de publicarla.</p>
+        </div>
+        <span class="badge ${puedePlantillas ? 'badge-success' : 'badge-neutral'}">${puedePlantillas ? 'Ecommerce' : 'Plan requerido'}</span>
+      </div>
+      <div id="storefront-template-grid" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:var(--space-3);">
+        ${Object.entries(STORE_TEMPLATE_LABELS).map(([key, label]) => `
+          <button type="button" class="store-template-card ${key === selectedTemplate ? 'is-selected' : ''}" data-template="${key}" ${puedePlantillas ? '' : 'disabled'}>
+            <span class="store-template-preview store-template-preview-${key.toLowerCase()}"><span>${key === selectedTemplate ? 'Actual' : 'Vista'}</span></span>
+            <strong>${label}</strong>
+            <small>${STORE_TEMPLATE_DESCRIPTIONS[key]}</small>
+          </button>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="table-card" style="padding:var(--space-5);">
+      <h3 style="margin:0 0 var(--space-1);">Personalizacion visual</h3>
+      <p class="table-cell-muted" style="margin-bottom:var(--space-4);">Los colores se aplican a la tienda completa y se validan como valores hexadecimales.</p>
+      <div class="form-grid">
+        <div class="field"><label class="field-label" for="store-primary-color">Color principal</label><input class="input" type="color" id="store-primary-color" value="${initialPrimary}" ${puedePlantillas ? '' : 'disabled'} /></div>
+        <div class="field"><label class="field-label" for="store-accent-color">Color de acento</label><input class="input" type="color" id="store-accent-color" value="${initialAccent}" ${puedePlantillas ? '' : 'disabled'} /></div>
+        <div class="field"><label class="field-label" for="store-background-color">Color de fondo</label><input class="input" type="color" id="store-background-color" value="${initialBackground}" ${puedePlantillas ? '' : 'disabled'} /></div>
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:var(--space-3); margin-top:var(--space-5); padding-top:var(--space-4); border-top:1px solid var(--color-border);">
+        <button class="btn btn-secondary" type="button" id="storefront-preview-bottom" ${puedePlantillas ? '' : 'disabled'}>Vista previa</button>
+        <button class="btn btn-primary" type="button" id="storefront-publish" ${puedePlantillas ? '' : 'disabled'}>Publicar cambios</button>
+      </div>
+      <div class="alert alert-danger" id="storefront-error" role="alert" hidden><span class="alert-message"></span></div>
+    </div>
+  `;
+
+  const openPreview = () => window.open(previewUrl(), '_blank', 'noopener,noreferrer');
+  content.querySelector('#storefront-preview')?.addEventListener('click', openPreview);
+  content.querySelector('#storefront-preview-bottom')?.addEventListener('click', openPreview);
+  content.querySelectorAll('[data-template]').forEach((button) => button.addEventListener('click', () => {
+    selectedTemplate = button.dataset.template;
+    content.querySelectorAll('[data-template]').forEach((item) => item.classList.toggle('is-selected', item.dataset.template === selectedTemplate));
+  }));
+  content.querySelector('#storefront-publish')?.addEventListener('click', async (event) => {
+    const button = event.currentTarget;
+    const errorAlert = content.querySelector('#storefront-error');
+    errorAlert.hidden = true;
+    button.disabled = true;
+    button.textContent = 'Publicando...';
+    try {
+      const actualizado = await api.put('/settings/company/storefront', {
+        template: selectedTemplate,
+        primaryColor: content.querySelector('#store-primary-color').value.toUpperCase(),
+        accentColor: content.querySelector('#store-accent-color').value.toUpperCase(),
+        backgroundColor: content.querySelector('#store-background-color').value.toUpperCase(),
+      });
+      showToast({ type: 'success', title: 'Tienda publicada', message: STORE_TEMPLATE_LABELS[actualizado.storeTemplate] || 'Cambios aplicados' });
+      renderTiendaBuilder(actualizado);
+    } catch (error) {
+      errorAlert.querySelector('.alert-message').textContent = error instanceof ApiError ? error.message : 'No se pudieron publicar los cambios';
+      errorAlert.hidden = false;
+      button.disabled = false;
+      button.textContent = 'Publicar cambios';
+    }
+  });
+}
+
 async function cargarMetodosPago() {
   const body = document.querySelector('#payment-methods-body');
+  const integrations = document.querySelector('#payment-integrations-content');
   try {
     const metodos = await api.get('/payment-methods');
     body.innerHTML = metodos.length
@@ -354,6 +505,168 @@ async function cargarMetodosPago() {
   } catch (error) {
     body.innerHTML = `<tr><td colspan="5"><div class="empty-state"><span>${error instanceof ApiError ? error.message : 'Error al cargar métodos de pago'}</span></div></td></tr>`;
   }
+
+  const [proveedoresResult, facturacionResult] = await Promise.allSettled([
+    api.get('/settings/payment-providers'),
+    api.get('/settings/billing'),
+  ]);
+  const proveedores = proveedoresResult.status === 'fulfilled' ? proveedoresResult.value : [];
+  const facturacion = facturacionResult.status === 'fulfilled'
+    ? facturacionResult.value
+    : { provider: 'VERIFACT', enabled: false, environment: 'TEST', apiUrl: null, invoiceSeries: null, receiptSeries: null, creditNoteSeries: null, debitNoteSeries: null, configured: false, credentialKeys: [] };
+  const errores = [proveedoresResult, facturacionResult]
+    .filter((result) => result.status === 'rejected')
+    .map((result) => result.reason)
+    .filter((error) => error instanceof ApiError)
+    .map((error) => error.message);
+  if (proveedoresResult.status === 'rejected' && facturacionResult.status === 'rejected' && integrations) {
+    integrations.innerHTML = `<div class="table-card" style="padding: var(--space-5);"><div class="empty-state"><span>No se pudieron cargar las integraciones</span></div></div>`;
+  } else {
+    renderIntegracionesPago(proveedores, facturacion, errores);
+  }
+}
+
+function renderIntegracionesPago(proveedores, facturacion, errores = []) {
+  const content = document.querySelector('#payment-integrations-content');
+  if (!content) return;
+  const providerLabels = { NIUBIZ: 'Niubiz', CULQI: 'Culqi', IZIPAY: 'Izipay', VERIFACT: 'Verifac', NUBEFACT: 'NubeFact' };
+  const puedeConfigurarPagos = hasPermission('CONFIGURACION_PAGOS');
+  const puedeConfigurarFacturacion = hasPermission('CONFIGURACION_EDITAR');
+  content.innerHTML = `
+    <div class="table-card" style="padding: var(--space-5);">
+      <h3 style="margin: 0 0 var(--space-2);">Integraciones por empresa</h3>
+      <p class="table-cell-muted" style="margin: 0 0 var(--space-4);">Cada empresa puede activar sus integraciones de forma independiente. Las credenciales nunca se muestran en esta pantalla.</p>
+      ${errores.length ? `<div class="alert alert-warning" role="status"><span class="alert-message">${escapeHtml(errores.join(' · '))}</span></div>` : ''}
+      <div style="display:grid; gap: var(--space-2);">
+        ${proveedores.map((p) => `
+          <div style="display:flex; justify-content:space-between; align-items:center; gap: var(--space-3); padding: var(--space-3) 0; border-top: 1px solid var(--color-border);">
+            <div><strong>${providerLabels[p.provider] ?? p.provider}</strong><div class="table-cell-muted">${p.configured ? 'Credenciales guardadas' : 'Sin credenciales configuradas'}</div></div>
+            <div style="display:flex; align-items:center; gap: var(--space-3);">
+              <span>${p.enabled ? statusBadge('ACTIVE') : statusBadge('INACTIVE')}</span>
+              ${puedeConfigurarPagos ? `<button class="btn btn-secondary btn-sm" type="button" data-config-provider="${p.provider}">Configurar</button>` : ''}
+            </div>
+          </div>
+        `).join('')}
+        <div style="display:flex; justify-content:space-between; align-items:center; gap: var(--space-3); padding: var(--space-3) 0; border-top: 1px solid var(--color-border);">
+          <div><strong>Facturación electrónica</strong><div class="table-cell-muted">${providerLabels[facturacion.provider] ?? facturacion.provider} · ${facturacion.configured ? 'Credenciales guardadas' : 'Sin credenciales configuradas'}</div></div>
+          <div style="display:flex; align-items:center; gap: var(--space-3);">
+            <span>${facturacion.enabled ? statusBadge('ACTIVE') : statusBadge('INACTIVE')}</span>
+            ${puedeConfigurarFacturacion ? '<button class="btn btn-secondary btn-sm" type="button" data-config-billing>Configurar</button>' : ''}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  content.querySelectorAll('[data-config-provider]').forEach((button) => {
+    const config = proveedores.find((item) => item.provider === button.dataset.configProvider);
+    button.addEventListener('click', () => abrirFormularioIntegracion('payment', config));
+  });
+  content.querySelector('[data-config-billing]')?.addEventListener('click', () => abrirFormularioIntegracion('billing', facturacion));
+}
+
+function abrirFormularioIntegracion(kind, config) {
+  const isBilling = kind === 'billing';
+  const providerLabels = { NIUBIZ: 'Niubiz', CULQI: 'Culqi', IZIPAY: 'Izipay', VERIFACT: 'Verifac', NUBEFACT: 'NubeFact' };
+  const title = isBilling ? `Facturación electrónica · ${providerLabels[config.provider] ?? config.provider}` : `Pasarela · ${providerLabels[config.provider] ?? config.provider}`;
+  const existingKeys = config.credentialKeys ?? [];
+  const credentialHint = isBilling && config.provider === 'NUBEFACT'
+    ? 'NubeFact: token. La URL de API debe ser la ruta completa entregada para la cuenta.'
+    : isBilling
+    ? 'Usa los nombres entregados por Verifact, por ejemplo apiKey o token.'
+    : config.provider === 'IZIPAY'
+      ? 'Izipay: newPaymentButtonApiKey y hashKey. Opcionales: sessionTokenUrl, ipnUrl y apiKeyPrefix.'
+      : config.provider === 'NIUBIZ'
+        ? 'Niubiz: username y password. Las URLs específicas pueden guardarse como securityUrl, sessionUrl o authorizationUrl.'
+        : 'Culqi: secretKey o privateKey. La llave pública va en el campo superior.';
+  const credentialRows = existingKeys.length
+    ? existingKeys.map((key) => credentialRow(key, true)).join('')
+    : credentialRow('', false);
+  const modal = openModal({
+    title,
+    subtitle: 'Las credenciales se cifran antes de guardarse y nunca se vuelven a mostrar.',
+    maxWidth: '620px',
+    body: `
+      <form id="integration-form" novalidate>
+        <div class="alert alert-danger" id="integration-form-error" role="alert" hidden>
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 6v5M10 14h.01" stroke-linecap="round"/></svg>
+          <span class="alert-message"></span>
+        </div>
+        <div class="form-grid">
+          ${isBilling ? `<div class="field"><label class="field-label" for="integration-billing-provider">Proveedor</label><select class="select" id="integration-billing-provider"><option value="VERIFACT" ${config.provider === 'VERIFACT' ? 'selected' : ''}>Verifac</option><option value="NUBEFACT" ${config.provider === 'NUBEFACT' ? 'selected' : ''}>NubeFact</option></select></div>` : ''}
+          <div class="field">
+            <label class="field-label" for="integration-environment">Ambiente</label>
+            <select class="select" id="integration-environment">
+              <option value="TEST" ${config.environment === 'TEST' ? 'selected' : ''}>Pruebas</option>
+              <option value="PRODUCTION" ${config.environment === 'PRODUCTION' ? 'selected' : ''}>Producción</option>
+            </select>
+          </div>
+          <div class="field" style="display:flex; align-items:center; padding-top: var(--space-5);">
+            <label style="display:flex; align-items:center; gap: var(--space-2);"><input type="checkbox" id="integration-enabled" ${config.enabled ? 'checked' : ''} /> Activar integración</label>
+          </div>
+          ${isBilling
+            ? `<div class="field field-span-2"><label class="field-label" for="integration-api-url">URL de API</label><input class="input" id="integration-api-url" maxlength="500" value="${escapeHtml(config.apiUrl ?? '')}" placeholder="Ruta completa de API del proveedor" /></div><div class="field"><label class="field-label" for="integration-invoice-series">Serie factura</label><input class="input mono" id="integration-invoice-series" maxlength="10" value="${escapeHtml(config.invoiceSeries ?? '')}" placeholder="F001" /></div><div class="field"><label class="field-label" for="integration-receipt-series">Serie boleta</label><input class="input mono" id="integration-receipt-series" maxlength="10" value="${escapeHtml(config.receiptSeries ?? '')}" placeholder="B001" /></div><div class="field"><label class="field-label" for="integration-credit-note-series">Serie nota de crédito</label><input class="input mono" id="integration-credit-note-series" maxlength="10" value="${escapeHtml(config.creditNoteSeries ?? '')}" placeholder="FC01" /></div><div class="field"><label class="field-label" for="integration-debit-note-series">Serie nota de débito</label><input class="input mono" id="integration-debit-note-series" maxlength="10" value="${escapeHtml(config.debitNoteSeries ?? '')}" placeholder="FD01" /></div>`
+            : `<div class="field field-span-2"><label class="field-label" for="integration-api-url">URL base de API</label><input class="input" id="integration-api-url" maxlength="500" value="${escapeHtml(config.apiUrl ?? '')}" placeholder="La URL entregada por la pasarela" /></div><div class="field"><label class="field-label" for="integration-merchant-code">Código de comercio</label><input class="input mono" id="integration-merchant-code" maxlength="100" value="${escapeHtml(config.merchantCode ?? '')}" /></div><div class="field"><label class="field-label" for="integration-public-key">Clave pública</label><input class="input mono" id="integration-public-key" maxlength="500" value="${escapeHtml(config.publicKey ?? '')}" /></div>`}
+        </div>
+        <div style="margin-top: var(--space-5); padding-top: var(--space-4); border-top: 1px solid var(--color-border);">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap: var(--space-3); margin-bottom: var(--space-2);">
+            <div><div class="field-label">Credenciales privadas</div><div class="field-hint">${credentialHint}</div></div>
+            <button class="btn btn-secondary btn-sm" type="button" id="add-credential">Agregar campo</button>
+          </div>
+          <div id="credential-rows" style="display:grid; gap: var(--space-2);">${credentialRows}</div>
+        </div>
+      </form>
+    `,
+    footer: '<button class="btn btn-secondary" type="button" data-cancel>Cancelar</button><button class="btn btn-primary" type="submit" form="integration-form">Guardar</button>',
+  });
+
+  modal.footer.querySelector('[data-cancel]').addEventListener('click', () => closeModal());
+  modal.body.querySelector('#add-credential').addEventListener('click', () => {
+    modal.body.querySelector('#credential-rows').insertAdjacentHTML('beforeend', credentialRow('', false));
+  });
+  modal.body.querySelector('#credential-rows').addEventListener('click', (event) => {
+    if (event.target.closest('[data-remove-credential]')) {
+      event.target.closest('[data-credential-row]')?.remove();
+    }
+  });
+  modal.body.querySelector('#integration-form').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const errorAlert = modal.body.querySelector('#integration-form-error');
+    errorAlert.hidden = true;
+    try {
+      const credentials = {};
+      modal.body.querySelectorAll('[data-credential-row]').forEach((row) => {
+        const key = row.querySelector('[data-credential-key]').value.trim();
+        const value = row.querySelector('[data-credential-value]').value;
+        if (key && value) credentials[key] = value;
+      });
+      const request = { enabled: modal.body.querySelector('#integration-enabled').checked, environment: modal.body.querySelector('#integration-environment').value, credentials };
+      if (isBilling) {
+        request.provider = modal.body.querySelector('#integration-billing-provider').value;
+        request.apiUrl = modal.body.querySelector('#integration-api-url').value.trim() || null;
+        request.invoiceSeries = modal.body.querySelector('#integration-invoice-series').value.trim() || null;
+        request.receiptSeries = modal.body.querySelector('#integration-receipt-series').value.trim() || null;
+        request.creditNoteSeries = modal.body.querySelector('#integration-credit-note-series').value.trim() || null;
+        request.debitNoteSeries = modal.body.querySelector('#integration-debit-note-series').value.trim() || null;
+        await api.put('/settings/billing', request);
+      } else {
+        request.apiUrl = modal.body.querySelector('#integration-api-url').value.trim() || null;
+        request.merchantCode = modal.body.querySelector('#integration-merchant-code').value.trim() || null;
+        request.publicKey = modal.body.querySelector('#integration-public-key').value.trim() || null;
+        await api.put(`/settings/payment-providers/${config.provider}`, request);
+      }
+      closeModal();
+      showToast({ type: 'success', title: 'Integración guardada' });
+      cargarMetodosPago();
+    } catch (error) {
+      errorAlert.querySelector('.alert-message').textContent = error instanceof ApiError ? error.message : 'No se pudo guardar la integración';
+      errorAlert.hidden = false;
+    }
+  });
+}
+
+function credentialRow(key, existing) {
+  return `<div data-credential-row style="display:grid; grid-template-columns: 1fr 1fr auto; gap: var(--space-2);"><input class="input mono" data-credential-key maxlength="80" value="${escapeHtml(key)}" ${existing ? 'readonly' : ''} placeholder="Nombre" /><input class="input mono" type="password" data-credential-value autocomplete="new-password" placeholder="${existing ? 'Dejar vacío para conservar' : 'Valor'}" /><button class="btn btn-ghost btn-sm" type="button" data-remove-credential aria-label="Quitar credencial">×</button></div>`;
 }
 
 function abrirFormularioMetodoPago(metodo) {

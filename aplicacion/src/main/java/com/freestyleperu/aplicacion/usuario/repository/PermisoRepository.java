@@ -7,4 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface PermisoRepository extends JpaRepository<Permiso, Long> {
 
     List<Permiso> findAllByOrderByModuleAscCodeAsc();
+
+    java.util.Optional<Permiso> findByCode(String code);
 }

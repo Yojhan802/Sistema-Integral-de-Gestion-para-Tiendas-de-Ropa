@@ -1,0 +1,24 @@
+body[data-store-template='SPORT'] {
+  --template-ink: #071827;
+  --template-muted: #477084;
+  --template-surface-alt: #e9f8fb;
+  --template-line: #b8dbe3;
+  --template-radius: 10px;
+  --template-card-radius: 8px;
+  --template-heading: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+}
+
+body[data-store-template='SPORT'] .store-promo-bar { background:#071827; color:#7ce7eb; font-weight:800; text-transform:uppercase; letter-spacing:.14em; }
+body[data-store-template='SPORT'] .store-header { background:#071827; color:#fff; border-bottom:3px solid #7ce7eb; }
+body[data-store-template='SPORT'] .store-brand, body[data-store-template='SPORT'] .store-nav a { color:#fff; }
+body[data-store-template='SPORT'] .store-brand-logobox { background:#7ce7eb; color:#071827; border-radius:4px; transform:skew(-10deg); }
+body[data-store-template='SPORT'] .store-icon-btn { background:transparent; color:#fff; border-color:#35596b; border-radius:4px; }
+body[data-store-template='SPORT'] .store-hero { border-radius:0; background:linear-gradient(120deg,#071827,#075985 65%,#0e7490); clip-path:polygon(0 0,100% 0,100% 88%,96% 100%,0 100%); }
+body[data-store-template='SPORT'] .store-hero::after { content:'QYNEX'; position:absolute; right:3%; bottom:0; font:900 clamp(5rem,18vw,16rem)/.8 Impact,sans-serif; color:rgba(255,255,255,.08); transform:skew(-12deg); }
+body[data-store-template='SPORT'] .store-hero h1 { text-transform:uppercase; font-style:italic; letter-spacing:-.03em; }
+body[data-store-template='SPORT'] .store-hero .btn-primary { background:#7ce7eb; color:#071827; border-radius:4px; font-weight:900; text-transform:uppercase; }
+body[data-store-template='SPORT'] .store-product-card { border:2px solid #071827; border-radius:8px; box-shadow:5px 5px 0 #071827; }
+body[data-store-template='SPORT'] .store-product-card:hover { transform:translate(-3px,-3px); box-shadow:8px 8px 0 #071827; }
+body[data-store-template='SPORT'] .store-product-tag { border-radius:3px; background:#f97316; }
+body[data-store-template='SPORT'] .store-product-name { text-transform:uppercase; font-weight:900; }
+body[data-store-template='SPORT'] .store-footer { background:#071827; }

@@ -1,0 +1,97 @@
+/* Superficies dinámicas propias de SPORT. El contenido puede llegar de API,
+   pero su presentación pertenece a esta plantilla. */
+body[data-store-template='SPORT'] .store-cart-item,
+body[data-store-template='SPORT'] .store-summary,
+body[data-store-template='SPORT'] .store-checkout-form,
+body[data-store-template='SPORT'] .store-form-panel,
+body[data-store-template='SPORT'] .store-checkout-summary,
+body[data-store-template='SPORT'] .store-auth-form,
+body[data-store-template='SPORT'] .store-order-card,
+body[data-store-template='SPORT'] .store-order-drawer-panel {
+  border-color: var(--sport-line, #bae6fd);
+  border-radius: var(--sport-radius, 12px);
+  background: var(--sport-surface, #fff);
+  color: var(--sport-ink, #0b1f33);
+  box-shadow: 5px 5px 0 #071827;
+}
+body[data-store-template='SPORT'] .store-cart-item { border-width: 1px; padding: 1rem; }
+body[data-store-template='SPORT'] .store-cart-item img,
+body[data-store-template='SPORT'] .store-qr-box,
+body[data-store-template='SPORT'] .store-payment-option,
+body[data-store-template='SPORT'] .store-payment-account,
+body[data-store-template='SPORT'] .store-proof-image { border-color: var(--sport-line, #bae6fd); border-radius: var(--sport-card-radius, 8px); }
+body[data-store-template='SPORT'] .store-cart-item img,
+body[data-store-template='SPORT'] .store-cart-controls,
+body[data-store-template='SPORT'] .store-payment-account,
+body[data-store-template='SPORT'] .store-qr-box { background: var(--sport-surface-alt, #e0f2fe); }
+body[data-store-template='SPORT'] .store-cart-product-name,
+body[data-store-template='SPORT'] .store-cart-line-total,
+body[data-store-template='SPORT'] .store-summary-row,
+body[data-store-template='SPORT'] .store-summary-total,
+body[data-store-template='SPORT'] .store-form-panel h2,
+body[data-store-template='SPORT'] .store-checkout-summary h2,
+body[data-store-template='SPORT'] .store-order-card { color: var(--sport-ink, #0b1f33); }
+body[data-store-template='SPORT'] .store-cart-variant,
+body[data-store-template='SPORT'] .store-cart-unit-price,
+body[data-store-template='SPORT'] .store-summary-note,
+body[data-store-template='SPORT'] .store-checkout-intro,
+body[data-store-template='SPORT'] .field-hint,
+body[data-store-template='SPORT'] .store-order-card small,
+body[data-store-template='SPORT'] .store-order-detail-meta { color: var(--sport-muted, #46627a); }
+body[data-store-template='SPORT'] .store-summary,
+body[data-store-template='SPORT'] .store-checkout-summary { border-top-color: var(--sport-accent, #0e7490); }
+body[data-store-template='SPORT'] .store-payment-option { background: var(--sport-surface, #fff); }
+body[data-store-template='SPORT'] .store-payment-option[data-selected='true'] { border-color: var(--sport-accent, #0e7490); background: color-mix(in srgb, var(--sport-accent, #0e7490) 11%, var(--sport-surface, #fff)); }
+body[data-store-template='SPORT'] .store-payment-provider,
+body[data-store-template='SPORT'] .store-order-proof-section { border-color: var(--sport-line, #bae6fd); }
+body[data-store-template='SPORT'] .store-form-panel .input,
+body[data-store-template='SPORT'] .store-form-panel .select,
+body[data-store-template='SPORT'] .store-checkout-summary .input,
+body[data-store-template='SPORT'] .store-checkout-summary .select,
+body[data-store-template='SPORT'] .store-auth-form .input { border-color: var(--sport-line, #bae6fd); border-radius: var(--sport-card-radius, 8px); background: var(--sport-surface, #fff); color: var(--sport-ink, #0b1f33); }
+body[data-store-template='SPORT'] .store-form-panel .input:focus-visible,
+body[data-store-template='SPORT'] .store-form-panel .select:focus-visible,
+body[data-store-template='SPORT'] .store-checkout-summary .input:focus-visible,
+body[data-store-template='SPORT'] .store-checkout-summary .select:focus-visible,
+body[data-store-template='SPORT'] .store-auth-form .input:focus-visible { outline: 2px solid var(--sport-accent, #0e7490); outline-offset: 2px; }
+body[data-store-template='SPORT'] .store-summary-total { border-top-color: var(--sport-line, #bae6fd); }
+body[data-store-template='SPORT'] .store-summary-action,
+body[data-store-template='SPORT'] .store-auth-form .btn { border-radius: var(--sport-card-radius, 8px); }
+@media (max-width: 760px) {
+  body[data-store-template='SPORT'] .store-cart-item { padding: .85rem; }
+  body[data-store-template='SPORT'] .store-checkout-form { border-radius: var(--sport-card-radius, 8px); }
+}
+/* Checkout nativo React de SPORT: estos nodos son la plantilla que recibe los datos. */
+body[data-store-template='SPORT'] .template-checkout { color: var(--template-ink); }
+body[data-store-template='SPORT'] .template-checkout-eyebrow { border-bottom: 1px solid var(--template-line); color: var(--template-ink); }
+body[data-store-template='SPORT'] .template-checkout-intro { color: var(--template-muted); }
+body[data-store-template='SPORT'] .template-checkout-delivery,
+body[data-store-template='SPORT'] .template-checkout-order { border: 1px solid var(--template-line); border-radius: var(--template-radius); background: var(--template-surface); box-shadow: var(--react-form-shadow, none); }
+body[data-store-template='SPORT'] .template-checkout-order { border-top: 3px solid var(--brand-accent); }
+body[data-store-template='SPORT'] .template-panel-kicker,
+body[data-store-template='SPORT'] .template-payment-title { color: var(--brand-accent); }
+body[data-store-template='SPORT'] .template-field > span { color: var(--template-ink); }
+body[data-store-template='SPORT'] .template-field > span small,
+body[data-store-template='SPORT'] .template-field small { color: var(--template-muted); }
+body[data-store-template='SPORT'] .template-field input,
+body[data-store-template='SPORT'] .template-field select,
+body[data-store-template='SPORT'] .template-field textarea { border: 1px solid var(--template-line); border-radius: var(--template-card-radius); background: var(--template-surface); color: var(--template-ink); }
+body[data-store-template='SPORT'] .template-field input:focus-visible,
+body[data-store-template='SPORT'] .template-field select:focus-visible,
+body[data-store-template='SPORT'] .template-field textarea:focus-visible { outline: 2px solid var(--brand-accent); outline-offset: 2px; }
+body[data-store-template='SPORT'] .template-order-line,
+body[data-store-template='SPORT'] .template-total-line { border-bottom: 1px solid var(--template-line); }
+body[data-store-template='SPORT'] .template-order-line,
+body[data-store-template='SPORT'] .template-total-line,
+body[data-store-template='SPORT'] .template-grand-total { color: var(--template-ink); }
+body[data-store-template='SPORT'] .template-grand-total { border-top: 1px solid var(--template-line); }
+body[data-store-template='SPORT'] .template-payment-option { border: 1px solid var(--template-line); border-radius: var(--template-card-radius); background: var(--template-surface); color: var(--template-ink); }
+body[data-store-template='SPORT'] .template-payment-option.is-selected { border-color: var(--brand-accent); background: color-mix(in srgb, var(--brand-accent) 11%, var(--template-surface)); }
+body[data-store-template='SPORT'] .template-payment-qr,
+body[data-store-template='SPORT'] .template-payment-account { border: 1px solid var(--template-line); border-radius: var(--template-card-radius); background: var(--template-surface-alt); color: var(--template-ink); }
+body[data-store-template='SPORT'] .template-payment-qr img { border-radius: var(--template-card-radius); }
+body[data-store-template='SPORT'] .template-provider-field { border-top: 1px solid var(--template-line); }
+body[data-store-template='SPORT'] .template-error { border: 1px solid #d77; background: color-mix(in srgb, #d33 8%, var(--template-surface)); color: var(--template-ink); }
+body[data-store-template='SPORT'] .template-submit { border-radius: var(--template-card-radius); background: var(--brand-accent); color: #fff; transition: transform .25s ease, filter .25s ease; }
+body[data-store-template='SPORT'] .template-submit:hover:not(:disabled) { filter: brightness(.92); transform: translateY(-2px); }
+body[data-store-template='SPORT'] .template-submit:focus-visible { outline: 2px solid var(--brand-accent); outline-offset: 3px; }

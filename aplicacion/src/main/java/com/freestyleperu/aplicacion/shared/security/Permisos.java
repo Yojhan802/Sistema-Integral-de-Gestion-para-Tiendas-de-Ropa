@@ -50,6 +50,8 @@ public final class Permisos {
     public static final String USUARIOS_CREAR = "USUARIOS_CREAR";
     public static final String USUARIOS_EDITAR = "USUARIOS_EDITAR";
     public static final String USUARIOS_BLOQUEAR = "USUARIOS_BLOQUEAR";
+    public static final String USUARIOS_CAMBIAR_CONTRASENA = "USUARIOS_CAMBIAR_CONTRASENA";
+    public static final String USUARIOS_RESETEAR_CONTRASENA = "USUARIOS_RESETEAR_CONTRASENA";
     public static final String ROLES_GESTIONAR = "ROLES_GESTIONAR";
 
     public static final String CONFIGURACION_VER = "CONFIGURACION_VER";
@@ -58,11 +60,17 @@ public final class Permisos {
     /** Razón social, RUC, dirección, contacto y logo — reservado para el operador de la plataforma, nunca para el cliente. Ver RN-26. */
     public static final String CONFIGURACION_IDENTIDAD_EDITAR = "CONFIGURACION_IDENTIDAD_EDITAR";
 
+    /** Autoridad sintética otorgada solo a usuarios marcados como operadores de plataforma. */
+    public static final String PLATAFORMA_EMPRESAS_GESTIONAR = "PLATAFORMA_EMPRESAS_GESTIONAR";
+
     public static final String PROMOTORES_CONSULTAR = "PROMOTORES_CONSULTAR";
     public static final String PROMOTORES_GESTIONAR = "PROMOTORES_GESTIONAR";
 
     public static final String PEDIDOS_CONSULTAR = "PEDIDOS_CONSULTAR";
     public static final String PEDIDOS_GESTIONAR = "PEDIDOS_GESTIONAR";
+
+    public static final String RECLAMOS_CONSULTAR = "RECLAMOS_CONSULTAR";
+    public static final String RECLAMOS_RESPONDER = "RECLAMOS_RESPONDER";
 
     public static final String RESERVAS_CONSULTAR = "RESERVAS_CONSULTAR";
     public static final String RESERVAS_CREAR = "RESERVAS_CREAR";

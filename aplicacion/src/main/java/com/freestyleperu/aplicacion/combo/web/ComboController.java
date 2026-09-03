@@ -29,32 +29,32 @@ public class ComboController {
     }
 
     @GetMapping("/api/combos")
-    @PreAuthorize("hasAuthority('" + Permisos.COMBOS_CONSULTAR + "') and @planGate.tienePlan('PROFESIONAL')")
+    @PreAuthorize("hasAuthority('" + Permisos.COMBOS_CONSULTAR + "') and @modulos.activo('COMBOS')")
     public List<ComboResponse> listar() {
         return comboService.listar();
     }
 
     @GetMapping("/api/combos/{id}")
-    @PreAuthorize("hasAuthority('" + Permisos.COMBOS_CONSULTAR + "') and @planGate.tienePlan('PROFESIONAL')")
+    @PreAuthorize("hasAuthority('" + Permisos.COMBOS_CONSULTAR + "') and @modulos.activo('COMBOS')")
     public ComboResponse obtener(@PathVariable Long id) {
         return comboService.obtener(id);
     }
 
     @PostMapping("/api/combos")
-    @PreAuthorize("hasAuthority('" + Permisos.COMBOS_GESTIONAR + "') and @planGate.tienePlan('PROFESIONAL')")
+    @PreAuthorize("hasAuthority('" + Permisos.COMBOS_GESTIONAR + "') and @modulos.activo('COMBOS')")
     public ResponseEntity<ComboResponse> crear(@Valid @RequestBody ComboRequest request) {
         ComboResponse creado = comboService.crear(request);
         return ResponseEntity.created(URI.create("/api/combos/" + creado.id())).body(creado);
     }
 
     @PutMapping("/api/combos/{id}")
-    @PreAuthorize("hasAuthority('" + Permisos.COMBOS_GESTIONAR + "') and @planGate.tienePlan('PROFESIONAL')")
+    @PreAuthorize("hasAuthority('" + Permisos.COMBOS_GESTIONAR + "') and @modulos.activo('COMBOS')")
     public ComboResponse actualizar(@PathVariable Long id, @Valid @RequestBody ComboRequest request) {
         return comboService.actualizar(id, request);
     }
 
     @PatchMapping("/api/combos/{id}/status")
-    @PreAuthorize("hasAuthority('" + Permisos.COMBOS_GESTIONAR + "') and @planGate.tienePlan('PROFESIONAL')")
+    @PreAuthorize("hasAuthority('" + Permisos.COMBOS_GESTIONAR + "') and @modulos.activo('COMBOS')")
     public ComboResponse cambiarEstado(@PathVariable Long id, @Valid @RequestBody CambiarEstadoRequest request) {
         return comboService.cambiarEstado(id, request.status());
     }

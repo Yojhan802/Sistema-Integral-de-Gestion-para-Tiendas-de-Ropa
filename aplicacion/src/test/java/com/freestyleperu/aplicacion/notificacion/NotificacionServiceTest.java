@@ -54,6 +54,43 @@ class NotificacionServiceTest {
         assertThat(fallando.intentosDeEnvio).isEqualTo(1);
     }
 
+    /**
+     * Un cliente que desaparece sin cerrar no genera tráfico, así que sin latido el servidor
+     * nunca descubre que el socket murió y la conexión queda ocupada hasta el timeout de 30
+     * minutos. Con suficientes clientes eso agota el límite de conexiones de Tomcat.
+     */
+    @Test
+    void elLatidoDetectaAlClienteMuertoYCierraSuEmitter() throws Exception {
+        CapturingEmitter muerto = new CapturingEmitter();
+        muerto.fallarSiempre = true;
+        inyectarStaffEmitter(muerto);
+
+        notificacionService.enviarLatido();
+
+        assertThat(muerto.intentosDeEnvio).isEqualTo(1);
+        // Quitarlo de la lista no basta: si la petición asíncrona no se completa, Tomcat
+        // mantiene ocupada la conexión. Por eso se exige el cierre explícito.
+        assertThat(muerto.cerrado).isTrue();
+
+        // Ya no forma parte del canal: el siguiente latido no vuelve a intentarlo.
+        notificacionService.enviarLatido();
+        assertThat(muerto.intentosDeEnvio).isEqualTo(1);
+    }
+
+    @Test
+    void elLatidoNoLlegaAlClienteComoEventoNiTumbaAlQueSigueVivo() throws Exception {
+        CapturingEmitter vivo = new CapturingEmitter();
+        inyectarStaffEmitter(vivo);
+
+        notificacionService.enviarLatido();
+
+        assertThat(vivo.intentosDeEnvio).isEqualTo(1);
+        assertThat(vivo.cerrado).isFalse();
+        // Se envía como comentario SSE: EventSource lo ignora, así que el cliente no
+        // recibe un evento espurio cada 20 segundos.
+        assertThat(vivo.eventosConNombre).isZero();
+    }
+
     @SuppressWarnings("unchecked")
     private void inyectarStaffEmitter(SseEmitter emitter) throws Exception {
         Field field = NotificacionService.class.getDeclaredField("staffEmitters");
@@ -76,7 +113,9 @@ class NotificacionServiceTest {
     private static class CapturingEmitter extends SseEmitter {
         int eventosRecibidos = 0;
         int intentosDeEnvio = 0;
+        int eventosConNombre = 0;
         boolean fallarSiempre = false;
+        boolean cerrado = false;
 
         @Override
         public void send(SseEventBuilder builder) throws IOException {
@@ -84,7 +123,21 @@ class NotificacionServiceTest {
             if (fallarSiempre) {
                 throw new IOException("simulado");
             }
+            // Un evento con nombre serializa "event:<nombre>"; un comentario, solo ":texto".
+            if (builder.build().stream().anyMatch(parte -> String.valueOf(parte).startsWith("event:"))) {
+                eventosConNombre++;
+            }
             eventosRecibidos++;
+        }
+
+        @Override
+        public void completeWithError(Throwable ex) {
+            cerrado = true;
+        }
+
+        @Override
+        public void complete() {
+            cerrado = true;
         }
     }
 }

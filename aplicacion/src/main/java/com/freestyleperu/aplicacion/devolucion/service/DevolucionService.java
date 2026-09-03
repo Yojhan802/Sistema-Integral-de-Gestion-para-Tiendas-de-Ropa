@@ -1,6 +1,8 @@
 package com.freestyleperu.aplicacion.devolucion.service;
 
 import com.freestyleperu.aplicacion.caja.service.CajaService;
+import com.freestyleperu.aplicacion.facturacion.dto.request.NotaItemRequest;
+import com.freestyleperu.aplicacion.facturacion.service.ElectronicDocumentService;
 import com.freestyleperu.aplicacion.devolucion.domain.Return;
 import com.freestyleperu.aplicacion.devolucion.domain.ReturnDetail;
 import com.freestyleperu.aplicacion.devolucion.dto.request.CrearDevolucionRequest;
@@ -48,11 +50,13 @@ public class DevolucionService {
     private final PagoService pagoService;
     private final SequenceService sequenceService;
     private final AuditService auditService;
+    private final ElectronicDocumentService electronicDocumentService;
 
     public DevolucionService(ReturnRepository returnRepository, ReturnDetailRepository returnDetailRepository,
             SaleRepository saleRepository, SaleDetailRepository saleDetailRepository, UsuarioRepository usuarioRepository,
             InventarioService inventarioService, CajaService cajaService, PagoService pagoService,
-            SequenceService sequenceService, AuditService auditService) {
+            SequenceService sequenceService, AuditService auditService,
+            ElectronicDocumentService electronicDocumentService) {
         this.returnRepository = returnRepository;
         this.returnDetailRepository = returnDetailRepository;
         this.saleRepository = saleRepository;
@@ -63,6 +67,7 @@ public class DevolucionService {
         this.pagoService = pagoService;
         this.sequenceService = sequenceService;
         this.auditService = auditService;
+        this.electronicDocumentService = electronicDocumentService;
     }
 
     public PageResponse<DevolucionResponse> listar(Long saleId, Pageable pageable) {
@@ -135,6 +140,15 @@ public class DevolucionService {
             detail.setRestock(item.restock());
             detallesCalculados.add(detail);
         }
+
+        electronicDocumentService.asegurarNotaCreditoDevolucion(
+                sale.getId(),
+                request.reason(),
+                detallesCalculados.stream()
+                        .map(detail -> new NotaItemRequest(detail.getVariant().getId(), detail.getQuantity()))
+                        .toList(),
+                "return-" + devolucion.getReturnNumber(),
+                userId);
 
         devolucion.setTotalAmount(total);
         Return guardada = returnRepository.save(devolucion);

@@ -1,0 +1,453 @@
+/*
+ * Acabado visual de las superficies React.
+ *
+ * Esta capa se carga al final para impedir que los selectores históricos por
+ * id o por .store-* vuelvan a pintar el checkout. La superficie conserva los
+ * tokens de la plantilla activa y no agrega una segunda piel azul/blanca.
+ */
+body[data-store-template] .template-checkout {
+  --react-surface-radius: clamp(14px, 1.4vw, 22px);
+  --react-field-radius: clamp(9px, 1vw, 14px);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
+}
+
+/* Todas las superficies React leen estos tokens desde la plantilla activa.
+   No se usa un azul/blanco fijo para carrito ni pedidos. */
+body[data-store-template] {
+  --react-surface-radius: clamp(14px, 1.4vw, 22px);
+  --react-field-radius: clamp(9px, 1vw, 14px);
+}
+
+/* Mayor especificidad para neutralizar los bordes históricos que usaban los
+   mismos ids, sin afectar ningún formulario legacy fuera de esta superficie. */
+body.store-body[data-store-template][data-store-page] #checkout-form.template-checkout {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+body[data-store-template] .template-checkout-eyebrow {
+  min-height: 2.75rem;
+  padding: .75rem 0;
+  border: 0;
+  color: var(--template-muted);
+}
+
+body[data-store-template] .store-page-heading {
+  max-width: var(--template-container, 1380px);
+  margin: 0 auto clamp(1.75rem, 3.5vw, 3rem);
+  padding: clamp(2rem, 4vw, 4rem) clamp(.75rem, 2vw, 2rem) 0;
+  box-sizing: border-box;
+}
+
+body[data-store-template] .store-page-heading h1 {
+  color: var(--template-ink);
+  font-family: var(--template-heading);
+  font-size: clamp(2.6rem, 7vw, 6.5rem);
+  letter-spacing: -.065em;
+}
+
+body[data-store-template] .store-page-heading p {
+  color: var(--template-muted);
+}
+
+body[data-store-template] .template-checkout-intro {
+  margin: 1.25rem clamp(.75rem, 2vw, 2rem) 2rem;
+  color: var(--template-muted);
+}
+
+body[data-store-template] .template-checkout-host {
+  width: 100%;
+  max-width: var(--template-container, 1380px);
+  margin-inline: auto;
+  padding-inline: clamp(.75rem, 2vw, 2rem);
+  box-sizing: border-box;
+}
+
+body[data-store-template] .template-checkout-layout {
+  grid-template-columns: minmax(0, 1.25fr) minmax(320px, .75fr);
+  gap: clamp(1.5rem, 3vw, 3.5rem);
+}
+
+body[data-store-template] .template-checkout-delivery,
+body[data-store-template] .template-checkout-order {
+  padding: clamp(1.25rem, 3vw, 2.25rem);
+  border: 0;
+  border-radius: var(--react-surface-radius);
+  background: var(--template-surface);
+  box-shadow: none;
+  overflow: hidden;
+}
+
+body.store-body[data-store-template][data-store-page] #checkout-form.template-checkout,
+body.store-body[data-store-template][data-store-page] #checkout-form.template-checkout::after {
+  border-top: 0;
+  border-bottom: 0;
+}
+
+body[data-store-template] .template-checkout-order {
+  top: 6rem;
+}
+
+body.store-body[data-store-template][data-store-page='checkout'] #order-summary.template-checkout-order {
+  padding: clamp(1.25rem, 3vw, 2.25rem);
+  box-sizing: border-box;
+  border: 0;
+  border-radius: var(--react-surface-radius);
+  background: var(--template-surface);
+  color: var(--template-ink);
+  box-shadow: none;
+}
+
+body[data-store-template] .template-panel-heading h2 {
+  margin: .5rem 0 1.5rem;
+  color: var(--template-ink);
+}
+
+body[data-store-template] .template-field input,
+body[data-store-template] .template-field select,
+body[data-store-template] .template-field textarea,
+body[data-store-template] .template-order-proof input {
+  min-height: 48px;
+  border: 0;
+  border-radius: var(--react-field-radius);
+  background: var(--template-surface-alt);
+  color: var(--template-ink);
+  box-shadow: none;
+}
+
+body[data-store-template] .template-field input:focus-visible,
+body[data-store-template] .template-field select:focus-visible,
+body[data-store-template] .template-field textarea:focus-visible,
+body[data-store-template] .template-order-proof input:focus-visible {
+  outline: 2px solid var(--brand-accent);
+  outline-offset: 2px;
+}
+
+body[data-store-template] .template-order-line,
+body[data-store-template] .template-total-line,
+body[data-store-template] .template-grand-total {
+  border: 0;
+  color: var(--template-ink);
+}
+
+body[data-store-template] .template-grand-total {
+  margin-top: .75rem;
+  padding-top: .85rem;
+  font-size: 1.35rem;
+}
+
+body[data-store-template] .template-payment-block {
+  margin-top: 1.5rem;
+}
+
+body[data-store-template] .template-payment-option {
+  min-height: 52px;
+  border: 0;
+  border-radius: var(--react-field-radius);
+  background: var(--template-surface-alt);
+  color: var(--template-ink);
+  transition: background .2s ease, transform .2s ease;
+}
+
+body[data-store-template] .template-payment-option:hover,
+body[data-store-template] .template-payment-option.is-selected {
+  border: 0;
+  background: color-mix(in srgb, var(--brand-accent) 12%, var(--template-surface-alt));
+  transform: translateY(-1px);
+}
+
+body[data-store-template] .template-payment-qr,
+body[data-store-template] .template-payment-account {
+  border: 0;
+  border-radius: var(--react-field-radius);
+  background: var(--template-surface-alt);
+  color: var(--template-ink);
+}
+
+body[data-store-template] .template-payment-qr img[hidden] { display: none; }
+
+body[data-store-template] .template-provider-field,
+body[data-store-template] .template-error,
+body[data-store-template] .template-order-proof {
+  border: 0;
+}
+
+body[data-store-template] .template-submit {
+  border: 0;
+  border-radius: var(--react-field-radius);
+  background: var(--template-accent, var(--brand-accent));
+  color: #fff;
+}
+
+/* Carrito y pedidos: los datos son dinámicos, pero la superficie completa
+   pertenece al tema activo (incluyendo controles, estados y CTA). */
+body[data-store-template] .template-cart-item,
+body[data-store-template] .template-cart-summary,
+body[data-store-template] .template-order-card,
+body[data-store-template] .template-order-drawer-panel {
+  border: 1px solid color-mix(in srgb, var(--template-line) 72%, var(--template-surface));
+  border-radius: var(--react-surface-radius);
+  background: var(--template-surface);
+  color: var(--template-ink);
+  box-shadow: var(--template-surface-shadow, none);
+}
+
+body[data-store-template] .template-cart-item img,
+body[data-store-template] .template-cart-controls,
+body[data-store-template] .template-dialog-close,
+body[data-store-template] .template-order-proof input {
+  border-color: var(--template-line);
+  border-radius: var(--react-field-radius);
+  background: var(--template-surface-alt);
+  color: var(--template-ink);
+}
+
+body[data-store-template] .template-cart-product h2,
+body[data-store-template] .template-cart-line-total,
+body[data-store-template] .template-cart-summary strong,
+body[data-store-template] .template-order-card,
+body[data-store-template] .template-order-card-total,
+body[data-store-template] .template-order-drawer-panel h2,
+body[data-store-template] .template-order-line,
+body[data-store-template] .template-total-line,
+body[data-store-template] .template-grand-total { color: var(--template-ink); }
+
+body[data-store-template] .template-cart-meta,
+body[data-store-template] .template-cart-variant,
+body[data-store-template] .template-cart-unit-price,
+body[data-store-template] .template-summary-note,
+body[data-store-template] .template-order-card-main small,
+body[data-store-template] .template-order-detail-meta { color: var(--template-muted); }
+
+body[data-store-template] .template-cart-summary {
+  border: 0;
+  box-shadow: 0 14px 34px color-mix(in srgb, var(--template-ink) 8%, transparent);
+}
+
+body[data-store-template] .template-cart-item {
+  border: 0;
+  box-shadow: 0 10px 28px color-mix(in srgb, var(--template-ink) 7%, transparent);
+}
+
+/* El wrapper de ítems no es una tarjeta: solo organiza las tarjetas React.
+   Esto neutraliza los bordes superiores que las plantillas legacy aplicaban
+   a #cart-items y que dejaban una línea aislada sobre el primer producto. */
+body.store-body[data-store-template][data-store-page='cart'] #cart-items.template-cart-items {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+body[data-store-template] .template-cart-summary .template-total-line,
+body[data-store-template] .template-cart-summary .template-grand-total,
+body[data-store-template] .template-order-line,
+body[data-store-template] .template-total-line {
+  border-color: var(--template-line);
+}
+
+body[data-store-template] .template-cart-summary .template-submit {
+  border-radius: var(--react-field-radius);
+  background: var(--template-accent, var(--brand-accent));
+}
+
+body[data-store-template] .template-cart-summary .template-submit:hover,
+body[data-store-template] .template-order-card:hover {
+  border-color: var(--template-accent, var(--brand-accent));
+}
+
+body[data-store-template] .template-order-status {
+  border-color: color-mix(in srgb, var(--template-accent, var(--brand-accent)) 32%, var(--template-line));
+  color: var(--template-ink);
+  background: color-mix(in srgb, var(--template-accent, var(--brand-accent)) 13%, var(--template-surface));
+}
+
+body[data-store-template] .template-order-status.is-confirmed {
+  border-color: color-mix(in srgb, #16803c 32%, var(--template-line));
+  color: color-mix(in srgb, #16803c 75%, var(--template-ink));
+  background: color-mix(in srgb, #16803c 11%, var(--template-surface));
+}
+
+body[data-store-template] .template-order-status.is-cancelled {
+  border-color: color-mix(in srgb, #b42318 32%, var(--template-line));
+  color: color-mix(in srgb, #b42318 75%, var(--template-ink));
+  background: color-mix(in srgb, #b42318 10%, var(--template-surface));
+}
+
+body[data-store-template] .template-order-drawer {
+  background: color-mix(in srgb, var(--template-ink) 55%, transparent);
+}
+
+/* FASHION usa una superficie oscura en sus resúmenes para mantener la misma
+   jerarquía editorial que el checkout; los datos internos siguen heredando
+   sus tokens de contraste. */
+body[data-store-template='FASHION'] .template-cart-summary {
+  background: var(--fashion-dark);
+  color: #fff;
+}
+
+body[data-store-template='FASHION'] .template-cart-summary strong,
+body[data-store-template='FASHION'] .template-cart-summary .template-total-line,
+body[data-store-template='FASHION'] .template-cart-summary .template-grand-total { color: #fff; }
+
+body[data-store-template='FASHION'] .template-cart-summary .template-summary-note { color: #d2c1ca; }
+
+body[data-store-template='FASHION'] .template-cart-summary .template-total-line,
+body[data-store-template='FASHION'] .template-cart-summary .template-grand-total { border-color: rgba(255,255,255,.18); }
+
+/* El resumen oscuro es una decisión editorial de FASHION, no un contenedor
+   genérico. Sus elementos internos se adaptan al contraste de esa superficie. */
+body[data-store-template='FASHION'] .template-checkout-order {
+  border: 0;
+  border-radius: var(--react-surface-radius);
+  background: var(--fashion-dark);
+  color: #fff;
+}
+
+body.store-body[data-store-template='FASHION'][data-store-page='checkout'] #order-summary.template-checkout-order {
+  border: 0;
+  border-radius: var(--react-surface-radius);
+  background: var(--fashion-dark);
+  color: #fff;
+}
+
+body[data-store-template='FASHION'] .template-checkout-order .template-panel-heading h2,
+body[data-store-template='FASHION'] .template-checkout-order .template-order-line,
+body[data-store-template='FASHION'] .template-checkout-order .template-total-line,
+body[data-store-template='FASHION'] .template-checkout-order .template-grand-total { color: #fff; }
+
+body[data-store-template='FASHION'] .template-checkout-order .template-order-line small,
+body[data-store-template='FASHION'] .template-checkout-order .template-field small { color: #d2c1ca; }
+
+body[data-store-template='FASHION'] .template-checkout-order .template-payment-option,
+body[data-store-template='FASHION'] .template-checkout-order .template-payment-qr,
+body[data-store-template='FASHION'] .template-checkout-order .template-payment-account { background: var(--fashion-surface-alt); color: var(--fashion-ink); }
+
+body[data-store-template='FASHION'] .template-checkout-order .template-payment-option span,
+body[data-store-template='FASHION'] .template-checkout-order .template-payment-option strong { color: var(--fashion-ink); }
+
+body[data-store-template='FASHION'] .template-checkout-order .template-field input,
+body[data-store-template='FASHION'] .template-checkout-order .template-field select,
+body[data-store-template='FASHION'] .template-checkout-order .template-order-proof input { background: #fff; color: var(--fashion-ink); }
+
+@media (max-width: 760px) {
+  body[data-store-template] .store-page-heading {
+    margin-bottom: 1.5rem;
+    padding-inline: .75rem;
+  }
+  body[data-store-template] .template-checkout-host { padding-inline: .75rem; }
+  body[data-store-template] .template-checkout-intro { margin-inline: .75rem; }
+  body[data-store-template] .template-checkout-layout { grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+  body[data-store-template] .template-checkout-delivery,
+  body[data-store-template] .template-checkout-order {
+    width: 100%;
+    padding: 1.1rem;
+    box-sizing: border-box;
+  }
+  body.store-body[data-store-template][data-store-page='checkout'] #order-summary.template-checkout-order {
+    padding: 1.1rem;
+  }
+  body[data-store-template] .template-checkout-order { position: static; }
+  body[data-store-template] .template-order-line,
+  body[data-store-template] .template-total-line,
+  body[data-store-template] .template-grand-total { gap: .75rem; }
+  body[data-store-template] .template-order-line span,
+  body[data-store-template] .template-total-line span,
+  body[data-store-template] .template-grand-total span { min-width: 0; }
+  body[data-store-template] .template-order-line strong,
+  body[data-store-template] .template-total-line strong,
+  body[data-store-template] .template-grand-total strong { flex-shrink: 0; }
+  body[data-store-template] .template-cart,
+  body[data-store-template] .template-orders { padding-inline: .75rem; box-sizing: border-box; }
+  body[data-store-template] .template-cart-item { border-radius: var(--react-surface-radius); }
+  body[data-store-template] .template-cart-summary { width: 100%; box-sizing: border-box; }
+  body[data-store-template] .template-order-card { gap: .65rem; padding: .9rem; }
+  body[data-store-template] .template-order-drawer-panel { border-radius: var(--react-surface-radius) var(--react-surface-radius) 0 0; }
+}
+
+/* Las superficies de producto comparten la misma protección de ancho que el
+   checkout. La plantilla conserva su identidad, pero nunca puede empujar la
+   galería fuera del viewport en pantallas estrechas. */
+body[data-store-template] .store-product-detail {
+  min-width: 0;
+  padding-inline: clamp(.75rem, 2vw, 2rem);
+  box-sizing: border-box;
+}
+
+body[data-store-template] .store-product-detail > *,
+body[data-store-template] .store-product-gallery,
+body[data-store-template] .store-product-info {
+  min-width: 0;
+  max-width: 100%;
+}
+
+body[data-store-template] .store-product-detail-main {
+  width: 100%;
+  border-radius: var(--react-surface-radius);
+}
+
+body[data-store-template] .store-product-detail-main img,
+body[data-store-template] .store-product-thumbs img {
+  max-width: 100%;
+}
+
+/* En algunas combinaciones de flex de las plantillas el alto automático de
+   los tres trazos se comprime a cero. El botón sigue siendo el mismo control,
+   pero sus trazos conservan una medida táctil y visible. */
+body[data-store-template] .store-mobile-menu-toggle span {
+  flex: 0 0 2px;
+  min-height: 2px;
+}
+
+/* Una opciÃ³n sin ninguna combinaciÃ³n disponible se mantiene visible para
+   orientar al cliente: el valor se tacha y se identifica como agotado. */
+body[data-store-template] .store-swatch.is-sold-out,
+body[data-store-template] .store-swatch.is-sold-out:disabled {
+  opacity: .58;
+  cursor: not-allowed;
+  text-decoration: none;
+  border-style: dashed;
+}
+
+body[data-store-template] .store-swatch.is-sold-out .store-swatch-label {
+  text-decoration: line-through;
+}
+
+body[data-store-template] .store-swatch-status {
+  margin-left: .15rem;
+  color: var(--color-text-muted);
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+body[data-store-template] .store-stock-message {
+  margin: -.5rem 0 1rem;
+  color: var(--color-text-muted);
+  font-size: .88rem;
+}
+
+@media (max-width: 760px) {
+  body[data-store-template] .store-product-detail { padding-inline: .75rem; }
+  body[data-store-template] .store-product-info { padding-inline: .25rem; }
+  body[data-store-template] .store-product-detail-main { border-radius: 14px; }
+  body[data-store-template] .store-product-thumbs {
+    max-width: 100%;
+    padding-bottom: .25rem;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+  body[data-store-template] .store-product-thumbs button { flex: 0 0 76px; }
+  body[data-store-template] .store-purchase-row { gap: .75rem; }
+  body[data-store-template] .store-purchase-row label { min-width: 0; }
+  body[data-store-template] .store-purchase-row .btn { min-width: 0; }
+}

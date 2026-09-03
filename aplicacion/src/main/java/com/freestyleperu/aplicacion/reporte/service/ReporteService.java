@@ -5,6 +5,7 @@ import com.freestyleperu.aplicacion.caja.repository.CashSessionRepository;
 import com.freestyleperu.aplicacion.inventario.service.InventarioService;
 import com.freestyleperu.aplicacion.reporte.dto.response.CajaSesionResumenResponse;
 import com.freestyleperu.aplicacion.reporte.dto.response.DashboardResponse;
+import com.freestyleperu.aplicacion.reporte.dto.response.IntegracionEstadoResponse;
 import com.freestyleperu.aplicacion.reporte.dto.response.ProductoTopResponse;
 import com.freestyleperu.aplicacion.reporte.dto.response.PromotorReporteResponse;
 import com.freestyleperu.aplicacion.reporte.dto.response.ResumenPeriodoResponse;
@@ -13,6 +14,8 @@ import com.freestyleperu.aplicacion.reporte.dto.response.SerieEtiquetaResponse;
 import com.freestyleperu.aplicacion.venta.repository.PaymentRepository;
 import com.freestyleperu.aplicacion.venta.repository.SaleDetailRepository;
 import com.freestyleperu.aplicacion.venta.repository.SaleRepository;
+import com.freestyleperu.aplicacion.pago.repository.PaymentTransactionRepository;
+import com.freestyleperu.aplicacion.facturacion.repository.ElectronicDocumentRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -35,15 +38,20 @@ public class ReporteService {
     private final PaymentRepository paymentRepository;
     private final CashSessionRepository cashSessionRepository;
     private final InventarioService inventarioService;
+    private final PaymentTransactionRepository paymentTransactionRepository;
+    private final ElectronicDocumentRepository electronicDocumentRepository;
 
     public ReporteService(SaleRepository saleRepository, SaleDetailRepository saleDetailRepository,
             PaymentRepository paymentRepository, CashSessionRepository cashSessionRepository,
-            InventarioService inventarioService) {
+            InventarioService inventarioService, PaymentTransactionRepository paymentTransactionRepository,
+            ElectronicDocumentRepository electronicDocumentRepository) {
         this.saleRepository = saleRepository;
         this.saleDetailRepository = saleDetailRepository;
         this.paymentRepository = paymentRepository;
         this.cashSessionRepository = cashSessionRepository;
         this.inventarioService = inventarioService;
+        this.paymentTransactionRepository = paymentTransactionRepository;
+        this.electronicDocumentRepository = electronicDocumentRepository;
     }
 
     public DashboardResponse dashboard() {
@@ -118,6 +126,22 @@ public class ReporteService {
         LocalDateTime[] rango = rango(from, to);
         return cashSessionRepository.sesionesCerradasEntre(rango[0], rango[1]).stream()
                 .map(this::toCajaResumen)
+                .toList();
+    }
+
+    public List<IntegracionEstadoResponse> pagosOnline(LocalDate from, LocalDate to) {
+        LocalDateTime[] rango = rango(from, to);
+        return paymentTransactionRepository.resumenPorEstado(rango[0], rango[1]).stream()
+                .map(fila -> new IntegracionEstadoResponse(
+                        fila[0].toString(), fila[1].toString(), ((Number) fila[2]).longValue(), (BigDecimal) fila[3]))
+                .toList();
+    }
+
+    public List<IntegracionEstadoResponse> comprobantesElectronicos(LocalDate from, LocalDate to) {
+        LocalDateTime[] rango = rango(from, to);
+        return electronicDocumentRepository.resumenPorEstado(rango[0], rango[1]).stream()
+                .map(fila -> new IntegracionEstadoResponse(
+                        fila[0].toString(), fila[1].toString(), ((Number) fila[2]).longValue(), (BigDecimal) fila[3]))
                 .toList();
     }
 

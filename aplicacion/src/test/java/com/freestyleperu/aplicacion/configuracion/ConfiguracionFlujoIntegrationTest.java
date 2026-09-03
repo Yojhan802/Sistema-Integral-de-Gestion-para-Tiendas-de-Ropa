@@ -3,6 +3,7 @@ package com.freestyleperu.aplicacion.configuracion;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.freestyleperu.aplicacion.configuracion.domain.BusinessVertical;
 import com.freestyleperu.aplicacion.configuracion.domain.CompanySettings;
 import com.freestyleperu.aplicacion.configuracion.domain.Plan;
 import com.freestyleperu.aplicacion.configuracion.domain.SubscriptionStatus;
@@ -58,7 +59,8 @@ class ConfiguracionFlujoIntegrationTest {
         assertThat(actualizado.updatedByUsername()).isEqualTo("config.test");
 
         CompanySettingsResponse conIdentidad = configuracionService.actualizarIdentidad(new ActualizarIdentidadEmpresaRequest(
-                "Freestyle Perú SAC", "20123456789", "Av. Test 123", "999888777", "contacto@test.com"), userId);
+                "Freestyle Perú SAC", "20123456789", "Av. Test 123", "999888777", "contacto@test.com",
+                BusinessVertical.CLOTHING, null), userId);
         assertThat(conIdentidad.name()).isEqualTo("Freestyle Perú SAC");
         assertThat(conIdentidad.ruc()).isEqualTo("20123456789");
 
@@ -80,7 +82,7 @@ class ConfiguracionFlujoIntegrationTest {
 
     private void sembrarFilaUnica() {
         CompanySettings settings = new CompanySettings();
-        settings.setId(1L);
+        settings.setSlug("default");
         settings.setName("Freestyle Perú (semilla test)");
         settings.setCurrencyCode("PEN");
         settings.setCurrencySymbol("S/");

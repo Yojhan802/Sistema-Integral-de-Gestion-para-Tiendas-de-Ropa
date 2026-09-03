@@ -25,12 +25,13 @@
       <div class="page-header">
         <div>
           <h1>Configuración</h1>
-          <p>Datos de la empresa, moneda, IGV y métodos de pago.</p>
+          <p>Datos de la empresa, moneda, impuestos, integraciones y métodos de pago.</p>
         </div>
       </div>
 
       <div class="tabs" role="tablist" style="margin-bottom: var(--space-5);">
         <button class="tab" type="button" data-tab="empresa" role="tab" aria-selected="true">Empresa</button>
+        <button class="tab" type="button" data-tab="tienda" role="tab" aria-selected="false">Tienda virtual</button>
         <button class="tab" type="button" data-tab="pagos" role="tab" aria-selected="false">Métodos de pago</button>
       </div>
 
@@ -45,7 +46,14 @@
         </div>
       </section>
 
+      <section id="panel-tienda" hidden>
+        <div id="storefront-content" style="max-width: 900px; display:grid; gap: var(--space-5);">
+          <div class="table-card" style="padding: var(--space-5);"><div class="skeleton" style="height:420px;"></div></div>
+        </div>
+      </section>
+
       <section id="panel-pagos" hidden>
+        <div id="payment-integrations-content" style="display:grid; gap: var(--space-5); margin-bottom: var(--space-5);"></div>
         <div class="table-card">
           <div class="table-scroll">
             <table class="data-table">

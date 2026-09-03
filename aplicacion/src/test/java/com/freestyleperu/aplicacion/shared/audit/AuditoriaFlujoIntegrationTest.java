@@ -38,8 +38,10 @@ class AuditoriaFlujoIntegrationTest {
         PageResponse<AuditLogResumenResponse> porAccion = auditoriaService.listar(10L, "CREADO", null, null, null, null, PageRequest.of(0, 20));
         assertThat(porAccion.content()).extracting("action").containsExactly("PRODUCTO_CREADO");
 
-        // Filtro por entidad.
-        PageResponse<AuditLogResumenResponse> porEntidad = auditoriaService.listar(null, null, "VENTA", null, null, null, PageRequest.of(0, 20));
+        // Filtro por entidad, combinado con usuario — otras pruebas del mismo suite (ventas,
+        // devoluciones, pedidos, reservas) también generan entradas reales entity=VENTA en esta
+        // misma base compartida, ahora que AuditService.write() persiste de verdad en REQUIRES_NEW.
+        PageResponse<AuditLogResumenResponse> porEntidad = auditoriaService.listar(20L, null, "VENTA", null, null, null, PageRequest.of(0, 20));
         assertThat(porEntidad.content()).hasSize(1);
         assertThat(porEntidad.content().get(0).entity()).isEqualTo("VENTA");
 

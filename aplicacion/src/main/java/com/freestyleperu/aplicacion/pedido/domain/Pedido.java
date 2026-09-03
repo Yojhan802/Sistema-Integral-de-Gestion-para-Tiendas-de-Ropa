@@ -15,11 +15,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.TenantId;
 
 /**
  * Pedido de la tienda online. Al crearse todavía no es una venta (el pago es
@@ -32,14 +34,18 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "orders")
+@Table(name = "orders", uniqueConstraints = @UniqueConstraint(columnNames = { "tenant_id", "order_number" }))
 public class Pedido {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "order_number", nullable = false, unique = true, length = 20)
+    /** Ver Javadoc de {@code BaseEntity.tenantId} — esta entidad no extiende BaseEntity pero también se aísla por tenant. */
+    @TenantId
+    private Long tenantId;
+
+    @Column(name = "order_number", nullable = false, length = 20)
     private String orderNumber;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -74,6 +80,24 @@ public class Pedido {
 
     @Column(name = "payment_proof_url", length = 255)
     private String paymentProofUrl;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "billing_document_type", nullable = false, length = 20)
+    private PedidoBillingDocumentType billingDocumentType = PedidoBillingDocumentType.TICKET;
+
+    @Column(name = "billing_document_number", length = 15)
+    private String billingDocumentNumber;
+
+    @Column(name = "billing_name", length = 150)
+    private String billingName;
+
+    /** Cuándo el comprador aceptó los Términos y Condiciones al confirmar el pedido. */
+    @Column(name = "terms_accepted_at")
+    private LocalDateTime termsAcceptedAt;
+
+    /** Versión del texto aceptado, para poder probar qué condiciones regían esa compra. */
+    @Column(name = "terms_version", length = 20)
+    private String termsVersion;
 
     @Column(name = "recipient_dni", nullable = false, length = 15)
     private String recipientDni;

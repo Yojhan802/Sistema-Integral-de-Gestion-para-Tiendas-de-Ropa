@@ -12,24 +12,30 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.TenantId;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "returns")
+@Table(name = "returns", uniqueConstraints = @UniqueConstraint(columnNames = { "tenant_id", "return_number" }))
 public class Return {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "return_number", nullable = false, unique = true, length = 20)
+    /** Ver Javadoc de {@code BaseEntity.tenantId} — esta entidad no extiende BaseEntity pero también se aísla por tenant. */
+    @TenantId
+    private Long tenantId;
+
+    @Column(name = "return_number", nullable = false, length = 20)
     private String returnNumber;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

@@ -4,6 +4,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
@@ -13,7 +15,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/** Fila única (id = 1). Ver docs/03-modelo-datos.md "company_settings". */
+/**
+ * Una fila por negocio (conversión a SaaS multi-tenant, ver plan aprobado) — esta es la tabla
+ * de tenants: su propio {@code id} es el {@code tenant_id} que referencian todas las demás
+ * tablas. Antes de la conversión era una fila única (id = 1, asignado a mano); ver
+ * docs/03-modelo-datos.md "company_settings" y la migración V38. A propósito NO extiende
+ * {@code BaseEntity} y no lleva {@code @TenantId}: es el tenant, no un dato aislado por tenant.
+ */
 @Getter
 @Setter
 @NoArgsConstructor
@@ -22,10 +30,25 @@ import lombok.Setter;
 public class CompanySettings {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    /** Subdominio del negocio (ej. "tiendax" → tiendax.qynex.pe) — lo resuelve TenantResolutionFilter (Fase 2 de la conversión). */
+    @Column(name = "slug", nullable = false, unique = true, length = 63)
+    private String slug;
 
     @Column(name = "name", nullable = false, length = 150)
     private String name;
+
+    /** Decide qué instrucciones de IA se activan (ver BusinessVertical) — default CLOTHING. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "business_vertical", nullable = false, length = 20)
+    private BusinessVertical businessVertical = BusinessVertical.CLOTHING;
+
+    /** Frase libre para el framing del prompt (ej. "una ferretería en Perú"); si es null se arma
+     * un texto genérico a partir de businessVertical (ver AsistenteTiendaService). */
+    @Column(name = "business_description", length = 255)
+    private String businessDescription;
 
     @Column(name = "ruc", length = 15)
     private String ruc;
@@ -39,8 +62,29 @@ public class CompanySettings {
     @Column(name = "email", length = 120)
     private String email;
 
+    /**
+     * Si esta empresa cuenta como ingreso. La tienda propia y el demo funcionan igual que
+     * las demás, pero nadie paga por ellas: incluirlas falsea el ingreso mensual.
+     */
+    @Column(name = "billable", nullable = false)
+    private boolean billable = true;
+
     @Column(name = "logo_url", length = 255)
     private String logoUrl;
+
+    /** Plantilla visual de la tienda publica; la logica de catalogo y checkout es compartida. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "store_template", nullable = false, length = 30)
+    private StoreTemplate storeTemplate = StoreTemplate.CLASSIC;
+
+    @Column(name = "store_primary_color", length = 7)
+    private String storePrimaryColor = "#17324D";
+
+    @Column(name = "store_accent_color", length = 7)
+    private String storeAccentColor = "#17324D";
+
+    @Column(name = "store_background_color", length = 7)
+    private String storeBackgroundColor = "#F5F7FA";
 
     @Column(name = "currency_code", nullable = false, length = 3)
     private String currencyCode;
@@ -77,6 +121,14 @@ public class CompanySettings {
 
     @Column(name = "next_payment_due")
     private LocalDate nextPaymentDue;
+
+    /** Interruptor maestro por tenant para las pasarelas de pago online. */
+    @Column(name = "online_payments_enabled", nullable = false)
+    private boolean onlinePaymentsEnabled;
+
+    /** Interruptor maestro por tenant para la facturación electrónica. */
+    @Column(name = "electronic_invoicing_enabled", nullable = false)
+    private boolean electronicInvoicingEnabled;
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;

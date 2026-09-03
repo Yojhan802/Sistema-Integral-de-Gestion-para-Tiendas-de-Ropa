@@ -25,16 +25,30 @@ services:
         condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: prod
-      DB_URL: jdbc:mysql://mysql:3306/${DB_NAME:-freestyleperu}?useUnicode=true&characterEncoding=utf8&serverTimezone=America/Lima
+      DB_URL: ${DB_URL:-jdbc:mysql://mysql:3306/${DB_NAME:-freestyleperu}?useUnicode=true&characterEncoding=utf8&serverTimezone=America/Lima}
       DB_USERNAME: ${DB_USERNAME:-freestyleperu}
       DB_PASSWORD: ${DB_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
       JWT_ACCESS_MINUTES: ${JWT_ACCESS_MINUTES:-30}
       JWT_REFRESH_DAYS: ${JWT_REFRESH_DAYS:-7}
+      CREDENTIALS_ENCRYPTION_KEY: ${CREDENTIALS_ENCRYPTION_KEY}
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost}
+      CORS_ALLOWED_ORIGIN_PATTERNS: ${CORS_ALLOWED_ORIGIN_PATTERNS:-http://*.localhost:[*],https://*.qynex.pe:[*]}
       SERVER_PORT: 8080
       UPLOADS_DIR: /app/uploads
       OPS_API_KEY: ${OPS_API_KEY:-}
+      # Los defaults de abajo repiten los del perfil prod de application.yml — Docker Compose
+      # fija la variable como string vacío si no está en .env (no la omite), lo que rompería el
+      # parseo numérico de Spring si no hubiera un valor de respaldo acá. Subir estos números es
+      # el ajuste real de capacidad — ver docs/08-despliegue.md, sección de capacidad.
+      DB_POOL_MAX: ${DB_POOL_MAX:-8}
+      DB_POOL_MIN: ${DB_POOL_MIN:-2}
+      TOMCAT_MAX_THREADS: ${TOMCAT_MAX_THREADS:-50}
+      TOMCAT_MIN_THREADS: ${TOMCAT_MIN_THREADS:-10}
+      TOMCAT_ACCEPT_COUNT: ${TOMCAT_ACCEPT_COUNT:-100}
+      # true SOLO si todavía no hay un subdominio real apuntando a este despliegue (ver Javadoc
+      # de TenantResolutionFilter) — con un subdominio real, dejar en true (el default).
+      TENANT_STRICT_SUBDOMAIN_RESOLUTION: ${TENANT_STRICT_SUBDOMAIN_RESOLUTION:-true}
     volumes:
       - uploads_data:/app/uploads
     healthcheck:
@@ -46,7 +60,26 @@ services:
     networks:
       - freestyle
 
+  # Frontend en uso. Arranca con un `docker compose up` normal.
+  frontend-react:
+    build:
+      context: .
+      dockerfile: front-react/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "${REACT_HTTP_PORT:-8093}:80"
+    networks:
+      - freestyle
+
+  # Frontend legado, abandonado. Queda tras un perfil para que no arranque solo: ya no
+  # recibe funcionalidad y levantarlo sin querer da la impresión de que sigue en uso.
+  # Solo para consultar el comportamiento anterior:
+  #   docker compose --profile legacy up -d frontend
   frontend:
+    profiles: ["legacy"]
     build: ./front
     restart: unless-stopped
     depends_on:

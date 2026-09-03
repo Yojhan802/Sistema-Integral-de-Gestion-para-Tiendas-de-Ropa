@@ -8,12 +8,9 @@ import com.freestyleperu.aplicacion.caja.dto.request.AbrirCajaRequest;
 import com.freestyleperu.aplicacion.caja.dto.response.SesionCajaResponse;
 import com.freestyleperu.aplicacion.caja.repository.CashRegisterRepository;
 import com.freestyleperu.aplicacion.caja.service.CajaService;
+import com.freestyleperu.aplicacion.catalogo.domain.AttributeValue;
 import com.freestyleperu.aplicacion.catalogo.domain.Category;
-import com.freestyleperu.aplicacion.catalogo.domain.Color;
-import com.freestyleperu.aplicacion.catalogo.domain.Size;
 import com.freestyleperu.aplicacion.catalogo.repository.CategoryRepository;
-import com.freestyleperu.aplicacion.catalogo.repository.ColorRepository;
-import com.freestyleperu.aplicacion.catalogo.repository.SizeRepository;
 import com.freestyleperu.aplicacion.devolucion.dto.request.CrearDevolucionRequest;
 import com.freestyleperu.aplicacion.devolucion.dto.request.ItemDevolucionRequest;
 import com.freestyleperu.aplicacion.devolucion.dto.response.DevolucionResponse;
@@ -28,6 +25,7 @@ import com.freestyleperu.aplicacion.pago.domain.PaymentMethodType;
 import com.freestyleperu.aplicacion.pago.repository.PaymentMethodRepository;
 import com.freestyleperu.aplicacion.producto.dto.request.CrearProductoRequest;
 import com.freestyleperu.aplicacion.producto.dto.request.CrearVarianteRequest;
+import com.freestyleperu.aplicacion.producto.AtributoTestFixture;
 import com.freestyleperu.aplicacion.producto.dto.response.ProductoDetalleResponse;
 import com.freestyleperu.aplicacion.producto.dto.response.VarianteResponse;
 import com.freestyleperu.aplicacion.producto.repository.ProductVariantRepository;
@@ -75,8 +73,7 @@ class DevolucionFlujoIntegrationTest {
     @Autowired private UsuarioRepository usuarioRepository;
     @Autowired private RolRepository rolRepository;
     @Autowired private CategoryRepository categoryRepository;
-    @Autowired private ColorRepository colorRepository;
-    @Autowired private SizeRepository sizeRepository;
+    @Autowired private AtributoTestFixture atributos;
     @Autowired private PaymentMethodRepository paymentMethodRepository;
     @Autowired private ProductoService productoService;
     @Autowired private VarianteService varianteService;
@@ -108,19 +105,13 @@ class DevolucionFlujoIntegrationTest {
         categoria.setName("Polos-devolucion-sincaja");
         categoria.setSlug("polos-devolucion-sincaja");
         categoryRepository.save(categoria);
-        Color color = new Color();
-        color.setName("Negro-devolucion-sincaja");
-        color.setHexCode("#000000");
-        colorRepository.save(color);
-        Size talla = new Size();
-        talla.setName("M-devolucion-sincaja");
-        talla.setSortOrder((short) 1);
-        sizeRepository.save(talla);
+        AttributeValue color = atributos.color("Negro-devolucion-sincaja");
+        AttributeValue talla = atributos.talla("M-devolucion-sincaja", (short) 1);
         ProductoDetalleResponse producto = productoService.crear(new CrearProductoRequest(
                 null, null, "Polo Devolución Sin Caja", categoria.getId(), null, null, null, null, null,
                 new BigDecimal("40.00"), null));
         VarianteResponse variante = varianteService.crear(producto.id(),
-                new CrearVarianteRequest(color.getId(), talla.getId(), null, null, 10, 1, false));
+                new CrearVarianteRequest(List.of(color.getId(), talla.getId()), null, null, 10, 1, false));
 
         PaymentMethod efectivo = new PaymentMethod();
         efectivo.setCode("EFECTIVO-DEV-SINCAJA");
@@ -151,8 +142,7 @@ class DevolucionFlujoIntegrationTest {
         detalle.setSubtotal(new BigDecimal("40.00"));
         detalle.setProductName("Polo Devolución Sin Caja");
         detalle.setVariantSku(variante.sku());
-        detalle.setColorName("Negro-devolucion-sincaja");
-        detalle.setSizeName("M-devolucion-sincaja");
+        detalle.setVariantLabel("Negro-devolucion-sincaja / M-devolucion-sincaja");
         SaleDetail detalleGuardado = saleDetailRepository.save(detalle);
 
         Payment pago = new Payment();
@@ -210,20 +200,13 @@ class DevolucionFlujoIntegrationTest {
         categoria.setSlug("polos-devolucion");
         categoryRepository.save(categoria);
 
-        Color color = new Color();
-        color.setName("Negro-devolucion");
-        color.setHexCode("#000000");
-        colorRepository.save(color);
-
-        Size talla = new Size();
-        talla.setName("M-devolucion");
-        talla.setSortOrder((short) 1);
-        sizeRepository.save(talla);
+        AttributeValue color = atributos.color("Negro-devolucion");
+        AttributeValue talla = atributos.talla("M-devolucion", (short) 1);
 
         ProductoDetalleResponse producto = productoService.crear(new CrearProductoRequest(
                 null, null, "Polo Devolución", categoria.getId(), null, null, null, null, null, new BigDecimal("40.00"), null));
         VarianteResponse variante = varianteService.crear(producto.id(),
-                new CrearVarianteRequest(color.getId(), talla.getId(), null, null, 10, 1, false));
+                new CrearVarianteRequest(List.of(color.getId(), talla.getId()), null, null, 10, 1, false));
 
         PaymentMethod efectivo = new PaymentMethod();
         efectivo.setCode("EFECTIVO-DEV");

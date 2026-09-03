@@ -10,6 +10,7 @@ import com.freestyleperu.aplicacion.shared.domain.EstadoGeneral;
 import com.freestyleperu.aplicacion.shared.exception.RecursoDuplicadoException;
 import com.freestyleperu.aplicacion.shared.exception.RecursoNoEncontradoException;
 import com.freestyleperu.aplicacion.shared.util.TextNormalizer;
+import com.freestyleperu.aplicacion.tienda.service.StoreCatalogSyncService;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,10 +21,13 @@ public class SubcategoryService {
 
     private final SubcategoryRepository subcategoryRepository;
     private final CategoryRepository categoryRepository;
+    private final StoreCatalogSyncService storeCatalogSyncService;
 
-    public SubcategoryService(SubcategoryRepository subcategoryRepository, CategoryRepository categoryRepository) {
+    public SubcategoryService(SubcategoryRepository subcategoryRepository, CategoryRepository categoryRepository,
+            StoreCatalogSyncService storeCatalogSyncService) {
         this.subcategoryRepository = subcategoryRepository;
         this.categoryRepository = categoryRepository;
+        this.storeCatalogSyncService = storeCatalogSyncService;
     }
 
     public List<SubcategoryResponse> listar(Long categoryId) {
@@ -48,7 +52,9 @@ public class SubcategoryService {
         subcategory.setCategory(category);
         subcategory.setName(request.name());
         subcategory.setSlug(TextNormalizer.slugify(category.getName() + "-" + request.name()));
-        return toResponse(subcategoryRepository.save(subcategory));
+        SubcategoryResponse response = toResponse(subcategoryRepository.save(subcategory));
+        storeCatalogSyncService.requestRefresh();
+        return response;
     }
 
     @Transactional
@@ -66,14 +72,18 @@ public class SubcategoryService {
         subcategory.setCategory(category);
         subcategory.setName(request.name());
         subcategory.setSlug(TextNormalizer.slugify(category.getName() + "-" + request.name()));
-        return toResponse(subcategory);
+        SubcategoryResponse response = toResponse(subcategory);
+        storeCatalogSyncService.requestRefresh();
+        return response;
     }
 
     @Transactional
     public SubcategoryResponse cambiarEstado(Long id, EstadoGeneral status) {
         Subcategory subcategory = buscarOFallar(id);
         subcategory.setStatus(status);
-        return toResponse(subcategory);
+        SubcategoryResponse response = toResponse(subcategory);
+        storeCatalogSyncService.requestRefresh();
+        return response;
     }
 
     private Subcategory buscarOFallar(Long id) {

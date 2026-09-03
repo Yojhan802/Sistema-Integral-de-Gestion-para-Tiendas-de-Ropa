@@ -42,7 +42,7 @@ public class ReservaController {
     }
 
     @GetMapping("/api/reservations")
-    @PreAuthorize("hasAuthority('" + Permisos.RESERVAS_CONSULTAR + "') and @planGate.tienePlan('PROFESIONAL')")
+    @PreAuthorize("hasAuthority('" + Permisos.RESERVAS_CONSULTAR + "') and @modulos.activo('SEPARACIONES')")
     public PageResponse<ReservaResumenResponse> listar(
             @RequestParam(required = false) ReservaStatus status,
             @RequestParam(required = false) Long customerId,
@@ -52,13 +52,13 @@ public class ReservaController {
     }
 
     @GetMapping("/api/reservations/{id}")
-    @PreAuthorize("hasAuthority('" + Permisos.RESERVAS_CONSULTAR + "') and @planGate.tienePlan('PROFESIONAL')")
+    @PreAuthorize("hasAuthority('" + Permisos.RESERVAS_CONSULTAR + "') and @modulos.activo('SEPARACIONES')")
     public ReservaResponse obtener(@PathVariable Long id) {
         return reservaService.obtener(id);
     }
 
     @PostMapping("/api/reservations")
-    @PreAuthorize("hasAuthority('" + Permisos.RESERVAS_CREAR + "') and @planGate.tienePlan('PROFESIONAL')")
+    @PreAuthorize("hasAuthority('" + Permisos.RESERVAS_CREAR + "') and @modulos.activo('SEPARACIONES')")
     public ResponseEntity<ReservaResponse> crear(
             @Valid @RequestBody CrearReservaRequest request, @AuthenticationPrincipal AuthenticatedUser currentUser) {
         ReservaResponse creada = reservaService.crear(request, currentUser.id());
@@ -66,7 +66,7 @@ public class ReservaController {
     }
 
     @PostMapping("/api/reservations/{id}/complete")
-    @PreAuthorize("hasAuthority('" + Permisos.RESERVAS_GESTIONAR + "') and @planGate.tienePlan('PROFESIONAL')")
+    @PreAuthorize("hasAuthority('" + Permisos.RESERVAS_GESTIONAR + "') and @modulos.activo('SEPARACIONES')")
     public ReservaResponse completar(
             @PathVariable Long id,
             @Valid @RequestBody CompletarReservaRequest request,
@@ -76,21 +76,21 @@ public class ReservaController {
 
     /** Previsualiza el cobro de varias separaciones juntas (con combo ya detectado si aplica) antes de pedir los pagos. */
     @GetMapping("/api/reservations/complete-batch/preview")
-    @PreAuthorize("hasAuthority('" + Permisos.RESERVAS_GESTIONAR + "') and @planGate.tienePlan('PROFESIONAL')")
+    @PreAuthorize("hasAuthority('" + Permisos.RESERVAS_GESTIONAR + "') and @modulos.activo('SEPARACIONES')")
     public PreviewCompletarVariasResponse previsualizarCompletarVarias(@RequestParam List<Long> ids) {
         return reservaService.previsualizarCompletarVarias(ids);
     }
 
     /** Completa varias separaciones del mismo comprador de una sola vez, con detección automática de combo (RN-28). */
     @PostMapping("/api/reservations/complete-batch")
-    @PreAuthorize("hasAuthority('" + Permisos.RESERVAS_GESTIONAR + "') and @planGate.tienePlan('PROFESIONAL')")
+    @PreAuthorize("hasAuthority('" + Permisos.RESERVAS_GESTIONAR + "') and @modulos.activo('SEPARACIONES')")
     public List<ReservaResponse> completarVarias(
             @Valid @RequestBody CompletarVariasReservasRequest request, @AuthenticationPrincipal AuthenticatedUser currentUser) {
         return reservaService.completarVarias(request, currentUser.id());
     }
 
     @PostMapping("/api/reservations/{id}/cancel")
-    @PreAuthorize("hasAuthority('" + Permisos.RESERVAS_GESTIONAR + "') and @planGate.tienePlan('PROFESIONAL')")
+    @PreAuthorize("hasAuthority('" + Permisos.RESERVAS_GESTIONAR + "') and @modulos.activo('SEPARACIONES')")
     public ReservaResponse cancelar(
             @PathVariable Long id,
             @Valid @RequestBody CancelarReservaRequest request,

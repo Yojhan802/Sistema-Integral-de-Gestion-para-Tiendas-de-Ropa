@@ -19,7 +19,7 @@ public interface InventoryMovementRepository extends JpaRepository<InventoryMove
               AND (:type IS NULL OR m.type = :type)
               AND (:from IS NULL OR m.createdAt >= :from)
               AND (:to IS NULL OR m.createdAt <= :to)
-            ORDER BY m.createdAt DESC
+            ORDER BY m.createdAt DESC, m.id DESC
             """)
     Page<InventoryMovement> buscar(
             @Param("variantId") Long variantId,

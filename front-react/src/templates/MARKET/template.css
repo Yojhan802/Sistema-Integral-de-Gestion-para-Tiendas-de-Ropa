@@ -1,0 +1,27 @@
+body[data-store-template='MARKET'] {
+  --template-ink: #182230;
+  --template-muted: #667085;
+  --template-surface-alt: #eef4ff;
+  --template-line: #d6e0ef;
+  --template-radius: 14px;
+  --template-card-radius: 12px;
+  --template-container: 1460px;
+}
+
+body[data-store-template='MARKET'] .store-promo-bar { background:#155eef; color:#fff; font-weight:700; }
+body[data-store-template='MARKET'] .store-header { min-height:96px; box-shadow:0 4px 16px rgba(16,24,40,.08); }
+body[data-store-template='MARKET'] .store-nav { order:3; width:100%; margin:0; padding-top:.6rem; border-top:1px solid var(--template-line); }
+body[data-store-template='MARKET'] .store-header { flex-wrap:wrap; height:auto; padding-top:.8rem; padding-bottom:.8rem; }
+body[data-store-template='MARKET'] .store-hero { min-height:440px; background:linear-gradient(110deg,#155eef,#7f56d9); }
+body[data-store-template='MARKET'] .store-hero::after { content:''; position:absolute; right:6%; bottom:-10%; width:360px; height:360px; border-radius:50%; background:rgba(255,255,255,.14); box-shadow:-120px -30px 0 rgba(255,255,255,.08); }
+body[data-store-template='MARKET'] .store-category-banners { grid-template-columns:repeat(4,minmax(0,1fr)); }
+body[data-store-template='MARKET'] .store-category-banner,
+body[data-store-template='MARKET'] .store-category-banner:nth-child(1),
+body[data-store-template='MARKET'] .store-category-banner:nth-child(2),
+body[data-store-template='MARKET'] .store-category-banner:nth-child(3) { grid-column:auto; min-height:190px; }
+body[data-store-template='MARKET'] .store-section { padding:1.5rem; margin-bottom:2rem; border-radius:18px; background:linear-gradient(135deg,#fff,var(--template-surface-alt)); }
+body[data-store-template='MARKET'] .store-section .store-grid { grid-template-columns:repeat(4,minmax(0,1fr)); }
+body[data-store-template='MARKET'] .store-product-card { box-shadow:0 5px 18px rgba(16,24,40,.08); }
+body[data-store-template='MARKET'] .store-footer { background:#182230; }
+
+@media (max-width:767px) { body[data-store-template='MARKET'] .store-nav { display:flex; overflow-x:auto; flex-wrap:nowrap; } body[data-store-template='MARKET'] .store-section { padding:.9rem; } }

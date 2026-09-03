@@ -32,7 +32,7 @@ public class PedidoController {
     }
 
     @GetMapping("/api/orders")
-    @PreAuthorize("hasAuthority('" + Permisos.PEDIDOS_CONSULTAR + "') and @planGate.tienePlan('ECOMMERCE')")
+    @PreAuthorize("hasAuthority('" + Permisos.PEDIDOS_CONSULTAR + "') and @modulos.activo('TIENDA')")
     public PageResponse<PedidoResumenResponse> listar(
             @RequestParam(required = false) PedidoStatus status,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,
@@ -42,19 +42,19 @@ public class PedidoController {
     }
 
     @GetMapping("/api/orders/{id}")
-    @PreAuthorize("hasAuthority('" + Permisos.PEDIDOS_CONSULTAR + "') and @planGate.tienePlan('ECOMMERCE')")
+    @PreAuthorize("hasAuthority('" + Permisos.PEDIDOS_CONSULTAR + "') and @modulos.activo('TIENDA')")
     public PedidoResponse obtener(@PathVariable Long id) {
         return pedidoService.obtener(id);
     }
 
     @PostMapping("/api/orders/{id}/confirm")
-    @PreAuthorize("hasAuthority('" + Permisos.PEDIDOS_GESTIONAR + "') and @planGate.tienePlan('ECOMMERCE')")
+    @PreAuthorize("hasAuthority('" + Permisos.PEDIDOS_GESTIONAR + "') and @modulos.activo('TIENDA')")
     public PedidoResponse confirmar(@PathVariable Long id, @AuthenticationPrincipal AuthenticatedUser currentUser) {
         return pedidoService.confirmarPago(id, currentUser.id());
     }
 
     @PostMapping("/api/orders/{id}/cancel")
-    @PreAuthorize("hasAuthority('" + Permisos.PEDIDOS_GESTIONAR + "') and @planGate.tienePlan('ECOMMERCE')")
+    @PreAuthorize("hasAuthority('" + Permisos.PEDIDOS_GESTIONAR + "') and @modulos.activo('TIENDA')")
     public PedidoResponse cancelar(
             @PathVariable Long id,
             @AuthenticationPrincipal AuthenticatedUser currentUser,

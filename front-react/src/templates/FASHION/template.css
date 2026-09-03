@@ -1,0 +1,825 @@
+/*
+ * Qynex FASHION — editorial commerce.
+ *
+ * This layer changes composition and interaction language only. Product,
+ * variant, cart, checkout, customer and tenant data remain owned by the
+ * shared storefront engine.
+ */
+
+body[data-store-template='FASHION'] {
+  --fashion-ink: #241923;
+  --fashion-ink-soft: #594652;
+  --fashion-muted: #806b79;
+  /* --fashion-accent sigue el color de marca del comerciante: solo se usa en
+     elementos de marca (botón principal, foco). --fashion-signature es el
+     rosa editorial propio de FASHION y no varía con la marca: lo usan los
+     estados decorativos/identitarios (hover, etiquetas, bordes, selección)
+     para que la plantilla conserve su paleta aunque cambie el accentColor. */
+  --fashion-accent: var(--brand-accent, #cc4778);
+  --fashion-accent-soft: color-mix(in srgb, var(--fashion-accent) 12%, white);
+  --fashion-signature: #cc4778;
+  --fashion-signature-soft: color-mix(in srgb, var(--fashion-signature) 12%, white);
+  --template-accent: var(--fashion-signature);
+  --fashion-background: #fbf7f8;
+  --fashion-surface: #ffffff;
+  --fashion-surface-alt: #f4e9ee;
+  --fashion-line: #e8d8e0;
+  --fashion-dark: #241923;
+  --fashion-dark-soft: #3b2935;
+  --fashion-container: 1480px;
+  --fashion-gap: clamp(0.75rem, 1.7vw, 1.5rem);
+  --fashion-display: Georgia, 'Times New Roman', serif;
+  --fashion-body: var(--font-body, Inter, sans-serif);
+  --fashion-ease: cubic-bezier(.22, .65, .28, 1);
+  --template-ink: var(--fashion-ink);
+  --template-muted: var(--fashion-muted);
+  --template-surface: var(--fashion-surface);
+  --template-surface-alt: var(--fashion-surface-alt);
+  --template-line: var(--fashion-line);
+  --template-radius: 0;
+  --template-card-radius: 0;
+  --template-container: var(--fashion-container);
+  --template-heading: var(--fashion-display);
+  --template-body: var(--fashion-body);
+  color: var(--fashion-ink);
+  background: var(--fashion-background);
+}
+
+/* ---------- Shell ---------- */
+
+body[data-store-template='FASHION'] .store-promo-bar {
+  min-height: 32px;
+  padding: 9px 1rem;
+  color: #f9eef3;
+  background: var(--fashion-dark);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .18em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+body[data-store-template='FASHION'] .store-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  width: 100%;
+  max-width: none;
+  height: 116px;
+  min-height: 116px;
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) auto minmax(180px, 1fr);
+  grid-template-rows: 72px 44px;
+  align-items: center;
+  gap: 0 2rem;
+  padding: 0 max(1rem, calc((100vw - var(--fashion-container)) / 2));
+  border-bottom: 1px solid var(--fashion-line);
+  background: rgba(251, 247, 248, .94);
+  backdrop-filter: blur(16px);
+  transition: height 420ms var(--fashion-ease), min-height 420ms var(--fashion-ease), background 300ms ease, border-color 300ms ease;
+}
+
+body[data-store-template='FASHION'] .store-header.is-scrolled {
+  height: 76px;
+  min-height: 76px;
+  grid-template-rows: 76px;
+  border-bottom-color: var(--fashion-ink);
+  background: rgba(255, 255, 255, .97);
+}
+
+body[data-store-template='FASHION'] .store-brand {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .7rem;
+  color: var(--fashion-ink);
+  font-family: var(--fashion-display);
+  font-size: clamp(1.15rem, 2vw, 1.65rem);
+  font-weight: 400;
+  letter-spacing: .1em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+body[data-store-template='FASHION'] .store-brand-logobox {
+  width: 31px;
+  height: 31px;
+  border-radius: 50%;
+  color: #fff;
+  background: var(--fashion-ink);
+  font-family: var(--fashion-body);
+  font-size: .8rem;
+}
+
+body[data-store-template='FASHION'] .store-brand img {
+  width: 31px;
+  height: 31px;
+  border-radius: 50%;
+}
+
+body[data-store-template='FASHION'] .store-nav {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  justify-self: center;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  gap: clamp(1rem, 3vw, 3rem);
+  margin: 0;
+}
+
+body[data-store-template='FASHION'] .store-nav a {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--fashion-ink-soft);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .15em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+body[data-store-template='FASHION'] .store-nav a::after {
+  position: absolute;
+  right: 0;
+  bottom: 7px;
+  left: 0;
+  height: 1px;
+  background: var(--fashion-signature);
+  content: '';
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 240ms var(--fashion-ease);
+}
+
+body[data-store-template='FASHION'] .store-nav a:hover,
+body[data-store-template='FASHION'] .store-nav a[aria-current='page'] { color: var(--fashion-ink); }
+
+body[data-store-template='FASHION'] .store-nav a:hover::after,
+body[data-store-template='FASHION'] .store-nav a[aria-current='page']::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+body[data-store-template='FASHION'] .store-header-actions {
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+body[data-store-template='FASHION'] .store-icon-btn {
+  width: 42px;
+  height: 42px;
+  color: var(--fashion-ink);
+  border: 1px solid var(--fashion-line);
+  border-radius: 50%;
+  background: transparent;
+  transition: color 220ms ease, background 220ms ease, border-color 220ms ease, transform 220ms ease;
+}
+
+body[data-store-template='FASHION'] .store-icon-btn:hover,
+body[data-store-template='FASHION'] .store-icon-btn:focus-visible {
+  color: #fff;
+  border-color: var(--fashion-ink);
+  background: var(--fashion-ink);
+  transform: translateY(-2px);
+}
+
+body[data-store-template='FASHION'] .store-cart-count {
+  top: -3px;
+  right: -3px;
+  min-width: 18px;
+  height: 18px;
+  border: 2px solid var(--fashion-background);
+  background: var(--fashion-signature);
+  font-size: 9px;
+}
+
+body[data-store-template='FASHION'] .store-main {
+  max-width: var(--fashion-container);
+  padding: 0 clamp(1rem, 3vw, 3.75rem);
+  font-family: var(--fashion-body);
+}
+
+body[data-store-template='FASHION'] .store-main > :is(.store-section-head, .store-section-header) {
+  margin-top: clamp(3.5rem, 8vw, 8rem);
+}
+
+body[data-store-template='FASHION'] #catalog-sections,
+body[data-store-template='FASHION'] #catalog-flat,
+body[data-store-template='FASHION'] #category-banners { scroll-margin-top: 100px; }
+
+/* ---------- Hero ---------- */
+
+body[data-store-template='FASHION'] .store-hero {
+  min-height: clamp(500px, 62vw, 760px);
+  margin: 0 calc(clamp(1rem, 3vw, 3.75rem) * -1) clamp(3rem, 7vw, 7rem);
+  border-radius: 0;
+  background: var(--fashion-dark);
+  box-shadow: none;
+}
+
+body[data-store-template='FASHION'] .store-hero-media {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  opacity: .9;
+  object-fit: cover;
+  object-position: center;
+  transition: transform 1.4s var(--fashion-ease), opacity 500ms ease;
+}
+
+body[data-store-template='FASHION'] .store-hero::before {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(90deg, rgba(26, 16, 23, .85) 0%, rgba(36, 25, 35, .48) 42%, rgba(36, 25, 35, .06) 78%), linear-gradient(0deg, rgba(26, 16, 23, .45), transparent 50%);
+  content: '';
+}
+
+body[data-store-template='FASHION'] .store-hero::after {
+  position: absolute;
+  inset: 8% 5% 8% auto;
+  z-index: 1;
+  width: min(32vw, 430px);
+  border: 1px solid rgba(255, 255, 255, .44);
+  content: '';
+  transform: rotate(7deg);
+  pointer-events: none;
+}
+
+body[data-store-template='FASHION'] .store-hero-content {
+  align-self: end;
+  max-width: min(720px, 70%);
+  padding: clamp(2rem, 7vw, 7rem);
+  color: #fff;
+}
+
+body[data-store-template='FASHION'] .store-hero-badge {
+  margin-bottom: 1.5rem;
+  padding: 0;
+  color: #f7d6e2;
+  border: 0;
+  background: transparent;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .24em;
+  text-transform: uppercase;
+}
+
+body[data-store-template='FASHION'] .store-hero h1 {
+  max-width: 8ch;
+  margin-bottom: 1.25rem;
+  color: #fff;
+  font-family: var(--fashion-display);
+  font-size: clamp(3.5rem, 9vw, 9rem);
+  font-weight: 400;
+  letter-spacing: -.075em;
+  line-height: .84;
+}
+
+body[data-store-template='FASHION'] .store-hero p {
+  max-width: 36ch;
+  margin-bottom: 2rem;
+  color: #f7e8ee;
+  font-size: clamp(.95rem, 1.4vw, 1.1rem);
+  line-height: 1.65;
+}
+
+body[data-store-template='FASHION'] .store-hero .btn-primary,
+body[data-store-template='FASHION'] .btn-primary {
+  min-height: 48px;
+  padding: .85rem 1.25rem;
+  border: 1px solid var(--fashion-accent);
+  border-radius: 0;
+  color: #fff;
+  background: var(--fashion-accent);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  transition: color 220ms ease, background 220ms ease, border-color 220ms ease, transform 220ms ease;
+}
+
+body[data-store-template='FASHION'] .store-hero .btn-primary {
+  color: var(--fashion-ink);
+  border-color: #fff;
+  background: #fff;
+}
+
+body[data-store-template='FASHION'] .btn-primary:hover:not(:disabled) {
+  color: #fff;
+  border-color: var(--fashion-accent);
+  background: var(--fashion-accent);
+  transform: translateY(-2px);
+}
+
+/* ---------- Homepage rhythm and categories ---------- */
+
+body[data-store-template='FASHION'] .store-section-head {
+  align-items: end;
+  margin-bottom: 1.25rem;
+  padding-bottom: .9rem;
+  border-bottom: 1px solid var(--fashion-ink);
+}
+
+body[data-store-template='FASHION'] .store-section-head h2,
+body[data-store-template='FASHION'] .store-section-header h2 {
+  color: var(--fashion-ink);
+  font-family: var(--fashion-display);
+  font-size: clamp(1.8rem, 4vw, 3.8rem);
+  font-weight: 400;
+  letter-spacing: -.06em;
+  line-height: .95;
+}
+
+body[data-store-template='FASHION'] .store-section-head .section-link,
+body[data-store-template='FASHION'] .store-section-header a {
+  color: var(--fashion-ink);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .14em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+body[data-store-template='FASHION'] .store-section-head .section-link:hover,
+body[data-store-template='FASHION'] .store-section-header a:hover { color: var(--fashion-signature); }
+
+body[data-store-template='FASHION'] .store-category-banners {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--fashion-gap);
+}
+
+body[data-store-template='FASHION'] .store-category-banner,
+body[data-store-template='FASHION'] .store-category-banner:nth-child(1),
+body[data-store-template='FASHION'] .store-category-banner:nth-child(2),
+body[data-store-template='FASHION'] .store-category-banner:nth-child(3) {
+  grid-column: span 4;
+  min-height: 280px;
+  height: clamp(280px, 30vw, 440px);
+  border-radius: 0;
+  box-shadow: none;
+  background-color: var(--fashion-dark-soft);
+}
+
+body[data-store-template='FASHION'] .store-category-banner:nth-child(1) { grid-column: span 7; }
+body[data-store-template='FASHION'] .store-category-banner:nth-child(2) { grid-column: span 5; }
+body[data-store-template='FASHION'] .store-category-banner:nth-child(3) { grid-column: span 5; }
+body[data-store-template='FASHION'] .store-category-banner:nth-child(4) { grid-column: span 7; }
+
+body[data-store-template='FASHION'] .store-category-banner::before {
+  z-index: 0;
+  background: linear-gradient(0deg, rgba(26, 16, 23, .82), transparent 65%);
+}
+
+body[data-store-template='FASHION'] .store-category-banner img {
+  transition: transform 800ms var(--fashion-ease), filter 800ms var(--fashion-ease);
+}
+
+body[data-store-template='FASHION'] .store-category-banner:hover img,
+body[data-store-template='FASHION'] .store-category-banner:focus-visible img {
+  filter: saturate(1.12);
+  transform: scale(1.06);
+}
+
+body[data-store-template='FASHION'] .store-category-banner span {
+  padding: clamp(1rem, 2.5vw, 2rem);
+  color: #fff;
+  font-family: var(--fashion-display);
+  font-size: clamp(1.3rem, 2.5vw, 2.5rem);
+  font-weight: 400;
+  letter-spacing: -.04em;
+}
+
+body[data-store-template='FASHION'] .store-promotional-banner strong {
+  right: clamp(1rem, 2.5vw, 2rem);
+  bottom: clamp(3.5rem, 5vw, 5rem);
+  left: clamp(1rem, 2.5vw, 2rem);
+  color: #fff;
+  font-family: var(--fashion-display);
+  font-size: clamp(1.5rem, 3vw, 3rem);
+  font-weight: 400;
+  letter-spacing: -.05em;
+}
+
+body[data-store-template='FASHION'] .store-promotional-banner span { padding-bottom: 1.5rem; }
+
+/* ---------- Filters and products ---------- */
+
+body[data-store-template='FASHION'] .store-filters {
+  align-items: center;
+  margin: 0 0 2rem;
+  padding: .75rem 0;
+  border: 0;
+  border-top: 1px solid var(--fashion-line);
+  border-bottom: 1px solid var(--fashion-line);
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+body[data-store-template='FASHION'] .store-filters .topbar-search,
+body[data-store-template='FASHION'] .store-filters .select,
+body[data-store-template='FASHION'] .store-filters .input {
+  height: 46px;
+  border: 1px solid var(--fashion-line);
+  border-radius: 0;
+  background: var(--fashion-surface);
+}
+
+body[data-store-template='FASHION'] .store-filters .topbar-search:focus-within,
+body[data-store-template='FASHION'] .store-filters .select:focus {
+  border-color: var(--fashion-ink);
+  box-shadow: 0 0 0 3px var(--fashion-accent-soft);
+}
+
+body[data-store-template='FASHION'] .store-grid {
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: clamp(1.25rem, 2.5vw, 2.5rem) var(--fashion-gap);
+}
+
+body[data-store-template='FASHION'] .store-section { margin-bottom: clamp(4rem, 9vw, 9rem); }
+
+body[data-store-template='FASHION'] .store-section-header {
+  align-items: end;
+  margin-bottom: 1.25rem;
+  padding-bottom: .85rem;
+  border-bottom: 1px solid var(--fashion-ink);
+}
+
+body[data-store-template='FASHION'] .store-section-header h2 { font-size: clamp(1.6rem, 3vw, 2.8rem); }
+
+body[data-store-template='FASHION'] .store-product-card {
+  grid-column: span 3;
+  min-width: 0;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  transition: transform 450ms var(--fashion-ease);
+}
+
+body[data-store-template='FASHION'] .store-product-card:nth-child(5n + 1) { grid-column: span 6; }
+
+body[data-store-template='FASHION'] .store-product-card:hover,
+body[data-store-template='FASHION'] .store-product-card:focus-visible { transform: translateY(-5px); box-shadow: none; }
+
+body[data-store-template='FASHION'] .store-product-image {
+  aspect-ratio: 3 / 4;
+  border-radius: 0;
+  background: var(--fashion-surface-alt);
+}
+
+body[data-store-template='FASHION'] .store-product-card:nth-child(5n + 1) .store-product-image { aspect-ratio: 4 / 5; }
+body[data-store-template='FASHION'] .store-product-image img { transition: transform 800ms var(--fashion-ease), opacity 500ms ease; }
+body[data-store-template='FASHION'] .store-product-card:hover .store-product-image img { transform: scale(1.035); }
+body[data-store-template='FASHION'] .store-product-card:hover .store-product-image-secondary { opacity: 1; }
+
+body[data-store-template='FASHION'] .store-product-tag {
+  top: 12px;
+  right: 12px;
+  left: auto;
+  padding: 6px 9px;
+  border-radius: 0;
+  color: #fff;
+  background: var(--fashion-signature);
+  font-size: 9px;
+  letter-spacing: .12em;
+}
+
+body[data-store-template='FASHION'] .store-product-body { min-height: 132px; gap: .4rem; padding: 1rem 0; }
+body[data-store-template='FASHION'] .store-product-meta { color: var(--fashion-muted); font-size: 9px; letter-spacing: .17em; }
+body[data-store-template='FASHION'] .store-product-name { color: var(--fashion-ink); font-family: var(--fashion-display); font-size: clamp(1rem, 1.5vw, 1.25rem); font-weight: 400; letter-spacing: -.025em; }
+body[data-store-template='FASHION'] .store-product-price { color: var(--fashion-ink); font-size: 1rem; font-weight: 700; }
+body[data-store-template='FASHION'] .store-product-price .price-old { color: var(--fashion-muted); }
+body[data-store-template='FASHION'] .store-card-swatch { width: 15px; height: 15px; }
+
+body[data-store-template='FASHION'] .store-benefits {
+  margin: clamp(4rem, 9vw, 9rem) calc(clamp(1rem, 3vw, 3.75rem) * -1) 0;
+  grid-template-columns: repeat(4, 1fr);
+  border: 0;
+  border-top: 1px solid rgba(255,255,255,.16);
+  border-radius: 0;
+  background: var(--fashion-dark);
+}
+
+body[data-store-template='FASHION'] .store-benefit { min-height: 200px; padding: clamp(1.25rem, 3vw, 2.5rem); border-right-color: rgba(255,255,255,.16); }
+body[data-store-template='FASHION'] .store-benefit-icon { width: 34px; height: 34px; margin-bottom: 1.5rem; border-radius: 50%; color: #fff; background: var(--fashion-signature); }
+body[data-store-template='FASHION'] .store-benefit h4 { color: #fff; font-family: var(--fashion-display); font-size: 1.15rem; font-weight: 400; }
+body[data-store-template='FASHION'] .store-benefit p { color: #cfbfc8; }
+
+/* ---------- Product detail ---------- */
+
+body[data-store-template='FASHION'] .store-detail { grid-template-columns: minmax(0, 1.15fr) minmax(320px, .85fr); gap: clamp(1.5rem, 6vw, 6rem); align-items: start; padding-top: clamp(2rem, 5vw, 5rem); }
+body[data-store-template='FASHION'][data-store-page='product'] .store-detail > :first-child { position: sticky; top: 96px; }
+body[data-store-template='FASHION'] .store-detail-main-image { aspect-ratio: 4 / 5; border-radius: 0; background: var(--fashion-surface-alt); }
+body[data-store-template='FASHION'] .store-detail-main-image img { transition: opacity 280ms ease; }
+body[data-store-template='FASHION'] .store-detail-thumbnails { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--fashion-gap); margin-top: var(--fashion-gap); }
+body[data-store-template='FASHION'] .store-detail-thumbnail { width: auto; height: auto; aspect-ratio: 3 / 4; border: 1px solid transparent; border-radius: 0; background: var(--fashion-surface-alt); transition: border-color 220ms ease, opacity 220ms ease, transform 220ms ease; }
+body[data-store-template='FASHION'] .store-detail-thumbnail:hover { transform: translateY(-3px); }
+body[data-store-template='FASHION'] .store-detail-thumbnail.is-selected,
+body[data-store-template='FASHION'] .store-detail-thumbnail:focus-visible { border-color: var(--fashion-signature); }
+body[data-store-template='FASHION'] .store-detail > :last-child { padding: clamp(1rem, 3vw, 3rem) 0; border: 0; border-top: 4px solid var(--fashion-signature); border-radius: 0; background: transparent; }
+body[data-store-template='FASHION'] .store-detail > :last-child .store-product-meta { color: var(--fashion-muted); font-size: 10px; letter-spacing: .2em; }
+body[data-store-template='FASHION'] .store-detail > :last-child h1 { margin-top: .6rem !important; color: var(--fashion-ink); font-family: var(--fashion-display); font-size: clamp(2.2rem, 5vw, 5.4rem); font-weight: 400; letter-spacing: -.07em; line-height: .9; }
+body[data-store-template='FASHION'] .store-detail > :last-child .store-product-price { margin: 1.5rem 0 2rem !important; font-size: 1.25rem !important; }
+body[data-store-template='FASHION'] .store-detail > :last-child .field-label { color: var(--fashion-ink); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; }
+body[data-store-template='FASHION'] .store-swatch { border-radius: 0; background: var(--fashion-surface); }
+body[data-store-template='FASHION'] .store-swatch[aria-pressed='true'] { color: var(--fashion-ink); border-color: var(--fashion-signature); background: var(--fashion-signature-soft); }
+body[data-store-template='FASHION'] .store-detail #quantity { border-radius: 0; }
+body[data-store-template='FASHION'] .store-detail #btn-add-cart { flex: 1; min-width: 180px; }
+
+/* ---------- Cart, checkout, account and status ---------- */
+
+body[data-store-template='FASHION'] .store-steps { color: var(--fashion-muted); }
+body[data-store-template='FASHION'] .store-step[data-active='true'] { color: var(--fashion-ink); }
+body[data-store-template='FASHION'] .store-step[data-active='true'] .store-step-dot { border-color: var(--fashion-signature); background: var(--fashion-signature); }
+body[data-store-template='FASHION'] .store-step-dot { border-radius: 50%; }
+body[data-store-template='FASHION'] .store-cart-item { border-bottom-color: var(--fashion-line); }
+body[data-store-template='FASHION'] .store-cart-item img { border-radius: 0; }
+body[data-store-template='FASHION'] .store-summary,
+body[data-store-template='FASHION'] .store-auth-card { border: 1px solid var(--fashion-line); border-top: 4px solid var(--fashion-signature); border-radius: 0; box-shadow: 0 18px 45px rgba(36, 25, 35, .07); background: var(--fashion-surface); }
+body[data-store-template='FASHION'] .store-payment-option { border-radius: 0; }
+body[data-store-template='FASHION'] .store-payment-option[data-selected='true'] { border-color: var(--fashion-signature); background: var(--fashion-signature-soft); }
+body[data-store-template='FASHION'] .store-auth-page { min-height: 65vh; }
+body[data-store-template='FASHION'] .store-auth-card h1 { color: var(--fashion-ink); font-family: var(--fashion-display); font-size: 3rem; font-weight: 400; letter-spacing: -.06em; }
+body[data-store-template='FASHION'] .store-footer { margin-top: 0; color: #d2c1ca; background: var(--fashion-dark); }
+body[data-store-template='FASHION'] .store-footer-top { max-width: var(--fashion-container); padding-top: clamp(3rem, 7vw, 7rem); padding-bottom: clamp(3rem, 7vw, 7rem); }
+body[data-store-template='FASHION'] .store-footer-brand,
+body[data-store-template='FASHION'] .store-footer-top h3 { color: #fff; font-family: var(--fashion-display); font-weight: 400; }
+body[data-store-template='FASHION'] .store-footer-brand { font-size: 2rem; }
+body[data-store-template='FASHION'] .store-footer-links a { color: #d2c1ca; transition: color 220ms ease, transform 220ms ease; }
+body[data-store-template='FASHION'] .store-footer-links a:hover { color: #fff; transform: translateX(4px); }
+body[data-store-template='FASHION'] .store-footer-copy { color: #9e8995; border-top-color: rgba(255,255,255,.16); }
+
+/* ---------- Motion and responsive behavior ---------- */
+
+body[data-store-template='FASHION'] .store-section,
+body[data-store-template='FASHION'] .store-category-banner,
+body[data-store-template='FASHION'] .store-benefits { opacity: 0; transform: translateY(22px); transition: opacity 650ms ease, transform 750ms var(--fashion-ease); }
+body[data-store-template='FASHION'] .store-section.is-visible,
+body[data-store-template='FASHION'] .store-category-banner.is-visible,
+body[data-store-template='FASHION'] .store-benefits.is-visible { opacity: 1; transform: none; }
+body[data-store-template='FASHION'] :is(button, a, input, select, textarea):focus-visible { outline: 3px solid color-mix(in srgb, var(--fashion-accent) 45%, white); outline-offset: 3px; }
+
+@media (max-width: 1024px) {
+  body[data-store-template='FASHION'] .store-product-card,
+  body[data-store-template='FASHION'] .store-product-card:nth-child(5n + 1) { grid-column: span 4; }
+  body[data-store-template='FASHION'] .store-category-banner,
+  body[data-store-template='FASHION'] .store-category-banner:nth-child(1),
+  body[data-store-template='FASHION'] .store-category-banner:nth-child(2),
+  body[data-store-template='FASHION'] .store-category-banner:nth-child(3),
+  body[data-store-template='FASHION'] .store-category-banner:nth-child(4) { grid-column: span 6; }
+}
+
+@media (max-width: 767px) {
+  body[data-store-template='FASHION'] .store-header { height: 68px; min-height: 68px; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: 68px; gap: 0; padding: 0 1rem; }
+  body[data-store-template='FASHION'] .store-header.is-scrolled { height: 68px; min-height: 68px; }
+  body[data-store-template='FASHION'] .store-brand { grid-column: 1; grid-row: 1; justify-content: flex-start; max-width: calc(100% - 100px); font-size: 1rem; letter-spacing: .07em; }
+  body[data-store-template='FASHION'] .store-brand-logobox,
+  body[data-store-template='FASHION'] .store-brand img { width: 28px; height: 28px; }
+  body[data-store-template='FASHION'] .store-header-actions { grid-column: 2; grid-row: 1; }
+  body[data-store-template='FASHION'] .store-header-actions .store-icon-btn { width: 38px; height: 38px; }
+  body[data-store-template='FASHION'] .store-mobile-menu-toggle { display: flex; align-items: center; justify-content: center; flex-direction: column; width: 42px; height: 42px; padding: 9px; border: 1px solid var(--fashion-line); border-radius: 50%; color: var(--fashion-ink); background: transparent; }
+  body[data-store-template='FASHION'] .store-nav,
+  body[data-store-template='FASHION'] .store-header.is-scrolled .store-nav { position: absolute; top: 68px; right: 0; left: 0; grid-column: 1 / -1; grid-row: auto; display: none; align-items: stretch; flex-direction: column; gap: 0; padding: .75rem 1rem 1rem; border-top: 1px solid var(--fashion-line); background: rgba(251,247,248,.98); box-shadow: 0 18px 35px rgba(36,25,35,.14); }
+  body[data-store-template='FASHION'] .store-nav.is-open { display: flex; }
+  body[data-store-template='FASHION'] .store-nav a { min-height: 52px; border-bottom: 1px solid var(--fashion-line); font-size: 12px; }
+  body[data-store-template='FASHION'] .store-nav a::after { bottom: 0; }
+  body[data-store-template='FASHION'] .store-promo-bar { padding: 8px .6rem; font-size: 8px; letter-spacing: .1em; }
+  body[data-store-template='FASHION'] .store-main { padding: 0 1rem; }
+  body[data-store-template='FASHION'] .store-hero { min-height: 590px; margin: 0 -1rem 4rem; }
+  body[data-store-template='FASHION'] .store-hero-media { object-position: 58% center; }
+  body[data-store-template='FASHION'] .store-hero-content { max-width: 100%; padding: 2rem 1.25rem 2.5rem; }
+  body[data-store-template='FASHION'] .store-hero h1 { max-width: 7ch; font-size: clamp(3.6rem, 18vw, 6rem); }
+  body[data-store-template='FASHION'] .store-hero::after { right: 5%; top: 31%; width: 55vw; height: 44%; }
+  body[data-store-template='FASHION'] .store-main > :is(.store-section-head, .store-section-header) { margin-top: 4rem; }
+  body[data-store-template='FASHION'] .store-category-banners { display: flex; overflow-x: auto; gap: .75rem; padding-bottom: .5rem; scroll-snap-type: x mandatory; }
+  body[data-store-template='FASHION'] .store-category-banner,
+  body[data-store-template='FASHION'] .store-category-banner:nth-child(n) { min-width: min(79vw, 310px); height: 390px; min-height: 0; grid-column: auto; scroll-snap-align: start; }
+  body[data-store-template='FASHION'] .store-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem .75rem; }
+  body[data-store-template='FASHION'] .store-product-card,
+  body[data-store-template='FASHION'] .store-product-card:nth-child(5n + 1) { grid-column: auto; }
+  body[data-store-template='FASHION'] .store-product-image,
+  body[data-store-template='FASHION'] .store-product-card:nth-child(5n + 1) .store-product-image { aspect-ratio: 3 / 4; }
+  body[data-store-template='FASHION'] .store-product-body { min-height: 120px; padding-top: .75rem; }
+  body[data-store-template='FASHION'] .store-product-name { font-size: 1rem; }
+  body[data-store-template='FASHION'] .store-benefits { display: block; margin: 4rem -1rem 0; }
+  body[data-store-template='FASHION'] .store-benefit { min-height: auto; border-right: 0; border-bottom: 1px solid rgba(255,255,255,.16); }
+  body[data-store-template='FASHION'] .store-benefit:last-child { border-bottom: 0; }
+  body[data-store-template='FASHION'] .store-detail { display: block; padding-top: 1.5rem; }
+  body[data-store-template='FASHION'][data-store-page='product'] .store-detail > :first-child { position: static; }
+  body[data-store-template='FASHION'] .store-detail-main-image { aspect-ratio: 4 / 5; }
+  body[data-store-template='FASHION'] .store-detail-thumbnails { display: flex; overflow-x: auto; gap: .5rem; }
+  body[data-store-template='FASHION'] .store-detail-thumbnail { flex: 0 0 82px; }
+  body[data-store-template='FASHION'] .store-detail > :last-child { padding: 2rem 0 1rem; }
+  body[data-store-template='FASHION'] .store-detail > :last-child h1 { font-size: clamp(2.5rem, 14vw, 4.5rem); }
+  body[data-store-template='FASHION'] .store-detail #btn-add-cart { width: 100%; flex-basis: 100%; }
+  body[data-store-template='FASHION'] .store-footer-top { padding-right: 1rem; padding-left: 1rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body[data-store-template='FASHION'] .store-section,
+  body[data-store-template='FASHION'] .store-category-banner,
+  body[data-store-template='FASHION'] .store-benefits { opacity: 1; transform: none; transition: none; }
+  body[data-store-template='FASHION'] .store-hero-media { transition: none; }
+}
+
+/* ---------- Vistas de operación: editorial también después del catálogo ---------- */
+body[data-store-template='FASHION'][data-store-page='cart'] .store-cart-item {
+  padding-top: 1.5rem;
+  padding-bottom: 1.5rem;
+}
+
+body[data-store-template='FASHION'][data-store-page='cart'] .store-cart-item:hover {
+  background: var(--fashion-signature-soft);
+}
+
+body[data-store-template='FASHION'][data-store-page='checkout'] #checkout-form {
+  border-top: 0;
+  border-left: 5px solid var(--fashion-signature);
+}
+
+body[data-store-template='FASHION'][data-store-page='checkout'] #order-summary {
+  border-top: 0;
+  border-left: 5px solid var(--fashion-signature);
+}
+
+body[data-store-template='FASHION'][data-store-page='login'] .store-auth-card,
+body[data-store-template='FASHION'][data-store-page='register'] .store-auth-card {
+  border-top: 0;
+  border-left: 5px solid var(--fashion-signature);
+}
+
+body[data-store-template='FASHION'][data-store-page='orders'] #orders-list .card {
+  border-left: 5px solid var(--fashion-signature);
+}
+
+@media (min-width: 861px) {
+  body[data-store-template='FASHION'] .store-header.is-scrolled {
+    height: 116px;
+    min-height: 116px;
+    grid-template-rows: 72px 44px;
+  }
+
+  body[data-store-template='FASHION'] .store-header.is-scrolled .store-nav {
+    display: flex;
+  }
+}
+
+body[data-store-template='FASHION'][data-store-page='checkout'] #checkout-form .input,
+body[data-store-template='FASHION'][data-store-page='checkout'] #checkout-form .select,
+body[data-store-template='FASHION'][data-store-page='login'] .store-auth-card .input,
+body[data-store-template='FASHION'][data-store-page='register'] .store-auth-card .input {
+  border-radius: 0;
+  border-color: var(--fashion-line);
+}
+
+body[data-store-template='FASHION'][data-store-page='checkout'] #checkout-form .input:focus,
+body[data-store-template='FASHION'][data-store-page='checkout'] #checkout-form .select:focus,
+body[data-store-template='FASHION'][data-store-page='login'] .store-auth-card .input:focus,
+body[data-store-template='FASHION'][data-store-page='register'] .store-auth-card .input:focus {
+  border-color: var(--fashion-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--fashion-accent) 16%, white);
+}
+
+/* ---------- Composición completa del flujo Fashion ---------- */
+body[data-store-template='FASHION'][data-store-page='cart'] .store-main {
+  max-width: 1080px;
+}
+
+body[data-store-template='FASHION'][data-store-page='cart'] #cart-items {
+  border-top: 1px solid var(--fashion-ink);
+  border-bottom: 1px solid var(--fashion-line);
+}
+
+body[data-store-template='FASHION'][data-store-page='cart'] .store-cart-item {
+  grid-template-columns: 112px minmax(0, 1fr) auto;
+  padding-top: 1.75rem;
+  padding-bottom: 1.75rem;
+}
+
+body[data-store-template='FASHION'][data-store-page='cart'] .store-cart-item img {
+  width: 112px;
+  height: 140px;
+}
+
+body[data-store-template='FASHION'][data-store-page='cart'] #cart-summary {
+  margin-top: 2.5rem;
+}
+
+body[data-store-template='FASHION'][data-store-page='cart'] #cart-summary .store-summary {
+  width: min(100%, 440px);
+  border-top: 0;
+  border-right: 0;
+  border-bottom: 1px solid var(--fashion-ink);
+  border-left: 5px solid var(--fashion-signature);
+  box-shadow: none;
+}
+
+body[data-store-template='FASHION'][data-store-page='checkout'] .store-detail {
+  grid-template-columns: minmax(0, 1fr) minmax(280px, .62fr);
+  gap: clamp(2rem, 7vw, 7rem);
+}
+
+body[data-store-template='FASHION'][data-store-page='checkout'] #checkout-form {
+  padding: 0 0 1.5rem;
+  border: 0;
+  border-top: 1px solid var(--fashion-ink);
+  border-bottom: 1px solid var(--fashion-line);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+body[data-store-template='FASHION'][data-store-page='checkout'] #checkout-form::before {
+  content: 'THE DELIVERY EDIT / 01';
+  display: block;
+  padding: 1rem 0 1.25rem;
+  color: var(--fashion-signature);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .2em;
+}
+
+body[data-store-template='FASHION'][data-store-page='checkout'] #order-summary {
+  top: 132px;
+  padding: 1.5rem;
+  border: 0;
+  border-top: 1px solid var(--fashion-ink);
+  border-bottom: 1px solid var(--fashion-ink);
+  background: var(--fashion-dark);
+  color: #fff;
+  box-shadow: none;
+}
+
+body[data-store-template='FASHION'][data-store-page='checkout'] #order-summary h3,
+body[data-store-template='FASHION'][data-store-page='checkout'] #order-summary .store-summary-total {
+  color: #fff;
+  font-family: var(--fashion-display);
+  font-weight: 400;
+}
+
+body[data-store-template='FASHION'][data-store-page='checkout'] #order-summary .store-summary-row {
+  border-color: rgba(255,255,255,.18);
+}
+
+body[data-store-template='FASHION'][data-store-page='checkout'] #order-summary .store-product-meta {
+  color: #d2c1ca;
+}
+
+body[data-store-template='FASHION'][data-store-page='orders'] #orders-list .card {
+  border-top: 1px solid var(--fashion-ink);
+  border-bottom: 0;
+  border-right: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+body[data-store-template='FASHION'][data-store-page='orders'] #orders-list .card:last-child {
+  border-bottom: 1px solid var(--fashion-ink);
+}
+
+body[data-store-template='FASHION'] .toast {
+  border-color: var(--fashion-line);
+  border-left-color: var(--fashion-signature);
+  border-radius: 0;
+  background: var(--fashion-dark);
+  color: #fff;
+}
+
+body[data-store-template='FASHION'] .toast-message {
+  color: #d2c1ca;
+}
+
+@media (max-width: 900px) {
+  body[data-store-template='FASHION'][data-store-page='checkout'] .store-detail {
+    grid-template-columns: 1fr;
+  }
+
+  body[data-store-template='FASHION'][data-store-page='checkout'] #order-summary {
+    position: static;
+  }
+}
+
+@media (max-width: 640px) {
+  body[data-store-template='FASHION'][data-store-page='cart'] .store-cart-item {
+    grid-template-columns: 72px minmax(0, 1fr);
+  }
+
+  body[data-store-template='FASHION'][data-store-page='cart'] .store-cart-item img {
+    width: 72px;
+    height: 90px;
+  }
+}

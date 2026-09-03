@@ -14,25 +14,35 @@
 </head>
 <body class="store-body">
   <a class="skip-link" href="#store-main">Saltar al contenido</a>
-  <div class="store-promo-bar">Envíos a todo el Perú · Yape, Plin o contraentrega en Huacho</div>
+  <div class="store-promo-bar">Envíos a todo el Perú &nbsp;·&nbsp; Yape &nbsp;·&nbsp; Plin &nbsp;·&nbsp; Contraentrega en Huacho</div>
   <header class="store-header" id="store-header"></header>
 
-  <section class="store-hero">
-    <span class="store-hero-eyebrow">Nueva colección</span>
-    <h1>Ropa y estilo urbano</h1>
-    <p>Compra online y recíbelo donde estés — pago por Yape, Plin, transferencia o contraentrega en Huacho.</p>
-    <div class="store-hero-actions">
-      <a class="btn btn-primary btn-xl" href="#catalog-sections">Ver catálogo</a>
-    </div>
-  </section>
-
   <main class="store-main" id="store-main">
+    <section class="store-hero" id="store-hero" hidden>
+      <img class="store-hero-media" id="store-hero-image" alt="" loading="eager" />
+      <div class="store-hero-content">
+        <span class="store-hero-badge" id="store-hero-badge"></span>
+        <h1 id="store-hero-title"></h1>
+        <p id="store-hero-description"></p>
+        <a class="btn btn-primary" id="store-hero-link" href="#catalog-sections">Explorar catálogo →</a>
+      </div>
+    </section>
+
+    <div class="store-section-head">
+      <h2>Explora por categoría</h2>
+      <a class="section-link" href="#catalog-sections">Ver todo →</a>
+    </div>
     <div class="store-category-banners" id="category-banners"></div>
 
+    <div class="store-section-head">
+      <h2>Catálogo</h2>
+    </div>
+
     <div class="store-filters">
-      <label class="topbar-search" style="background: var(--color-surface); border: 1px solid var(--color-border-strong); border-radius: var(--radius-md); padding: 0 var(--space-3); height: 38px; display:flex; align-items:center; gap:var(--space-2); flex:1; min-width:220px;">
+      <label class="topbar-search">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg>
-        <input type="search" id="filter-search" placeholder="Buscar producto…" aria-label="Buscar productos" style="border:none; outline:none; flex:1; font: inherit; background:transparent;" />
+        <input type="search" id="filter-search" list="filter-search-suggestions" placeholder="Buscar producto…" aria-label="Buscar productos" />
+        <datalist id="filter-search-suggestions"></datalist>
       </label>
       <select class="select" id="filter-category" aria-label="Filtrar por categoría">
         <option value="">Todas las categorías</option>
@@ -50,6 +60,37 @@
     <div id="catalog-flat" hidden>
       <div class="store-grid" id="product-grid"></div>
       <div class="pagination-bar" id="pagination"></div>
+    </div>
+
+    <div class="store-benefits">
+      <div class="store-benefit">
+        <div class="store-benefit-icon">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="1.6"/><circle cx="17.5" cy="18" r="1.6"/></svg>
+        </div>
+        <h4>Envíos a todo el Perú</h4>
+        <p>Recibe tus productos de forma segura estés donde estés.</p>
+      </div>
+      <div class="store-benefit">
+        <div class="store-benefit-icon">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h4>Compra segura</h4>
+        <p>Yape, Plin, transferencia o contraentrega — tú eliges.</p>
+      </div>
+      <div class="store-benefit">
+        <div class="store-benefit-icon">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3 6 6 1-4.5 4.3L17 20l-5-3-5 3 1.5-6.7L4 9l6-1z" stroke-linejoin="round"/></svg>
+        </div>
+        <h4>Productos seleccionados</h4>
+        <p>Trabajamos con productos cuidadosamente seleccionados.</p>
+      </div>
+      <div class="store-benefit">
+        <div class="store-benefit-icon">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 12h8M8 8h8M8 16h5" stroke-linecap="round"/></svg>
+        </div>
+        <h4>Atención personalizada</h4>
+        <p>Estamos disponibles para ayudarte antes y después de tu compra.</p>
+      </div>
     </div>
   </main>
 

@@ -7,8 +7,7 @@ import java.math.BigDecimal;
 public record VarianteBusquedaResponse(
         Long variantId,
         String productName,
-        String colorName,
-        String sizeName,
+        String variantLabel,
         String sku,
         String barcode,
         BigDecimal price,

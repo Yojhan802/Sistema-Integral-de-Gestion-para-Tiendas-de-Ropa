@@ -1,0 +1,9 @@
+# Override SOLO para pruebas de carga locales (Fase 5 del plan de multi-tenant) — expone el
+# backend directo al host (bypass de nginx) para que k6 le pegue sin pasar por el frontend.
+# Uso: docker compose -f docker-compose.yml -f docker-compose.loadtest.yml up -d mysql backend
+# NUNCA usar este override en un despliegue real (el backend no debe quedar público sin nginx
+# delante — CORS/TLS/rate-limiting de verdad los pone el reverse proxy, no esta app).
+services:
+  backend:
+    ports:
+      - "8090:8080"

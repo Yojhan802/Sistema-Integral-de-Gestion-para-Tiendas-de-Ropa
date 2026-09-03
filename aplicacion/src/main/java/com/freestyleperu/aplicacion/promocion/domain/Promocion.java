@@ -12,6 +12,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import lombok.Getter;
@@ -29,10 +30,10 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "promotions")
+@Table(name = "promotions", uniqueConstraints = @UniqueConstraint(columnNames = { "tenant_id", "code" }))
 public class Promocion extends BaseEntity {
 
-    @Column(name = "code", nullable = false, unique = true, length = 30)
+    @Column(name = "code", nullable = false, length = 30)
     private String code;
 
     @Column(name = "name", nullable = false, length = 150)

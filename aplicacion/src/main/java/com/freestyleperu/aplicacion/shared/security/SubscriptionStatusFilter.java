@@ -37,7 +37,9 @@ public class SubscriptionStatusFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
-        if (RUTAS_EXENTAS.contains(request.getRequestURI()) || planGate.suscripcionActiva()) {
+        if (RUTAS_EXENTAS.contains(request.getRequestURI())
+                || request.getRequestURI().startsWith("/api/platform/")
+                || planGate.suscripcionActiva()) {
             chain.doFilter(request, response);
             return;
         }

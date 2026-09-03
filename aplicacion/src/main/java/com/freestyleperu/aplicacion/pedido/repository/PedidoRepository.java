@@ -20,7 +20,7 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long> {
               AND (:status IS NULL OR p.status = :status)
               AND (:from IS NULL OR p.createdAt >= :from)
               AND (:to IS NULL OR p.createdAt <= :to)
-            ORDER BY p.createdAt DESC
+            ORDER BY p.createdAt DESC, p.id DESC
             """)
     Page<Pedido> buscar(
             @Param("customerId") Long customerId,

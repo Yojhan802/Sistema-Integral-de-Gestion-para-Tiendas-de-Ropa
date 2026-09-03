@@ -1,0 +1,33 @@
+body[data-store-template='CATALOG'] {
+  --template-ink: #1f2937;
+  --template-muted: #667085;
+  --template-surface-alt: #f3f4f6;
+  --template-line: #d0d5dd;
+  --template-radius: 8px;
+  --template-card-radius: 8px;
+  --template-container: 1540px;
+  --template-gap: 1rem;
+}
+
+body[data-store-template='CATALOG'] .store-promo-bar { background:#344054; text-align:left; padding-left:clamp(1rem,4vw,4rem); }
+body[data-store-template='CATALOG'] .store-header { position:relative; border-bottom:2px solid #344054; }
+body[data-store-template='CATALOG'] .store-brand-logobox { border-radius:6px; }
+body[data-store-template='CATALOG'] .store-hero { min-height:300px; margin-bottom:2rem; border-radius:8px; background:linear-gradient(100deg,#344054,#98a2b3); }
+body[data-store-template='CATALOG'] .store-hero-content { padding:2.5rem; }
+body[data-store-template='CATALOG'] .store-hero h1 { max-width:20ch; font-size:clamp(2rem,4vw,4rem); }
+body[data-store-template='CATALOG'] .store-category-banners { grid-template-columns:repeat(6,minmax(0,1fr)); }
+body[data-store-template='CATALOG'] .store-category-banner,
+body[data-store-template='CATALOG'] .store-category-banner:nth-child(1),
+body[data-store-template='CATALOG'] .store-category-banner:nth-child(2),
+body[data-store-template='CATALOG'] .store-category-banner:nth-child(3) { grid-column:span 2; min-height:150px; border-radius:8px; }
+body[data-store-template='CATALOG'] .store-filters { position:sticky; top:0; z-index:10; padding: .75rem; border:1px solid var(--template-line); border-radius:8px; background:#fff; }
+body[data-store-template='CATALOG'] .store-grid { grid-template-columns:repeat(5,minmax(0,1fr)); }
+body[data-store-template='CATALOG'] .store-product-card { border-radius:8px; box-shadow:0 1px 2px rgba(16,24,40,.08); }
+body[data-store-template='CATALOG'] .store-product-card:hover { transform:none; box-shadow:0 0 0 2px var(--brand-accent); }
+body[data-store-template='CATALOG'] .store-product-image { aspect-ratio:1 / 1; }
+body[data-store-template='CATALOG'] .store-product-body { min-height:118px; padding:.75rem; }
+body[data-store-template='CATALOG'] .store-product-name { font-size:.85rem; font-weight:600; }
+body[data-store-template='CATALOG'] .store-product-price { font-size:.95rem; }
+
+@media (max-width:1200px) { body[data-store-template='CATALOG'] .store-grid { grid-template-columns:repeat(4,minmax(0,1fr)); } }
+@media (max-width:767px) { body[data-store-template='CATALOG'] .store-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }

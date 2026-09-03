@@ -6,7 +6,7 @@ import { statusBadge } from '../components/status-badge.js';
 import { createVariantPicker } from '../components/variant-picker.js';
 import { openModal, closeModal } from '../components/modal.js';
 import { showToast } from '../components/toast.js';
-import { formatDateLong } from '../core/format.js';
+import { formatDateLong, escapeHtml } from '../core/format.js';
 import { debounce } from '../core/debounce.js';
 
 const MOVEMENT_LABELS = {
@@ -69,10 +69,10 @@ async function cargarStock() {
     body.innerHTML = page.content.length
       ? page.content.map((item) => `
           <tr>
-            <td class="table-cell-primary">${item.productName}</td>
-            <td>${item.colorName} / ${item.sizeName}</td>
-            <td class="mono">${item.sku}</td>
-            <td class="mono">${item.barcode ?? '—'}</td>
+            <td class="table-cell-primary">${escapeHtml(item.productName)}</td>
+            <td>${escapeHtml(item.variantLabel)}</td>
+            <td class="mono">${escapeHtml(item.sku)}</td>
+            <td class="mono">${item.barcode ? escapeHtml(item.barcode) : '—'}</td>
             <td>${item.stock}</td>
             <td>${item.minStock}</td>
             <td>${statusBadge(item.status)}</td>
@@ -93,9 +93,9 @@ async function cargarStockBajo() {
     body.innerHTML = items.length
       ? items.map((item) => `
           <tr>
-            <td class="table-cell-primary">${item.productName}</td>
-            <td>${item.colorName} / ${item.sizeName}</td>
-            <td class="mono">${item.sku}</td>
+            <td class="table-cell-primary">${escapeHtml(item.productName)}</td>
+            <td>${escapeHtml(item.variantLabel)}</td>
+            <td class="mono">${escapeHtml(item.sku)}</td>
             <td style="color:var(--color-warning-text); font-weight:600;">${item.stock}</td>
             <td>${item.minStock}</td>
             <td>${Math.max(item.minStock - item.stock, 0)}</td>
@@ -115,10 +115,10 @@ async function cargarAgotados() {
     body.innerHTML = items.length
       ? items.map((item) => `
           <tr>
-            <td class="table-cell-primary">${item.productName}</td>
-            <td>${item.colorName} / ${item.sizeName}</td>
-            <td class="mono">${item.sku}</td>
-            <td class="mono">${item.barcode ?? '—'}</td>
+            <td class="table-cell-primary">${escapeHtml(item.productName)}</td>
+            <td>${escapeHtml(item.variantLabel)}</td>
+            <td class="mono">${escapeHtml(item.sku)}</td>
+            <td class="mono">${item.barcode ? escapeHtml(item.barcode) : '—'}</td>
           </tr>
         `).join('')
       : vacio(4, 'No hay variantes agotadas.');
@@ -141,11 +141,11 @@ async function cargarMovimientos() {
             <tr>
               <td class="table-cell-muted">${formatDateLong(m.createdAt)}</td>
               <td><span class="badge ${meta.cls}">${meta.label}</span></td>
-              <td>${m.productName} <span class="table-cell-muted mono">${m.variantSku}</span></td>
+              <td>${escapeHtml(m.productName)} <span class="table-cell-muted mono">${escapeHtml(m.variantSku)}</span></td>
               <td class="mono" style="color:${m.quantity > 0 ? 'var(--color-success-text)' : 'var(--color-danger-text)'};">${signo}${m.quantity}</td>
               <td class="mono">${m.stockBefore} → ${m.stockAfter}</td>
-              <td>${m.reason ?? '—'}</td>
-              <td>${m.username}</td>
+              <td>${m.reason ? escapeHtml(m.reason) : '—'}</td>
+              <td>${escapeHtml(m.username)}</td>
             </tr>
           `;
         }).join('')

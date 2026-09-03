@@ -1,11 +1,10 @@
 package com.freestyleperu.aplicacion.tienda.dto.response;
 
+import java.util.List;
+
 public record PublicVarianteResponse(
         Long variantId,
-        Long colorId,
-        String colorName,
-        String colorHex,
-        Long sizeId,
-        String sizeName,
+        String variantLabel,
+        List<PublicAttributeValueResponse> attributes,
         boolean inStock) {
 }

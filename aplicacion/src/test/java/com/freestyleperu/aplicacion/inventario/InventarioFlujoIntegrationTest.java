@@ -3,12 +3,9 @@ package com.freestyleperu.aplicacion.inventario;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.freestyleperu.aplicacion.catalogo.domain.AttributeValue;
 import com.freestyleperu.aplicacion.catalogo.domain.Category;
-import com.freestyleperu.aplicacion.catalogo.domain.Color;
-import com.freestyleperu.aplicacion.catalogo.domain.Size;
 import com.freestyleperu.aplicacion.catalogo.repository.CategoryRepository;
-import com.freestyleperu.aplicacion.catalogo.repository.ColorRepository;
-import com.freestyleperu.aplicacion.catalogo.repository.SizeRepository;
 import com.freestyleperu.aplicacion.inventario.domain.Branch;
 import com.freestyleperu.aplicacion.inventario.domain.MovementType;
 import com.freestyleperu.aplicacion.inventario.domain.Warehouse;
@@ -20,6 +17,7 @@ import com.freestyleperu.aplicacion.inventario.repository.BranchRepository;
 import com.freestyleperu.aplicacion.inventario.repository.InventoryMovementRepository;
 import com.freestyleperu.aplicacion.inventario.repository.WarehouseRepository;
 import com.freestyleperu.aplicacion.inventario.service.InventarioService;
+import com.freestyleperu.aplicacion.producto.AtributoTestFixture;
 import com.freestyleperu.aplicacion.producto.dto.request.CrearProductoRequest;
 import com.freestyleperu.aplicacion.producto.dto.request.CrearVarianteRequest;
 import com.freestyleperu.aplicacion.producto.dto.response.ProductoDetalleResponse;
@@ -35,6 +33,7 @@ import com.freestyleperu.aplicacion.usuario.repository.RolRepository;
 import com.freestyleperu.aplicacion.usuario.repository.UsuarioRepository;
 import java.math.BigDecimal;
 import java.util.HashSet;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -48,8 +47,7 @@ import org.springframework.transaction.annotation.Transactional;
 class InventarioFlujoIntegrationTest {
 
     @Autowired private CategoryRepository categoryRepository;
-    @Autowired private ColorRepository colorRepository;
-    @Autowired private SizeRepository sizeRepository;
+    @Autowired private AtributoTestFixture atributos;
     @Autowired private BranchRepository branchRepository;
     @Autowired private WarehouseRepository warehouseRepository;
     @Autowired private UsuarioRepository usuarioRepository;
@@ -66,14 +64,14 @@ class InventarioFlujoIntegrationTest {
         Long userId = nuevoUsuario().getId();
 
         Category categoria = nuevaCategoria("Casacas");
-        Color negro = nuevoColor("Negro");
-        Size talleL = nuevaTalla("L", (short) 4);
+        AttributeValue negro = atributos.color("Negro");
+        AttributeValue talleL = atributos.talla("L", (short) 4);
 
         ProductoDetalleResponse producto = productoService.crear(new CrearProductoRequest(
                 null, null, "Casaca Denim", categoria.getId(), null, null, null, null, null,
                 new BigDecimal("129.90"), null));
         VarianteResponse variante = varianteService.crear(producto.id(),
-                new CrearVarianteRequest(negro.getId(), talleL.getId(), null, null, 0, 2, false));
+                new CrearVarianteRequest(List.of(negro.getId(), talleL.getId()), null, null, 0, 2, false));
 
         // Entrada: 0 -> 20
         MovimientoResponse entrada = inventarioService.registrarEntrada(
@@ -154,17 +152,4 @@ class InventarioFlujoIntegrationTest {
         return categoryRepository.save(category);
     }
 
-    private Color nuevoColor(String nombre) {
-        Color color = new Color();
-        color.setName(nombre);
-        color.setHexCode("#000000");
-        return colorRepository.save(color);
-    }
-
-    private Size nuevaTalla(String nombre, short orden) {
-        Size size = new Size();
-        size.setName(nombre);
-        size.setSortOrder(orden);
-        return sizeRepository.save(size);
-    }
 }

@@ -81,7 +81,13 @@ export function openProductoForm({ catalog, producto = null, onSaved }) {
             <input class="input" id="pf-fit" maxlength="100" placeholder="Ej. True to size" value="${producto?.fit ?? ''}" />
           </div>
           <div class="field field-span-2">
-            <label class="field-label" for="pf-description">Descripción</label>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <label class="field-label" for="pf-description">Descripción</label>
+              <button class="btn btn-ghost btn-sm" type="button" id="pf-generar-descripcion">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8" stroke-linecap="round"/></svg>
+                Generar con IA
+              </button>
+            </div>
             <textarea class="input" id="pf-description" rows="3" style="height:auto; padding-top:10px; resize:vertical;">${producto?.description ?? ''}</textarea>
           </div>
           ${
@@ -146,6 +152,32 @@ export function openProductoForm({ catalog, producto = null, onSaved }) {
 
   modal.footer.querySelector('[data-cancel]').addEventListener('click', closeModal);
 
+  modal.body.querySelector('#pf-generar-descripcion').addEventListener('click', async () => {
+    const nombre = modal.body.querySelector('#pf-name').value.trim();
+    if (!nombre) {
+      showToast({ type: 'danger', title: 'Escribe el nombre del producto primero' });
+      return;
+    }
+
+    const boton = modal.body.querySelector('#pf-generar-descripcion');
+    boton.disabled = true;
+    try {
+      const marcaSelect = modal.body.querySelector('#pf-brand');
+      const { descripcion } = await api.post('/products/assistant/description', {
+        nombre,
+        categoria: textoSeleccionado(categorySelect, 'Selecciona…'),
+        marca: textoSeleccionado(marcaSelect, 'Ninguna'),
+        material: modal.body.querySelector('#pf-material').value.trim() || null,
+        calce: modal.body.querySelector('#pf-fit').value.trim() || null,
+      });
+      modal.body.querySelector('#pf-description').value = descripcion;
+    } catch (error) {
+      showToast({ type: 'danger', title: 'No se pudo generar la descripción', message: error instanceof ApiError ? error.message : undefined });
+    } finally {
+      boton.disabled = false;
+    }
+  });
+
   modal.body.querySelector('#producto-form').addEventListener('submit', async (event) => {
     event.preventDefault();
     const errorAlert = modal.body.querySelector('#producto-form-error');
@@ -195,6 +227,11 @@ export function openProductoForm({ catalog, producto = null, onSaved }) {
       submitBtn.querySelector('.spinner').hidden = true;
     }
   });
+}
+
+function textoSeleccionado(select, valorVacio) {
+  const texto = select.options[select.selectedIndex]?.text;
+  return texto && texto !== valorVacio ? texto : null;
 }
 
 async function subirImagen(productId, file, previewWrap, onUploaded) {

@@ -3,7 +3,7 @@ import { api, ApiError } from '../core/api.js';
 import { renderShell } from '../components/shell.js';
 import { renderBarList, renderStackedBar, renderLineChart } from '../components/charts.js';
 import { showToast } from '../components/toast.js';
-import { formatCurrency, formatInteger } from '../core/format.js';
+import { formatCurrency, formatInteger, escapeHtml } from '../core/format.js';
 import { colorForPaymentMethod } from '../core/payment-colors.js';
 
 function formatWeekday(isoDate) {
@@ -69,8 +69,8 @@ async function cargarDashboard() {
         .map(
           (item) => `
           <tr>
-            <td data-label="Producto">${item.productName}</td>
-            <td data-label="Variante">${item.colorName} / ${item.sizeName}</td>
+            <td data-label="Producto">${escapeHtml(item.productName)}</td>
+            <td data-label="Variante">${escapeHtml(item.variantLabel)}</td>
             <td data-label="Stock"><strong style="color: var(--color-warning-text);">${item.stock}</strong></td>
             <td data-label="Mínimo">${item.minStock}</td>
           </tr>

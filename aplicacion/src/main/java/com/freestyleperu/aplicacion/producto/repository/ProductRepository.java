@@ -37,4 +37,17 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             @Param("minPrice") BigDecimal minPrice,
             @Param("maxPrice") BigDecimal maxPrice,
             Pageable pageable);
+
+    @Query("""
+            SELECT p FROM Product p
+            LEFT JOIN p.category c
+            LEFT JOIN p.brand b
+            WHERE p.status = :status
+              AND (LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%'))
+                   OR LOWER(c.name) LIKE LOWER(CONCAT('%', :search, '%'))
+                   OR LOWER(b.name) LIKE LOWER(CONCAT('%', :search, '%')))
+            ORDER BY p.name ASC
+            """)
+    java.util.List<Product> sugerencias(@Param("search") String search,
+            @Param("status") EstadoGeneral status, Pageable pageable);
 }

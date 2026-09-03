@@ -7,7 +7,7 @@ import { api, ApiError, API_ORIGIN, refreshAccessToken } from '../core/api.js';
 import { debounce } from '../core/debounce.js';
 import { connectLiveStream } from '../core/live-stream.js';
 import { showToast } from './toast.js';
-import { formatCurrency } from '../core/format.js';
+import { formatCurrency, escapeHtml } from '../core/format.js';
 
 const GROUP_LABELS = { products: 'Productos', customers: 'Clientes', sales: 'Ventas', users: 'Usuarios' };
 
@@ -59,12 +59,15 @@ const NAV_SECTIONS = [
     label: 'Administración',
     items: [
       { id: 'usuarios', label: 'Usuarios', href: 'usuarios.html', icon: 'users', enabled: true },
+      { id: 'cambiar-contrasena', label: 'Cambiar contraseña', href: 'cambiar-contrasena.html', icon: 'settings', permission: 'USUARIOS_CAMBIAR_CONTRASENA', enabled: true },
       { id: 'configuracion', label: 'Configuración', href: 'configuracion.html', icon: 'settings', enabled: true },
+      { id: 'empresas', label: 'Empresas', href: 'empresas.html', icon: 'users', permission: 'PLATAFORMA_EMPRESAS_GESTIONAR', enabled: true },
     ],
   },
 ];
 
 function navItemHtml(item, activePage) {
+  if (item.permission && !hasPermission(item.permission)) return '';
   const isActive = item.id === activePage;
   const commonAttrs = `class="nav-item" ${isActive ? "aria-current='page'" : ''}`;
   if (!item.enabled) {
@@ -137,10 +140,10 @@ export function renderShell(activePage) {
         </button>
         <div class="notif-panel" id="notif-panel" hidden></div>
         <div class="user-menu">
-          <span class="avatar">${initials(session.user.fullName)}</span>
+          <span class="avatar">${escapeHtml(initials(session.user.fullName))}</span>
           <div style="line-height:1.2;">
-            <div style="font-size: var(--font-size-sm); font-weight:600;">${session.user.fullName}</div>
-            <div style="font-size: var(--font-size-xs); color: var(--color-text-muted);">${session.user.roles[0]}</div>
+            <div style="font-size: var(--font-size-sm); font-weight:600;">${escapeHtml(session.user.fullName)}</div>
+            <div style="font-size: var(--font-size-xs); color: var(--color-text-muted);">${escapeHtml(session.user.roles[0])}</div>
           </div>
           <button class="btn btn-ghost btn-sm" type="button" id="logout-button" aria-label="Cerrar sesión">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" stroke-linecap="round"/><path d="M16 17l5-5-5-5M21 12H9" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -331,8 +334,8 @@ function renderPanelPedidos(panel, pedidos) {
         .map(
           (p) => `
       <a class="notif-item" href="pedidos.html">
-        <span class="notif-item-title">${p.orderNumber}</span>
-        <span class="notif-item-subtitle">${p.customerName ?? ''} · ${formatCurrency(p.total)}</span>
+        <span class="notif-item-title">${escapeHtml(p.orderNumber)}</span>
+        <span class="notif-item-subtitle">${escapeHtml(p.customerName ?? '')} · ${formatCurrency(p.total)}</span>
       </a>
     `
         )

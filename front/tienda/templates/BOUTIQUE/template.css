@@ -1,0 +1,26 @@
+body[data-store-template='BOUTIQUE'] {
+  --template-ink: #49372d;
+  --template-muted: #947b6b;
+  --template-surface-alt: #fbf1e9;
+  --template-line: #ead6c7;
+  --template-radius: 26px;
+  --template-card-radius: 20px;
+  --template-heading: Georgia, 'Times New Roman', serif;
+  --template-container: 1240px;
+}
+
+body[data-store-template='BOUTIQUE'] .store-promo-bar { background:#80624d; color:#fffaf5; }
+body[data-store-template='BOUTIQUE'] .store-header { background:#fffaf5; border:0; }
+body[data-store-template='BOUTIQUE'] .store-brand { font-family:Georgia,serif; color:#80624d; }
+body[data-store-template='BOUTIQUE'] .store-brand-logobox { background:#d99372; border-radius:50% 50% 45% 45%; }
+body[data-store-template='BOUTIQUE'] .store-hero { background:linear-gradient(135deg,#d99372,#eac5aa 70%,#fff5ed); }
+body[data-store-template='BOUTIQUE'] .store-hero::after { content:''; position:absolute; right:7%; bottom:-15%; width:280px; height:280px; border-radius:50%; background:rgba(255,250,245,.35); }
+body[data-store-template='BOUTIQUE'] .store-hero-badge { color:#6a5142; border-color:#80624d; background:transparent; }
+body[data-store-template='BOUTIQUE'] .store-hero h1 { font-family:Georgia,serif; font-weight:400; color:#49372d; }
+body[data-store-template='BOUTIQUE'] .store-hero p { color:#6a5142; }
+body[data-store-template='BOUTIQUE'] .store-hero .btn-primary { background:#80624d; color:#fffaf5; border-radius:999px; }
+body[data-store-template='BOUTIQUE'] .store-category-banner { border-radius:26px 26px 8px 8px; }
+body[data-store-template='BOUTIQUE'] .store-product-card { box-shadow:0 8px 24px rgba(128,98,77,.12); }
+body[data-store-template='BOUTIQUE'] .store-product-card:hover { box-shadow:0 18px 35px rgba(128,98,77,.2); }
+body[data-store-template='BOUTIQUE'] .store-product-name { font-family:Georgia,serif; font-weight:400; }
+body[data-store-template='BOUTIQUE'] .store-footer { background:#80624d; }

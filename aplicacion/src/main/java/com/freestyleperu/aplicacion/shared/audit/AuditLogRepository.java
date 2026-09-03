@@ -17,7 +17,7 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, Long> {
               AND (:result IS NULL OR a.result = :result)
               AND (:from IS NULL OR a.createdAt >= :from)
               AND (:to IS NULL OR a.createdAt <= :to)
-            ORDER BY a.createdAt DESC
+            ORDER BY a.createdAt DESC, a.id DESC
             """)
     Page<AuditLog> buscar(
             @Param("userId") Long userId,

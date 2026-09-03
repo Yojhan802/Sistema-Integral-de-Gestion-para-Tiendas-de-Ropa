@@ -1,5 +1,5 @@
 import { requireSession } from '../core/auth.js';
-import { api, ApiError } from '../core/api.js';
+import { api, apiDownload, ApiError } from '../core/api.js';
 import { renderShell, actualizarEstadoCaja } from '../components/shell.js';
 import { fetchCurrentSession } from '../core/cash-session.js';
 import { openAbrirCajaModal } from '../components/abrir-caja.js';
@@ -7,8 +7,9 @@ import { createCustomerPicker } from '../components/customer-picker.js';
 import { createVariantPicker } from '../components/variant-picker.js';
 import { openPagoModal } from '../components/pago-modal.js';
 import { openModal, closeModal } from '../components/modal.js';
+import { confirmAction } from '../components/confirm.js';
 import { showToast } from '../components/toast.js';
-import { formatCurrency, formatDateTime } from '../core/format.js';
+import { formatCurrency, formatDateTime, escapeHtml } from '../core/format.js';
 import { debounce } from '../core/debounce.js';
 import { renderPagination } from '../components/pagination.js';
 import { imprimirTicket } from '../components/ticket.js';
@@ -137,8 +138,8 @@ async function buscar(query) {
               .map(
                 (v) => `
               <tr class="${v.stock === 0 ? '' : 'clickable'}" data-id="${v.variantId}" style="${v.stock === 0 ? 'opacity:.5;' : ''}">
-                <td class="table-cell-primary">${v.productName} <span class="table-cell-muted">${v.colorName} / ${v.sizeName}</span></td>
-                <td class="mono">${v.sku}</td>
+                <td class="table-cell-primary">${escapeHtml(v.productName)} <span class="table-cell-muted">${escapeHtml(v.variantLabel)}</span></td>
+                <td class="mono">${escapeHtml(v.sku)}</td>
                 <td class="mono">${formatCurrency(v.effectivePrice)}</td>
                 <td>${v.stock}</td>
                 <td>${v.stock > 0 ? '<span class="badge badge-info">Agregar</span>' : '<span class="badge badge-danger">Sin stock</span>'}</td>
@@ -185,8 +186,7 @@ function agregarAlCarrito(variante) {
     cart.push({
       variantId: variante.variantId,
       productName: variante.productName,
-      colorName: variante.colorName,
-      sizeName: variante.sizeName,
+      variantLabel: variante.variantLabel,
       sku: variante.sku,
       unitPrice: variante.effectivePrice,
       stock: variante.stock,
@@ -246,7 +246,7 @@ async function abrirSelectorCombo() {
       (c) => `
     <button type="button" class="vp-result" data-combo="${c.id}" style="display:block; width:100%; text-align:left; padding:var(--space-3); border-bottom:1px solid var(--color-border);">
       <div style="display:flex; justify-content:space-between; font-weight:600;">
-        <span>${c.name}</span><span class="mono">${formatCurrency(c.price)}</span>
+        <span>${escapeHtml(c.name)}</span><span class="mono">${formatCurrency(c.price)}</span>
       </div>
       <div style="font-size:var(--font-size-xs); color:var(--color-text-muted);">
         ${c.items.map(comboItemTexto).join(' + ')}
@@ -268,8 +268,8 @@ async function abrirSelectorCombo() {
 
 function comboItemTexto(it) {
   return it.selectorType === 'CATEGORY'
-    ? `${it.quantity} × cualquier producto de ${it.categoryName}${it.brandName ? ` (marca ${it.brandName})` : ''}`
-    : `${it.quantity} × ${it.productName}`;
+    ? `${it.quantity} × cualquier producto de ${escapeHtml(it.categoryName)}${it.brandName ? ` (marca ${escapeHtml(it.brandName)})` : ''}`
+    : `${it.quantity} × ${escapeHtml(it.productName)}`;
 }
 
 function abrirFormularioComboItems(combo) {
@@ -334,8 +334,7 @@ function abrirFormularioComboItems(combo) {
       cart.push({
         variantId: variante.variantId,
         productName: variante.productName,
-        colorName: variante.colorName,
-        sizeName: variante.sizeName,
+        variantLabel: variante.variantLabel,
         sku: variante.sku,
         unitPrice: variante.effectivePrice,
         stock: variante.stock,
@@ -378,7 +377,7 @@ async function abrirSelectorPromocion(item) {
         .map(
           (p) => `
         <button type="button" class="vp-result" data-promo="${p.id}" style="display:block; width:100%; text-align:left; padding:var(--space-3); border-bottom:1px solid var(--color-border);">
-          <div style="font-weight:600;">${p.name}</div>
+          <div style="font-weight:600;">${escapeHtml(p.name)}</div>
           <div style="font-size:var(--font-size-xs); color:var(--color-text-muted);">${p.discountType === 'PERCENTAGE' ? `${p.discountValue}% de descuento` : `${formatCurrency(p.discountValue)} de descuento`}</div>
         </button>
       `
@@ -426,8 +425,8 @@ function itemIndividualHtml(item) {
   return `
     <div style="display:flex; gap:var(--space-3); padding:var(--space-3) 0; border-bottom:1px solid var(--color-border);">
       <div style="flex:1; min-width:0;">
-        <div style="font-weight:600; font-size:var(--font-size-sm);">${item.productName}</div>
-        <div class="table-cell-muted mono">${item.colorName} / ${item.sizeName}</div>
+        <div style="font-weight:600; font-size:var(--font-size-sm);">${escapeHtml(item.productName)}</div>
+        <div class="table-cell-muted mono">${escapeHtml(item.variantLabel)}</div>
         <div style="display:flex; align-items:center; gap:var(--space-2); margin-top:var(--space-2);">
           <button class="btn btn-ghost btn-sm" type="button" data-qty-down="${item.variantId}" style="width:28px; padding:0;">−</button>
           <span class="mono" style="min-width:24px; text-align:center;">${item.quantity}</span>
@@ -436,7 +435,7 @@ function itemIndividualHtml(item) {
         ${
           permissions.has('PROMOCIONES_APLICAR')
             ? item.promotionId
-              ? `<div style="margin-top:var(--space-2); font-size:var(--font-size-xs);"><span class="badge badge-success" data-promo-badge="${item.variantId}" style="cursor:pointer;">${item.promotionName} −${formatCurrency(item.promotionDiscount)}</span></div>`
+              ? `<div style="margin-top:var(--space-2); font-size:var(--font-size-xs);"><span class="badge badge-success" data-promo-badge="${item.variantId}" style="cursor:pointer;">${escapeHtml(item.promotionName)} −${formatCurrency(item.promotionDiscount)}</span></div>`
               : `<button type="button" class="btn btn-ghost btn-sm" data-promo-badge="${item.variantId}" style="margin-top:var(--space-2); padding:0; font-size:var(--font-size-xs);">+ Promoción</button>`
             : ''
         }
@@ -456,7 +455,7 @@ function comboGroupHtml(comboId, items) {
   return `
     <div style="padding:var(--space-3) 0; border-bottom:1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface-sunken); margin: var(--space-2) 0; padding: var(--space-3);">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-2);">
-        <span class="badge badge-info">Combo · ${items[0].comboName}</span>
+        <span class="badge badge-info">Combo · ${escapeHtml(items[0].comboName)}</span>
         <button class="btn btn-ghost btn-sm" type="button" data-remove-combo="${comboId}" aria-label="Quitar combo">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg>
         </button>
@@ -465,7 +464,7 @@ function comboGroupHtml(comboId, items) {
         .map(
           (item) => `
         <div style="display:flex; justify-content:space-between; font-size:var(--font-size-sm); padding: 2px 0;">
-          <span>${item.quantity} × ${item.productName} <span class="table-cell-muted mono">${item.colorName}/${item.sizeName}</span></span>
+          <span>${item.quantity} × ${escapeHtml(item.productName)} <span class="table-cell-muted mono">${escapeHtml(item.variantLabel)}</span></span>
         </div>
       `
         )
@@ -559,7 +558,7 @@ function mostrarTicket(venta) {
           .map(
             (item) => `
           <div style="display:flex; justify-content:space-between;">
-            <span>${item.quantity} × ${item.productName} (${item.colorName}/${item.sizeName})</span>
+            <span>${item.quantity} × ${escapeHtml(item.productName)} (${escapeHtml(item.variantLabel)})</span>
             <span class="mono">${formatCurrency(item.subtotal)}</span>
           </div>
         `
@@ -572,10 +571,12 @@ function mostrarTicket(venta) {
     `,
     footer: `
       <button class="btn btn-secondary" type="button" data-imprimir>Imprimir ticket</button>
+      <button class="btn btn-secondary" type="button" data-comprobante>Emitir comprobante</button>
       <button class="btn btn-dark btn-block" type="button" data-close>Nueva venta</button>
     `,
   });
   modal.footer.querySelector('[data-imprimir]').addEventListener('click', () => imprimirTicket(venta));
+  modal.footer.querySelector('[data-comprobante]').addEventListener('click', () => abrirDocumentosVenta(venta));
   modal.footer.querySelector('[data-close]').addEventListener('click', () => {
     closeModal();
     document.querySelector('#pos-scan-input').focus();
@@ -604,10 +605,10 @@ async function cargarHistorial() {
           .map(
             (v) => `
         <tr>
-          <td class="table-cell-primary mono">${v.saleNumber}</td>
+          <td class="table-cell-primary mono">${escapeHtml(v.saleNumber)}</td>
           <td class="table-cell-muted">${formatDateTime(v.createdAt)}</td>
-          <td>${v.customerName ?? '—'}</td>
-          <td>${v.sellerName}</td>
+          <td>${v.customerName ? escapeHtml(v.customerName) : '—'}</td>
+          <td>${escapeHtml(v.sellerName)}</td>
           <td class="mono">${formatCurrency(v.total)}</td>
           <td><span class="badge ${SALE_STATUS_CLASSES[v.status] ?? 'badge-neutral'}">${SALE_STATUS_LABELS[v.status] ?? v.status}</span></td>
           <td>
@@ -654,7 +655,7 @@ async function verDetalleVenta(saleId) {
           .map(
             (item) => `
           <div style="display:flex; justify-content:space-between;">
-            <span>${item.quantity} × ${item.productName} (${item.colorName}/${item.sizeName})</span>
+            <span>${item.quantity} × ${escapeHtml(item.productName)} (${escapeHtml(item.variantLabel)})</span>
             <span class="mono">${formatCurrency(item.subtotal)}</span>
           </div>
         `
@@ -665,14 +666,14 @@ async function verDetalleVenta(saleId) {
         </div>
         <div style="margin-top: var(--space-3); padding-top: var(--space-3); border-top:1px solid var(--color-border);">
           <div style="font-weight:600; margin-bottom: var(--space-2);">Pagos</div>
-          ${venta.payments.map((p) => `<div style="display:flex; justify-content:space-between;"><span>${p.paymentMethodName}${p.reference ? ` (${p.reference})` : ''}</span><span class="mono">${formatCurrency(p.amount)}</span></div>`).join('')}
+          ${venta.payments.map((p) => `<div style="display:flex; justify-content:space-between;"><span>${escapeHtml(p.paymentMethodName)}${p.reference ? ` (${escapeHtml(p.reference)})` : ''}</span><span class="mono">${formatCurrency(p.amount)}</span></div>`).join('')}
         </div>
         ${
           venta.status !== 'COMPLETED'
             ? `<div class="alert alert-warning" style="margin-top: var(--space-3);"><span class="alert-message">${
                 venta.status === 'CANCELLED'
-                  ? `Anulada${venta.cancelledByUsername ? ` por ${venta.cancelledByUsername}` : ''}: ${venta.cancellationReason ?? ''}`
-                  : SALE_STATUS_LABELS[venta.status] ?? venta.status
+                  ? `Anulada${venta.cancelledByUsername ? ` por ${escapeHtml(venta.cancelledByUsername)}` : ''}: ${escapeHtml(venta.cancellationReason ?? '')}`
+                  : escapeHtml(SALE_STATUS_LABELS[venta.status] ?? venta.status)
               }</span></div>`
             : ''
         }
@@ -681,6 +682,7 @@ async function verDetalleVenta(saleId) {
     footer: `
       <button class="btn btn-secondary" type="button" data-cancel-modal>Cerrar</button>
       <button class="btn btn-secondary" type="button" data-imprimir>Imprimir ticket</button>
+      ${venta.status === 'COMPLETED' ? '<button class="btn btn-secondary" type="button" data-comprobante>Comprobante</button>' : ''}
       ${puedeDevolver ? `<button class="btn btn-secondary" type="button" data-devolver>Devolver</button>` : ''}
       ${puedeAnular ? `<button class="btn btn-danger" type="button" data-anular>Anular venta</button>` : ''}
     `,
@@ -688,8 +690,296 @@ async function verDetalleVenta(saleId) {
 
   modal.footer.querySelector('[data-cancel-modal]').addEventListener('click', () => closeModal());
   modal.footer.querySelector('[data-imprimir]').addEventListener('click', () => imprimirTicket(venta));
+  modal.footer.querySelector('[data-comprobante]')?.addEventListener('click', () => abrirDocumentosVenta(venta));
   modal.footer.querySelector('[data-devolver]')?.addEventListener('click', () => abrirFormularioDevolucion(venta));
   modal.footer.querySelector('[data-anular]')?.addEventListener('click', () => anularVenta(venta));
+}
+
+const ELECTRONIC_DOCUMENT_LABELS = {
+  BOLETA: 'Boleta',
+  FACTURA: 'Factura',
+  NOTA_CREDITO: 'Nota de crédito',
+  NOTA_DEBITO: 'Nota de débito',
+};
+
+const BILLING_PROVIDER_LABELS = {
+  VERIFACT: 'Verifac',
+  NUBEFACT: 'NubeFact',
+};
+
+const ELECTRONIC_DOCUMENT_STATUS_LABELS = {
+  DRAFT: 'Borrador',
+  GENERATED: 'Generado',
+  PENDING: 'Pendiente',
+  SENT: 'Enviado',
+  ACCEPTED: 'Aceptado',
+  REJECTED: 'Rechazado',
+  CANCELLED: 'Anulado',
+  ERROR: 'Error',
+};
+
+const ELECTRONIC_DOCUMENT_STATUS_CLASSES = {
+  ACCEPTED: 'badge-success',
+  REJECTED: 'badge-danger',
+  ERROR: 'badge-danger',
+  PENDING: 'badge-warning',
+  SENT: 'badge-info',
+  DRAFT: 'badge-neutral',
+};
+
+function fingerprintText(value) {
+  let hash = 0;
+  for (let index = 0; index < value.length; index += 1) {
+    hash = ((hash << 5) - hash) + value.charCodeAt(index);
+    hash |= 0;
+  }
+  return (hash >>> 0).toString(36);
+}
+
+const ELECTRONIC_NOTE_REASONS = {
+  NOTA_CREDITO: [
+    ['01', 'AnulaciÃ³n de la operaciÃ³n'],
+    ['02', 'AnulaciÃ³n por error en el RUC'],
+    ['03', 'CorrecciÃ³n por error en la descripciÃ³n'],
+    ['04', 'Descuento global'],
+    ['05', 'Descuento por Ã­tem'],
+    ['06', 'DevoluciÃ³n total'],
+    ['07', 'DevoluciÃ³n por Ã­tem'],
+    ['08', 'BonificaciÃ³n'],
+    ['09', 'DisminuciÃ³n en el valor'],
+    ['10', 'Otros conceptos'],
+    ['11', 'Ajuste de exportaciÃ³n'],
+    ['12', 'Ajuste afecto al IVAP'],
+    ['13', 'CorrecciÃ³n del monto neto pendiente'],
+  ],
+  NOTA_DEBITO: [
+    ['01', 'Intereses por mora'],
+    ['02', 'Aumento en el valor'],
+    ['03', 'Penalidades / otros conceptos'],
+  ],
+};
+
+async function abrirDocumentosVenta(venta) {
+  let documentos;
+  try {
+    documentos = await api.get(`/sales/${venta.id}/electronic-documents`);
+  } catch (error) {
+    showToast({ type: 'danger', title: 'Comprobantes', message: error instanceof ApiError ? error.message : 'No se pudieron cargar los comprobantes' });
+    return;
+  }
+
+  const renderDocumentos = () => documentos.length
+    ? documentos.map((documento) => `
+        <div style="display:flex; justify-content:space-between; gap:var(--space-3); align-items:center; padding:var(--space-3) 0; border-bottom:1px solid var(--color-border);">
+          <div>
+            <div style="font-weight:600;">${escapeHtml(ELECTRONIC_DOCUMENT_LABELS[documento.documentType] ?? documento.documentType)} ${escapeHtml(documento.series ?? '')}${documento.documentNumber ? `-${escapeHtml(documento.documentNumber)}` : ''}</div>
+            <div style="font-size:var(--font-size-xs); color:var(--color-text-secondary);">${documento.providerDocumentId ? `${escapeHtml(BILLING_PROVIDER_LABELS[documento.provider] ?? documento.provider ?? 'Proveedor')} · ID: ${escapeHtml(documento.providerDocumentId)}` : 'Sin identificador externo todavía'}</div>
+          </div>
+          <div style="display:flex; flex-direction:column; align-items:flex-end; gap:var(--space-2);"><span class="badge ${ELECTRONIC_DOCUMENT_STATUS_CLASSES[documento.status] ?? 'badge-neutral'}">${escapeHtml(ELECTRONIC_DOCUMENT_STATUS_LABELS[documento.status] ?? documento.status)}</span>${['PENDING', 'SENT'].includes(documento.status) && documento.providerDocumentId ? '<button class="btn btn-ghost btn-sm" type="button" data-doc-status data-doc-id="' + documento.id + '">Actualizar</button>' : ''}${['ERROR', 'REJECTED'].includes(documento.status) && documento.providerDocumentId ? '<button class="btn btn-secondary btn-sm" type="button" data-doc-retry data-doc-id="' + documento.id + '">Reintentar</button>' : ''}${documento.providerDocumentId && documento.status === 'ACCEPTED' ? '<div style="display:flex; gap:var(--space-1);"><button class="btn btn-ghost btn-sm" type="button" data-doc-download="pdf" data-doc-id="' + documento.id + '">PDF</button><button class="btn btn-ghost btn-sm" type="button" data-doc-download="xml" data-doc-id="' + documento.id + '">XML</button><button class="btn btn-ghost btn-sm" type="button" data-doc-download="cdr" data-doc-id="' + documento.id + '">CDR</button></div>' : ''}${documento.providerDocumentId && documento.status === 'ACCEPTED' && ['BOLETA', 'FACTURA'].includes(documento.documentType) ? '<div style="display:flex; gap:var(--space-1);"><button class="btn btn-ghost btn-sm" type="button" data-create-note="NOTA_CREDITO" data-source-id="' + documento.id + '">NC</button><button class="btn btn-ghost btn-sm" type="button" data-create-note="NOTA_DEBITO" data-source-id="' + documento.id + '">ND</button></div>' : ''}</div>
+        </div>
+      `).join('')
+    : '<div class="empty-state" style="padding:var(--space-5) 0;"><span>Esta venta todavía no tiene comprobante.</span></div>';
+
+  const modal = openModal({
+    title: 'Comprobante electrónico',
+    subtitle: venta.saleNumber,
+    maxWidth: '520px',
+    body: `
+      <div id="documentos-venta-body">
+        <div id="documentos-list">${renderDocumentos()}</div>
+        <form id="comprobante-form" style="margin-top:var(--space-5);">
+          <div class="field">
+            <label class="field-label" for="comprobante-tipo">Tipo de comprobante</label>
+            <select class="select" id="comprobante-tipo" required>
+              <option value="BOLETA">Boleta</option>
+              <option value="FACTURA">Factura</option>
+              <option value="NOTA_CREDITO">Nota de crédito</option>
+              <option value="NOTA_DEBITO">Nota de débito</option>
+            </select>
+          </div>
+          <div id="nota-fields" hidden>
+            <div class="field">
+              <label class="field-label" for="nota-origen">Comprobante de origen</label>
+              <select class="select" id="nota-origen"></select>
+            </div>
+            <div class="field">
+              <label class="field-label" for="nota-motivo">Motivo fiscal</label>
+              <select class="select" id="nota-motivo"></select>
+            </div>
+            <div class="field">
+              <label class="field-label" for="nota-descripcion">Descripción del motivo</label>
+              <textarea class="input" id="nota-descripcion" maxlength="250" rows="2" placeholder="Describe el motivo de la nota"></textarea>
+            </div>
+            <div class="field" id="nota-items" hidden></div>
+          </div>
+          <p style="margin:var(--space-3) 0 0; color:var(--color-text-secondary); font-size:var(--font-size-xs);">
+            La empresa debe tener facturación electrónica habilitada y sus credenciales/series del proveedor configuradas.
+          </p>
+          <div class="alert alert-danger" id="comprobante-error" role="alert" hidden><span class="alert-message"></span></div>
+        </form>
+      </div>
+    `,
+    footer: `
+      <button class="btn btn-secondary" type="button" data-cerrar-comprobante>Cerrar</button>
+      <button class="btn btn-primary" type="submit" form="comprobante-form" data-emitir-comprobante>Crear y enviar</button>
+    `,
+  });
+
+  modal.footer.querySelector('[data-cerrar-comprobante]').addEventListener('click', () => modal.close());
+  const typeSelect = modal.body.querySelector('#comprobante-tipo');
+  const noteFields = modal.body.querySelector('#nota-fields');
+  const sourceSelect = modal.body.querySelector('#nota-origen');
+  const reasonSelect = modal.body.querySelector('#nota-motivo');
+  const noteItems = modal.body.querySelector('#nota-items');
+  const syncNoteFields = () => {
+    const isNote = typeSelect.value === 'NOTA_CREDITO' || typeSelect.value === 'NOTA_DEBITO';
+    noteFields.hidden = !isNote;
+    sourceSelect.required = isNote;
+    reasonSelect.required = isNote;
+    modal.body.querySelector('#nota-descripcion').required = isNote;
+    if (isNote) {
+      const sources = documentos.filter((item) => item.status === 'ACCEPTED' && ['BOLETA', 'FACTURA'].includes(item.documentType));
+      sourceSelect.innerHTML = sources.length
+        ? sources.map((item) => `<option value="${item.id}">${escapeHtml(ELECTRONIC_DOCUMENT_LABELS[item.documentType] ?? item.documentType)} ${escapeHtml(item.series)}-${escapeHtml(item.documentNumber)}</option>`).join('')
+        : '<option value="">No hay comprobantes aceptados</option>';
+      const previousReason = reasonSelect.value;
+      reasonSelect.innerHTML = (ELECTRONIC_NOTE_REASONS[typeSelect.value] ?? [])
+        .map(([code, label]) => `<option value="${code}">${code} · ${label}</option>`).join('');
+      if (Array.from(reasonSelect.options).some((option) => option.value === previousReason)) {
+        reasonSelect.value = previousReason;
+      }
+      const partial = typeSelect.value === 'NOTA_CREDITO' && reasonSelect.value === '07';
+      noteItems.hidden = !partial;
+      noteItems.innerHTML = partial
+        ? `<label class="field-label">Productos y cantidades a devolver</label>${venta.items.map((item) => `
+            <label style="display:flex; align-items:center; gap:var(--space-2); margin-top:var(--space-2);">
+              <input type="checkbox" data-note-variant="${item.variantId}" />
+              <span style="flex:1;">${escapeHtml(item.productName)} (${escapeHtml(item.variantLabel)})</span>
+              <input class="input" style="width:80px;" type="number" min="1" max="${item.quantity}" value="${item.quantity}" data-note-quantity="${item.variantId}" disabled />
+            </label>`).join('')}`
+        : '';
+      noteItems.querySelectorAll('[data-note-variant]').forEach((checkbox) => {
+        checkbox.addEventListener('change', () => {
+          const quantity = noteItems.querySelector(`[data-note-quantity="${checkbox.dataset.noteVariant}"]`);
+          if (quantity) quantity.disabled = !checkbox.checked;
+        });
+      });
+    }
+  };
+  typeSelect.addEventListener('change', syncNoteFields);
+  reasonSelect.addEventListener('change', syncNoteFields);
+  syncNoteFields();
+  modal.body.addEventListener('click', async (event) => {
+    const button = event.target.closest('[data-doc-status], [data-doc-retry], [data-doc-download], [data-create-note]');
+    if (!button) return;
+    if (button.dataset.createNote) {
+      typeSelect.value = button.dataset.createNote;
+      syncNoteFields();
+      sourceSelect.value = button.dataset.sourceId;
+      modal.body.querySelector('#nota-descripcion').focus();
+      return;
+    }
+    const documentId = Number(button.dataset.docId || 0);
+    const documento = documentos.find((item) => item.id === documentId);
+    if (!documento) return;
+    button.disabled = true;
+    try {
+      if (button.dataset.docDownload) {
+        const file = await apiDownload(`/electronic-documents/${documentId}/${button.dataset.docDownload}`);
+        const url = URL.createObjectURL(file.blob);
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = file.filename;
+        anchor.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      } else {
+        const actualizado = button.dataset.docStatus
+          ? await api.get(`/electronic-documents/${documentId}/status`)
+          : await api.post(`/electronic-documents/${documentId}/retry`);
+        documentos = [actualizado, ...documentos.filter((item) => item.id !== actualizado.id)];
+        modal.body.querySelector('#documentos-list').innerHTML = renderDocumentos();
+        showToast({ type: actualizado.status === 'ACCEPTED' ? 'success' : 'warning', title: 'Comprobante', message: ELECTRONIC_DOCUMENT_STATUS_LABELS[actualizado.status] ?? actualizado.status });
+      }
+    } catch (error) {
+      showToast({ type: 'danger', title: 'Comprobante', message: error instanceof ApiError ? error.message : 'No se pudo completar la operación' });
+    } finally {
+      button.disabled = false;
+    }
+  });
+  modal.body.querySelector('#comprobante-form').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const submit = modal.footer.querySelector('[data-emitir-comprobante]');
+    const errorAlert = modal.body.querySelector('#comprobante-error');
+    const errorMessage = errorAlert.querySelector('.alert-message');
+    submit.disabled = true;
+    submit.textContent = 'Enviando…';
+    errorAlert.hidden = true;
+    try {
+      const documentType = modal.body.querySelector('#comprobante-tipo').value;
+      const isNote = documentType === 'NOTA_CREDITO' || documentType === 'NOTA_DEBITO';
+      const sourceDocumentId = isNote ? Number(modal.body.querySelector('#nota-origen').value || 0) : null;
+      const reasonCode = isNote ? modal.body.querySelector('#nota-motivo').value : null;
+      const reasonDescription = isNote ? modal.body.querySelector('#nota-descripcion').value.trim() : null;
+      const selectedItems = isNote && reasonCode === '07'
+        ? Array.from(modal.body.querySelectorAll('[data-note-variant]:checked')).map((checkbox) => ({
+          variantId: Number(checkbox.dataset.noteVariant),
+          quantity: Number(modal.body.querySelector(`[data-note-quantity="${checkbox.dataset.noteVariant}"]`).value),
+        }))
+        : [];
+      if (isNote && reasonCode === '07' && selectedItems.length === 0) {
+        errorMessage.textContent = 'Selecciona al menos un producto para la devolución.';
+        errorAlert.hidden = false;
+        submit.disabled = false;
+        submit.textContent = 'Crear y enviar';
+        return;
+      }
+      const label = ELECTRONIC_DOCUMENT_LABELS[documentType] ?? documentType;
+      const confirmado = await confirmAction({
+        title: `Confirmar ${isNote ? 'envio de nota' : 'emision'}`,
+        message: `Se enviara ${label.toLowerCase()} al proveedor configurado para esta empresa y se solicitara su procesamiento ante SUNAT. Esta operacion no debe repetirse fuera del sistema.`,
+        confirmLabel: 'Enviar a SUNAT',
+        danger: false,
+      });
+      if (!confirmado) {
+        submit.disabled = false;
+        submit.textContent = 'Crear y enviar';
+        return;
+      }
+      const idempotencyKey = isNote
+        ? `sale-${venta.id}-${documentType}-source-${sourceDocumentId}-reason-${reasonCode}`
+        : `sale-${venta.id}-${documentType}`;
+      const itemsFingerprint = selectedItems.length
+        ? fingerprintText(selectedItems.map((item) => `${item.variantId}x${item.quantity}`).join('_'))
+        : null;
+      const borrador = await api.post(`/sales/${venta.id}/electronic-documents`, {
+        documentType,
+        sourceDocumentId: isNote ? sourceDocumentId : undefined,
+        reasonCode: isNote ? reasonCode : undefined,
+        reasonDescription: isNote ? reasonDescription : undefined,
+        items: selectedItems.length ? selectedItems : undefined,
+      }, {
+        headers: { 'Idempotency-Key': itemsFingerprint ? `${idempotencyKey}-items-${itemsFingerprint}` : idempotencyKey },
+      });
+      const enviado = await api.post(`/electronic-documents/${borrador.id}/submit`);
+      documentos = [enviado, ...documentos.filter((item) => item.id !== enviado.id)];
+      modal.body.querySelector('#documentos-list').innerHTML = renderDocumentos();
+      errorAlert.className = `alert ${enviado.status === 'ACCEPTED' ? 'alert-success' : enviado.status === 'ERROR' || enviado.status === 'REJECTED' ? 'alert-danger' : 'alert-warning'}`;
+      const proveedor = BILLING_PROVIDER_LABELS[enviado.provider] ?? enviado.provider ?? 'el proveedor configurado';
+      errorMessage.textContent = enviado.status === 'ACCEPTED'
+        ? `Comprobante aceptado por ${proveedor}.`
+        : `Estado actual: ${ELECTRONIC_DOCUMENT_STATUS_LABELS[enviado.status] ?? enviado.status}.`;
+      errorAlert.hidden = false;
+      submit.disabled = false;
+      submit.textContent = 'Crear y enviar';
+      syncNoteFields();
+      showToast({ type: enviado.status === 'ACCEPTED' ? 'success' : 'warning', title: 'Comprobante', message: ELECTRONIC_DOCUMENT_STATUS_LABELS[enviado.status] ?? enviado.status });
+    } catch (error) {
+      errorMessage.textContent = error instanceof ApiError ? error.message : 'No se pudo emitir el comprobante';
+      errorAlert.hidden = false;
+      submit.disabled = false;
+      submit.textContent = 'Crear y enviar';
+    }
+  });
 }
 
 async function anularVenta(venta) {
@@ -706,6 +996,7 @@ async function anularVenta(venta) {
         <div class="field">
           <label class="field-label" for="anular-reason">Motivo</label>
           <input class="input" id="anular-reason" maxlength="255" required autofocus />
+          <small class="field-hint">Si la venta tiene una factura o boleta aceptada, se generará automáticamente la nota de crédito fiscal.</small>
         </div>
       </form>
     `,
@@ -717,15 +1008,33 @@ async function anularVenta(venta) {
   modal.footer.querySelector('[data-cancel]').addEventListener('click', () => closeModal());
   modal.body.querySelector('#anular-form').addEventListener('submit', async (event) => {
     event.preventDefault();
+    const submit = modal.footer.querySelector('button[type="submit"]');
     const errorAlert = modal.body.querySelector('#anular-error');
+    const reason = modal.body.querySelector('#anular-reason').value.trim();
+    if (!reason) {
+      errorAlert.querySelector('.alert-message').textContent = 'Ingresa el motivo de la anulacion.';
+      errorAlert.hidden = false;
+      return;
+    }
+
+    const confirmado = await confirmAction({
+      title: 'Confirmar anulacion de venta',
+      message: `Se anulara la venta ${escapeHtml(venta.saleNumber)}. Si tiene una factura o boleta aceptada, se generara y enviara una nota de credito de anulacion al proveedor configurado antes de completar la anulacion local.`,
+      confirmLabel: 'Anular y enviar',
+      danger: true,
+    });
+    if (!confirmado) return;
+
+    submit.disabled = true;
     try {
-      await api.post(`/sales/${venta.id}/cancel`, { reason: modal.body.querySelector('#anular-reason').value.trim() });
+      await api.post(`/sales/${venta.id}/cancel`, { reason });
       closeModal();
       showToast({ type: 'success', title: 'Venta anulada', message: venta.saleNumber });
       cargarHistorial();
     } catch (error) {
       errorAlert.querySelector('.alert-message').textContent = error instanceof ApiError ? error.message : 'No se pudo anular la venta';
       errorAlert.hidden = false;
+      submit.disabled = false;
     }
   });
 }
@@ -767,8 +1076,8 @@ async function abrirFormularioDevolucion(venta) {
             <div style="border:1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-3);">
               <div style="display:flex; justify-content:space-between; align-items:center; gap:var(--space-3);">
                 <div>
-                  <div style="font-weight:600; font-size:var(--font-size-sm);">${item.productName}</div>
-                  <div class="table-cell-muted mono">${item.variantSku} · disponible para devolver: ${item.quantityReturnable}</div>
+                  <div style="font-weight:600; font-size:var(--font-size-sm);">${escapeHtml(item.productName)}</div>
+                  <div class="table-cell-muted mono">${escapeHtml(item.variantSku)} · disponible para devolver: ${item.quantityReturnable}</div>
                 </div>
                 <input class="input" type="number" min="0" max="${item.quantityReturnable}" value="0" style="width:80px; text-align:right;" data-dev-qty="${item.saleDetailId}" />
               </div>
@@ -878,7 +1187,7 @@ async function cargarPromotores() {
           .map(
             (p) => `
         <tr>
-          <td class="table-cell-primary">${p.name}</td>
+          <td class="table-cell-primary">${escapeHtml(p.name)}</td>
           <td>${statusBadge(p.status)}</td>
           <td>
             <div class="table-actions">

@@ -1,12 +1,13 @@
 import { storeApi, ApiError, API_ORIGIN } from './core/store-api.js';
 import { renderStoreShell, actualizarContadorCarrito } from './components/store-shell.js';
 import { addToCart } from './core/cart.js';
-import { formatCurrency } from '../../../js/core/format.js';
+import { formatCurrency, escapeHtml } from '../../../js/core/format.js';
 import { showToast } from '../../../js/components/toast.js';
 
 const productId = new URLSearchParams(window.location.search).get('id');
 let producto = null;
-let selectedColorId = null;
+/** attributeId -> attributeValueId elegido en cada nivel del cascade (Color, Talla, u otros). */
+let seleccion = {};
 let selectedVariantId = null;
 
 function placeholderImage() {
@@ -15,32 +16,57 @@ function placeholderImage() {
   )}`;
 }
 
-function coloresUnicos() {
-  const vistos = new Map();
-  producto.variants.forEach((v) => {
-    if (!vistos.has(v.colorId)) vistos.set(v.colorId, { colorId: v.colorId, colorName: v.colorName, colorHex: v.colorHex });
-  });
-  return [...vistos.values()];
+function galeriaDelProducto() {
+  const imagenes = producto.images?.filter((image) => image?.imageUrl) ?? [];
+  if (imagenes.length) return imagenes;
+  return producto.imageUrl ? [{ imageUrl: producto.imageUrl, altText: producto.name, primary: true }] : [];
+}
+
+/** Todas las variantes de un producto comparten el mismo conjunto de atributos, en el mismo
+ * orden (ver ProductAttribute) — la primera variante ya nos dice cuántos niveles de selección
+ * mostrar y en qué orden (antes esto era Color y Talla fijos; ahora es cualquier lista). */
+function niveles() {
+  return producto.variants?.[0]?.attributes.map((a) => ({
+    attributeId: a.attributeId,
+    attributeName: a.attributeName,
+    inputType: a.inputType,
+  })) ?? [];
+}
+
+function valorDeAtributo(variante, attributeId) {
+  return variante.attributes.find((a) => a.attributeId === attributeId)?.attributeValueId;
 }
 
 function render() {
-  const imageUrl = producto.imageUrl ? `${API_ORIGIN}${producto.imageUrl}` : placeholderImage();
+  const galeria = galeriaDelProducto();
+  const imageInicial = galeria[0]?.imageUrl ? `${API_ORIGIN}${galeria[0].imageUrl}` : placeholderImage();
   const tieneDescuento = producto.promoPrice != null;
-  const colores = coloresUnicos();
+  const listaNiveles = niveles();
+  seleccion = {};
+  selectedVariantId = null;
 
   document.querySelector('#product-detail').innerHTML = `
     <div class="store-detail">
-      <div class="store-product-image" style="border-radius: var(--radius-lg);">
-        <img src="${imageUrl}" alt="${producto.name}" style="width:100%; height:100%; object-fit:cover;" />
+      <div class="store-detail-gallery">
+        <div class="store-product-image store-detail-main-image">
+          <img id="product-main-image" src="${escapeHtml(imageInicial)}" alt="${escapeHtml(galeria[0]?.altText || producto.name)}" />
+        </div>
+        ${galeria.length > 1 ? `<div class="store-detail-thumbnails" role="list" aria-label="Imágenes del producto">
+          ${galeria.map((image, index) => `
+            <button class="store-detail-thumbnail${index === 0 ? ' is-selected' : ''}" type="button" data-gallery-index="${index}" aria-label="Ver imagen ${index + 1}">
+              <img src="${escapeHtml(API_ORIGIN + image.imageUrl)}" alt="" loading="lazy" />
+            </button>
+          `).join('')}
+        </div>` : ''}
       </div>
       <div>
-        <span class="store-product-meta">${producto.brandName ?? producto.categoryName}</span>
-        <h1 style="margin: var(--space-2) 0;">${producto.name}</h1>
+        <span class="store-product-meta">${escapeHtml(producto.brandName ?? producto.categoryName)}</span>
+        <h1 style="margin: var(--space-2) 0;">${escapeHtml(producto.name)}</h1>
         <div class="store-product-price" style="font-size: var(--font-size-xl); margin-bottom: var(--space-4);">
           ${tieneDescuento ? `<span class="price-old">${formatCurrency(producto.price)}</span>` : ''}
           <span>${formatCurrency(tieneDescuento ? producto.promoPrice : producto.price)}</span>
         </div>
-        ${producto.description ? `<p style="margin-bottom: var(--space-4);">${producto.description}</p>` : ''}
+        ${producto.description ? `<p style="margin-bottom: var(--space-4);">${escapeHtml(producto.description)}</p>` : ''}
 
         ${
           producto.material || producto.fit
@@ -53,31 +79,21 @@ function render() {
             : ''
         }
 
-        <div class="field" style="margin-bottom: var(--space-4);">
+        ${listaNiveles
+          .map(
+            (nivel, i) => `
+        <div class="field" style="margin-bottom: ${i === listaNiveles.length - 1 ? 'var(--space-5)' : 'var(--space-4)'};">
           <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span class="field-label">Color</span>
-            ${producto.sizeGuideImageUrl ? `<a href="${API_ORIGIN}${producto.sizeGuideImageUrl}" target="_blank" rel="noopener" style="font-size: var(--font-size-xs); color: var(--brand-accent); text-decoration:underline;">Guía de tallas</a>` : ''}
+            <span class="field-label">${escapeHtml(nivel.attributeName)}</span>
+            ${i === 0 && producto.sizeGuideImageUrl ? `<a href="${API_ORIGIN}${producto.sizeGuideImageUrl}" target="_blank" rel="noopener" style="font-size: var(--font-size-xs); color: var(--brand-accent); text-decoration:underline;">Guía de tallas</a>` : ''}
           </div>
-          <div class="store-swatches" id="color-swatches">
-            ${colores
-              .map(
-                (c) => `
-              <button type="button" class="store-swatch" data-color-id="${c.colorId}" aria-pressed="false">
-                ${c.colorHex ? `<span class="store-swatch-dot" style="background:${c.colorHex};"></span>` : ''}
-                ${c.colorName}
-              </button>
-            `
-              )
-              .join('')}
+          <div class="store-swatches" id="nivel-${nivel.attributeId}">
+            ${i === 0 ? '' : `<span class="field-hint">Elige ${escapeHtml(listaNiveles[i - 1].attributeName.toLowerCase())} primero</span>`}
           </div>
         </div>
-
-        <div class="field" style="margin-bottom: var(--space-5);">
-          <span class="field-label">Talla</span>
-          <div class="store-swatches" id="size-swatches">
-            <span class="field-hint">Elige un color primero</span>
-          </div>
-        </div>
+        `
+          )
+          .join('')}
 
         <div style="display:flex; align-items:center; gap: var(--space-3);">
           <input type="number" class="input" id="quantity" value="1" min="1" max="10" style="width:80px;" />
@@ -87,38 +103,76 @@ function render() {
     </div>
   `;
 
-  document.querySelector('#color-swatches').addEventListener('click', (event) => {
-    const btn = event.target.closest('[data-color-id]');
-    if (!btn) return;
-    selectedColorId = Number(btn.dataset.colorId);
-    selectedVariantId = null;
-    document.querySelectorAll('#color-swatches [data-color-id]').forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
-    renderTallas();
+  if (listaNiveles.length > 0) renderNivel(0);
+  document.querySelectorAll('[data-gallery-index]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const image = galeria[Number(button.dataset.galleryIndex)];
+      if (!image) return;
+      const main = document.querySelector('#product-main-image');
+      main.src = `${API_ORIGIN}${image.imageUrl}`;
+      main.alt = image.altText || producto.name;
+      document.querySelectorAll('[data-gallery-index]').forEach((item) => item.classList.toggle('is-selected', item === button));
+    });
   });
-
   document.querySelector('#btn-add-cart').addEventListener('click', agregarAlCarrito);
 }
 
-function renderTallas() {
-  const contenedor = document.querySelector('#size-swatches');
-  const tallas = producto.variants.filter((v) => v.colorId === selectedColorId);
-  contenedor.innerHTML = tallas
+/** Pinta las opciones disponibles en un nivel del cascade, filtradas por lo ya elegido en los
+ * niveles anteriores — generaliza el viejo "elige color, luego se filtran las tallas de ese
+ * color" a cualquier cantidad de niveles. */
+function renderNivel(index) {
+  const listaNiveles = niveles();
+  const nivel = listaNiveles[index];
+  const contenedor = document.querySelector(`#nivel-${nivel.attributeId}`);
+  if (!contenedor) return;
+
+  const anteriores = listaNiveles.slice(0, index);
+  const candidatas = producto.variants.filter((v) =>
+    anteriores.every((n) => valorDeAtributo(v, n.attributeId) === seleccion[n.attributeId])
+  );
+
+  const esUltimoNivel = index === listaNiveles.length - 1;
+  const vistos = new Map();
+  candidatas.forEach((v) => {
+    const attr = v.attributes.find((a) => a.attributeId === nivel.attributeId);
+    if (!attr) return;
+    const existente = vistos.get(attr.attributeValueId);
+    if (!existente) {
+      vistos.set(attr.attributeValueId, { attr, inStock: v.inStock, variantId: v.variantId });
+    } else if (v.inStock) {
+      existente.inStock = true;
+    }
+  });
+
+  contenedor.innerHTML = [...vistos.values()]
     .map(
-      (v) => `
-    <button type="button" class="store-swatch" data-variant-id="${v.variantId}" aria-pressed="false" ${v.inStock ? '' : 'disabled'}>
-      ${v.sizeName}
+      ({ attr, inStock, variantId }) => `
+    <button type="button" class="store-swatch" data-value-id="${attr.attributeValueId}" data-variant-id="${esUltimoNivel ? variantId : ''}"
+        aria-pressed="${seleccion[nivel.attributeId] === attr.attributeValueId}" ${esUltimoNivel && !inStock ? 'disabled' : ''}>
+      ${attr.inputType === 'SWATCH' && attr.hexCode ? `<span class="store-swatch-dot" style="background:${attr.hexCode};"></span>` : ''}
+      ${escapeHtml(attr.value)}
     </button>
   `
     )
     .join('');
 
-  contenedor.addEventListener('click', (event) => {
-    const btn = event.target.closest('[data-variant-id]');
+  contenedor.onclick = (event) => {
+    const btn = event.target.closest('[data-value-id]');
     if (!btn) return;
-    selectedVariantId = Number(btn.dataset.variantId);
-    contenedor.querySelectorAll('[data-variant-id]').forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
-    document.querySelector('#btn-add-cart').disabled = false;
-  });
+    seleccion[nivel.attributeId] = Number(btn.dataset.valueId);
+    listaNiveles.slice(index + 1).forEach((n) => delete seleccion[n.attributeId]);
+    selectedVariantId = esUltimoNivel ? Number(btn.dataset.variantId) : null;
+    contenedor.querySelectorAll('[data-value-id]').forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+    document.querySelector('#btn-add-cart').disabled = !esUltimoNivel;
+
+    if (!esUltimoNivel) {
+      renderNivel(index + 1);
+      for (let i = index + 2; i < listaNiveles.length; i++) {
+        const siguiente = document.querySelector(`#nivel-${listaNiveles[i].attributeId}`);
+        if (siguiente) siguiente.innerHTML = `<span class="field-hint">Elige ${escapeHtml(listaNiveles[i - 1].attributeName.toLowerCase())} primero</span>`;
+      }
+    }
+  };
 }
 
 function agregarAlCarrito() {
@@ -131,15 +185,14 @@ function agregarAlCarrito() {
       variantId: variante.variantId,
       productId: producto.id,
       productName: producto.name,
-      colorName: variante.colorName,
-      sizeName: variante.sizeName,
+      variantLabel: variante.variantLabel,
       unitPrice: producto.promoPrice ?? producto.price,
       imageUrl: producto.imageUrl,
     },
     quantity
   );
   actualizarContadorCarrito();
-  showToast({ type: 'success', title: 'Agregado al carrito', message: `${producto.name} (${variante.colorName} / ${variante.sizeName})` });
+  showToast({ type: 'success', title: 'Agregado al carrito', message: `${producto.name} (${variante.variantLabel})` });
 }
 
 async function init() {

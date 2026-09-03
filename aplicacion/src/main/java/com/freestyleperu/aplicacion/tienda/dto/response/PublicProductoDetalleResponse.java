@@ -15,5 +15,6 @@ public record PublicProductoDetalleResponse(
         String sizeGuideImageUrl,
         String categoryName,
         String brandName,
-        List<PublicVarianteResponse> variants) {
+        List<PublicVarianteResponse> variants,
+        List<PublicProductImageResponse> images) {
 }

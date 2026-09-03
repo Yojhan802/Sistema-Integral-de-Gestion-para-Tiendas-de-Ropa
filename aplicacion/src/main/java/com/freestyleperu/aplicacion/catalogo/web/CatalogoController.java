@@ -1,19 +1,18 @@
 package com.freestyleperu.aplicacion.catalogo.web;
 
+import com.freestyleperu.aplicacion.catalogo.dto.request.AttributeRequest;
+import com.freestyleperu.aplicacion.catalogo.dto.request.AttributeValueRequest;
 import com.freestyleperu.aplicacion.catalogo.dto.request.BrandRequest;
 import com.freestyleperu.aplicacion.catalogo.dto.request.CategoryRequest;
-import com.freestyleperu.aplicacion.catalogo.dto.request.ColorRequest;
-import com.freestyleperu.aplicacion.catalogo.dto.request.SizeRequest;
 import com.freestyleperu.aplicacion.catalogo.dto.request.SubcategoryRequest;
+import com.freestyleperu.aplicacion.catalogo.dto.response.AttributeResponse;
+import com.freestyleperu.aplicacion.catalogo.dto.response.AttributeValueResponse;
 import com.freestyleperu.aplicacion.catalogo.dto.response.BrandResponse;
 import com.freestyleperu.aplicacion.catalogo.dto.response.CategoryResponse;
-import com.freestyleperu.aplicacion.catalogo.dto.response.ColorResponse;
-import com.freestyleperu.aplicacion.catalogo.dto.response.SizeResponse;
 import com.freestyleperu.aplicacion.catalogo.dto.response.SubcategoryResponse;
+import com.freestyleperu.aplicacion.catalogo.service.AtributoService;
 import com.freestyleperu.aplicacion.catalogo.service.BrandService;
 import com.freestyleperu.aplicacion.catalogo.service.CategoryService;
-import com.freestyleperu.aplicacion.catalogo.service.ColorService;
-import com.freestyleperu.aplicacion.catalogo.service.SizeService;
 import com.freestyleperu.aplicacion.catalogo.service.SubcategoryService;
 import com.freestyleperu.aplicacion.shared.dto.CambiarEstadoRequest;
 import com.freestyleperu.aplicacion.shared.security.Permisos;
@@ -30,11 +29,14 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
- * Agrupa categorías, subcategorías, marcas, colores y tallas: cinco
- * catálogos con el mismo patrón CRUD (ver docs/05-api.md §4). Un único
- * controller evita cinco archivos casi idénticos.
+ * Agrupa categorías, subcategorías, marcas y atributos genéricos (color, talla, u otros — ver
+ * plan aprobado de atributos genéricos, reemplaza los antiguos catálogos fijos de colores y
+ * tallas): mismo patrón CRUD (ver docs/05-api.md §4). Un único controller evita archivos casi
+ * idénticos.
  */
 @RestController
 public class CatalogoController {
@@ -42,16 +44,14 @@ public class CatalogoController {
     private final CategoryService categoryService;
     private final SubcategoryService subcategoryService;
     private final BrandService brandService;
-    private final ColorService colorService;
-    private final SizeService sizeService;
+    private final AtributoService atributoService;
 
     public CatalogoController(CategoryService categoryService, SubcategoryService subcategoryService,
-            BrandService brandService, ColorService colorService, SizeService sizeService) {
+            BrandService brandService, AtributoService atributoService) {
         this.categoryService = categoryService;
         this.subcategoryService = subcategoryService;
         this.brandService = brandService;
-        this.colorService = colorService;
-        this.sizeService = sizeService;
+        this.atributoService = atributoService;
     }
 
     // ---------- Categorías ----------
@@ -85,6 +85,18 @@ public class CatalogoController {
     @PreAuthorize("hasAuthority('" + Permisos.CONFIGURACION_EDITAR + "')")
     public CategoryResponse cambiarEstadoCategoria(@PathVariable Long id, @Valid @RequestBody CambiarEstadoRequest request) {
         return categoryService.cambiarEstado(id, request.status());
+    }
+
+    @PostMapping("/api/categories/{id}/image")
+    @PreAuthorize("hasAuthority('" + Permisos.CONFIGURACION_EDITAR + "')")
+    public CategoryResponse actualizarImagenCategoria(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
+        return categoryService.actualizarImagen(id, file);
+    }
+
+    @DeleteMapping("/api/categories/{id}/image")
+    @PreAuthorize("hasAuthority('" + Permisos.CONFIGURACION_EDITAR + "')")
+    public CategoryResponse eliminarImagenCategoria(@PathVariable Long id) {
+        return categoryService.eliminarImagen(id);
     }
 
     // ---------- Subcategorías ----------
@@ -153,69 +165,58 @@ public class CatalogoController {
         return brandService.cambiarEstado(id, request.status());
     }
 
-    // ---------- Colores ----------
+    // ---------- Atributos genéricos (Color, Talla, u otros — reemplazan color/talla fijos, ver plan aprobado) ----------
 
-    @GetMapping("/api/colors")
+    @GetMapping("/api/attributes")
     @PreAuthorize("hasAuthority('" + Permisos.PRODUCTOS_CONSULTAR + "')")
-    public List<ColorResponse> listarColores() {
-        return colorService.listar();
+    public List<AttributeResponse> listarAtributos() {
+        return atributoService.listar();
     }
 
-    @GetMapping("/api/colors/{id}")
+    @GetMapping("/api/attributes/{id}")
     @PreAuthorize("hasAuthority('" + Permisos.PRODUCTOS_CONSULTAR + "')")
-    public ColorResponse obtenerColor(@PathVariable Long id) {
-        return colorService.obtener(id);
+    public AttributeResponse obtenerAtributo(@PathVariable Long id) {
+        return atributoService.obtener(id);
     }
 
-    @PostMapping("/api/colors")
+    @PostMapping("/api/attributes")
     @PreAuthorize("hasAuthority('" + Permisos.CONFIGURACION_EDITAR + "')")
-    public ResponseEntity<ColorResponse> crearColor(@Valid @RequestBody ColorRequest request) {
-        ColorResponse creado = colorService.crear(request);
-        return ResponseEntity.created(URI.create("/api/colors/" + creado.id())).body(creado);
+    public ResponseEntity<AttributeResponse> crearAtributo(@Valid @RequestBody AttributeRequest request) {
+        AttributeResponse creado = atributoService.crear(request);
+        return ResponseEntity.created(URI.create("/api/attributes/" + creado.id())).body(creado);
     }
 
-    @PutMapping("/api/colors/{id}")
+    @PutMapping("/api/attributes/{id}")
     @PreAuthorize("hasAuthority('" + Permisos.CONFIGURACION_EDITAR + "')")
-    public ColorResponse actualizarColor(@PathVariable Long id, @Valid @RequestBody ColorRequest request) {
-        return colorService.actualizar(id, request);
+    public AttributeResponse actualizarAtributo(@PathVariable Long id, @Valid @RequestBody AttributeRequest request) {
+        return atributoService.actualizar(id, request);
     }
 
-    @PatchMapping("/api/colors/{id}/status")
+    @PatchMapping("/api/attributes/{id}/status")
     @PreAuthorize("hasAuthority('" + Permisos.CONFIGURACION_EDITAR + "')")
-    public ColorResponse cambiarEstadoColor(@PathVariable Long id, @Valid @RequestBody CambiarEstadoRequest request) {
-        return colorService.cambiarEstado(id, request.status());
+    public AttributeResponse cambiarEstadoAtributo(@PathVariable Long id, @Valid @RequestBody CambiarEstadoRequest request) {
+        return atributoService.cambiarEstado(id, request.status());
     }
 
-    // ---------- Tallas ----------
-
-    @GetMapping("/api/sizes")
-    @PreAuthorize("hasAuthority('" + Permisos.PRODUCTOS_CONSULTAR + "')")
-    public List<SizeResponse> listarTallas() {
-        return sizeService.listar();
-    }
-
-    @GetMapping("/api/sizes/{id}")
-    @PreAuthorize("hasAuthority('" + Permisos.PRODUCTOS_CONSULTAR + "')")
-    public SizeResponse obtenerTalla(@PathVariable Long id) {
-        return sizeService.obtener(id);
-    }
-
-    @PostMapping("/api/sizes")
+    @PostMapping("/api/attributes/{id}/values")
     @PreAuthorize("hasAuthority('" + Permisos.CONFIGURACION_EDITAR + "')")
-    public ResponseEntity<SizeResponse> crearTalla(@Valid @RequestBody SizeRequest request) {
-        SizeResponse creado = sizeService.crear(request);
-        return ResponseEntity.created(URI.create("/api/sizes/" + creado.id())).body(creado);
+    public ResponseEntity<AttributeValueResponse> crearValorAtributo(@PathVariable Long id,
+            @Valid @RequestBody AttributeValueRequest request) {
+        AttributeValueResponse creado = atributoService.crearValor(id, request);
+        return ResponseEntity.created(URI.create("/api/attributes/" + id + "/values/" + creado.id())).body(creado);
     }
 
-    @PutMapping("/api/sizes/{id}")
+    @PutMapping("/api/attributes/values/{valueId}")
     @PreAuthorize("hasAuthority('" + Permisos.CONFIGURACION_EDITAR + "')")
-    public SizeResponse actualizarTalla(@PathVariable Long id, @Valid @RequestBody SizeRequest request) {
-        return sizeService.actualizar(id, request);
+    public AttributeValueResponse actualizarValorAtributo(@PathVariable Long valueId,
+            @Valid @RequestBody AttributeValueRequest request) {
+        return atributoService.actualizarValor(valueId, request);
     }
 
-    @PatchMapping("/api/sizes/{id}/status")
+    @PatchMapping("/api/attributes/values/{valueId}/status")
     @PreAuthorize("hasAuthority('" + Permisos.CONFIGURACION_EDITAR + "')")
-    public SizeResponse cambiarEstadoTalla(@PathVariable Long id, @Valid @RequestBody CambiarEstadoRequest request) {
-        return sizeService.cambiarEstado(id, request.status());
+    public AttributeValueResponse cambiarEstadoValorAtributo(@PathVariable Long valueId,
+            @Valid @RequestBody CambiarEstadoRequest request) {
+        return atributoService.cambiarEstadoValor(valueId, request.status());
     }
 }

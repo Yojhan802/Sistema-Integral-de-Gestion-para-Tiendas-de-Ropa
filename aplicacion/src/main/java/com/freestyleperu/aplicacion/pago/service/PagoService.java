@@ -9,6 +9,7 @@ import com.freestyleperu.aplicacion.shared.audit.AuditService;
 import com.freestyleperu.aplicacion.shared.domain.EstadoGeneral;
 import com.freestyleperu.aplicacion.shared.exception.RecursoNoEncontradoException;
 import com.freestyleperu.aplicacion.shared.util.ImageUploadService;
+import com.freestyleperu.aplicacion.tienda.service.StoreCatalogSyncService;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -22,12 +23,14 @@ public class PagoService {
     private final PaymentMethodRepository paymentMethodRepository;
     private final AuditService auditService;
     private final ImageUploadService imageUploadService;
+    private final StoreCatalogSyncService storeCatalogSyncService;
 
     public PagoService(PaymentMethodRepository paymentMethodRepository, AuditService auditService,
-            ImageUploadService imageUploadService) {
+            ImageUploadService imageUploadService, StoreCatalogSyncService storeCatalogSyncService) {
         this.paymentMethodRepository = paymentMethodRepository;
         this.auditService = auditService;
         this.imageUploadService = imageUploadService;
+        this.storeCatalogSyncService = storeCatalogSyncService;
     }
 
     public List<PaymentMethodResponse> listar() {
@@ -46,6 +49,7 @@ public class PagoService {
         method.setAccountNumber(request.accountNumber());
         method.setQrImageUrl(request.qrImageUrl());
         auditService.log("METODO_PAGO_ACTUALIZADO", "PAYMENT_METHOD", method.getId(), null, request, AuditResult.SUCCESS);
+        storeCatalogSyncService.requestRefresh();
         return toResponse(method);
     }
 
@@ -54,6 +58,7 @@ public class PagoService {
         PaymentMethod method = buscarOFallar(id);
         method.setQrImageUrl(imageUploadService.guardar(file, "payment-methods"));
         auditService.log("METODO_PAGO_QR_ACTUALIZADO", "PAYMENT_METHOD", method.getId(), null, method.getQrImageUrl(), AuditResult.SUCCESS);
+        storeCatalogSyncService.requestRefresh();
         return toResponse(method);
     }
 
@@ -61,6 +66,7 @@ public class PagoService {
     public PaymentMethodResponse cambiarEstado(Long id, EstadoGeneral status) {
         PaymentMethod method = buscarOFallar(id);
         method.setStatus(status);
+        storeCatalogSyncService.requestRefresh();
         return toResponse(method);
     }
 

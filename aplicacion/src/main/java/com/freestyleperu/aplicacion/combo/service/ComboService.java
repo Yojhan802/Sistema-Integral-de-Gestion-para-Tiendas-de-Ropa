@@ -17,6 +17,7 @@ import com.freestyleperu.aplicacion.producto.repository.ProductRepository;
 import com.freestyleperu.aplicacion.shared.domain.EstadoGeneral;
 import com.freestyleperu.aplicacion.shared.exception.RecursoNoEncontradoException;
 import com.freestyleperu.aplicacion.shared.exception.ReglaDeNegocioException;
+import com.freestyleperu.aplicacion.tienda.service.StoreCatalogSyncService;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -33,13 +34,16 @@ public class ComboService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final BrandRepository brandRepository;
+    private final StoreCatalogSyncService storeCatalogSyncService;
 
     public ComboService(ComboRepository comboRepository, ProductRepository productRepository,
-            CategoryRepository categoryRepository, BrandRepository brandRepository) {
+            CategoryRepository categoryRepository, BrandRepository brandRepository,
+            StoreCatalogSyncService storeCatalogSyncService) {
         this.comboRepository = comboRepository;
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
         this.brandRepository = brandRepository;
+        this.storeCatalogSyncService = storeCatalogSyncService;
     }
 
     public List<ComboResponse> listar() {
@@ -127,7 +131,9 @@ public class ComboService {
         combo.setPrice(request.price());
         combo.setItems(construirItems(combo, request.items()));
         validarPrecio(combo);
-        return toResponse(comboRepository.save(combo));
+        ComboResponse response = toResponse(comboRepository.save(combo));
+        storeCatalogSyncService.requestRefresh();
+        return response;
     }
 
     @Transactional
@@ -142,14 +148,18 @@ public class ComboService {
         combo.getItems().clear();
         combo.getItems().addAll(construirItems(combo, request.items()));
         validarPrecio(combo);
-        return toResponse(combo);
+        ComboResponse response = toResponse(combo);
+        storeCatalogSyncService.requestRefresh();
+        return response;
     }
 
     @Transactional
     public ComboResponse cambiarEstado(Long id, EstadoGeneral status) {
         Combo combo = buscarOFallar(id);
         combo.setStatus(status);
-        return toResponse(combo);
+        ComboResponse response = toResponse(combo);
+        storeCatalogSyncService.requestRefresh();
+        return response;
     }
 
     private List<ComboItem> construirItems(Combo combo, List<ComboItemRequest> items) {

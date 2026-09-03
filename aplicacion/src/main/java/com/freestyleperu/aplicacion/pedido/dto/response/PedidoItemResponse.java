@@ -6,8 +6,7 @@ public record PedidoItemResponse(
         Long variantId,
         String productName,
         String variantSku,
-        String colorName,
-        String sizeName,
+        String variantLabel,
         int quantity,
         BigDecimal unitPrice,
         BigDecimal subtotal) {

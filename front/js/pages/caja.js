@@ -6,7 +6,7 @@ import { openAbrirCajaModal } from '../components/abrir-caja.js';
 import { openModal, closeModal } from '../components/modal.js';
 import { renderPagination } from '../components/pagination.js';
 import { showToast } from '../components/toast.js';
-import { formatCurrency, formatDateLong } from '../core/format.js';
+import { formatCurrency, formatDateLong, escapeHtml } from '../core/format.js';
 
 const MOVEMENT_LABELS = {
   VENTA: 'Venta',
@@ -56,8 +56,8 @@ async function cargarSesionActual() {
           <td class="table-cell-muted">${formatDateLong(m.createdAt)}</td>
           <td><span class="badge ${m.amount >= 0 ? 'badge-success' : 'badge-warning'}">${MOVEMENT_LABELS[m.type] ?? m.type}</span></td>
           <td class="mono" style="color:${m.amount >= 0 ? 'var(--color-success-text)' : 'var(--color-danger-text)'};">${m.amount >= 0 ? '+' : ''}${formatCurrency(m.amount)}</td>
-          <td>${m.reason ?? '—'}</td>
-          <td>${m.username}</td>
+          <td>${m.reason ? escapeHtml(m.reason) : '—'}</td>
+          <td>${escapeHtml(m.username)}</td>
         </tr>
       `
         )

@@ -1,5 +1,5 @@
 import { renderEan13Svg } from './barcode.js';
-import { formatCurrency } from '../core/format.js';
+import { formatCurrency, escapeHtml } from '../core/format.js';
 
 /** Abre una ventana con etiquetas de precio + código de barras listas para imprimir y pegar (docs §12). */
 export function imprimirEtiquetas({ producto, variante, cantidad = 1 }) {
@@ -12,8 +12,8 @@ export function imprimirEtiquetas({ producto, variante, cantidad = 1 }) {
   const precio = producto.promoPrice ?? producto.price;
   const etiqueta = `
     <div class="etiqueta">
-      <div class="nombre">${producto.name}</div>
-      <div class="detalle">${variante.colorName} / ${variante.sizeName}</div>
+      <div class="nombre">${escapeHtml(producto.name)}</div>
+      <div class="detalle">${escapeHtml(variante.variantLabel)}</div>
       <div class="precio">${formatCurrency(precio)}</div>
       ${renderEan13Svg(variante.barcode, { moduleWidth: 1.3, height: 44 })}
     </div>

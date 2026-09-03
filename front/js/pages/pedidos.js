@@ -6,7 +6,7 @@ import { openModal, closeModal } from '../components/modal.js';
 import { confirmAction } from '../components/confirm.js';
 import { showToast } from '../components/toast.js';
 import { imprimirTicket } from '../components/ticket.js';
-import { formatCurrency, formatDateTime } from '../core/format.js';
+import { formatCurrency, formatDateTime, escapeHtml } from '../core/format.js';
 
 const STATUS_LABELS = { PENDING_PAYMENT: 'Pendiente de pago', CONFIRMED: 'Confirmado', CANCELLED: 'Anulado' };
 const STATUS_CLASSES = { PENDING_PAYMENT: 'badge-warning', CONFIRMED: 'badge-success', CANCELLED: 'badge-danger' };
@@ -41,8 +41,8 @@ async function cargarPedidos() {
           .map(
             (o) => `
         <tr>
-          <td class="table-cell-primary mono">${o.orderNumber}</td>
-          <td>${o.customerName}</td>
+          <td class="table-cell-primary mono">${escapeHtml(o.orderNumber)}</td>
+          <td>${escapeHtml(o.customerName)}</td>
           <td>${formatCurrency(o.total)}</td>
           <td>${orderStatusBadge(o.status)}</td>
           <td>${formatDateTime(o.createdAt)}</td>
@@ -81,8 +81,8 @@ function abrirModalDetalle(pedido) {
     .map(
       (it) => `
     <tr>
-      <td>${it.productName}</td>
-      <td>${it.colorName} / ${it.sizeName}</td>
+      <td>${escapeHtml(it.productName)}</td>
+      <td>${escapeHtml(it.variantLabel)}</td>
       <td class="mono">${it.quantity}</td>
       <td>${formatCurrency(it.unitPrice)}</td>
       <td>${formatCurrency(it.subtotal)}</td>
@@ -95,10 +95,10 @@ function abrirModalDetalle(pedido) {
   body.innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: var(--space-4);">
       <div>
-        <div style="font-weight:600;">${pedido.recipientFirstName} ${pedido.recipientLastNamePaterno} ${pedido.recipientLastNameMaterno}</div>
-        <div style="color: var(--color-text-secondary); font-size: var(--font-size-sm);">DNI ${pedido.recipientDni} · ${pedido.phone}</div>
-        <div style="color: var(--color-text-secondary); font-size: var(--font-size-sm);">${pedido.address}, ${pedido.district}, ${pedido.province}, ${pedido.department}</div>
-        ${pedido.notes ? `<div style="color: var(--color-text-muted); font-size: var(--font-size-sm); margin-top:4px;">Nota: ${pedido.notes}</div>` : ''}
+        <div style="font-weight:600;">${escapeHtml(pedido.recipientFirstName)} ${escapeHtml(pedido.recipientLastNamePaterno)} ${escapeHtml(pedido.recipientLastNameMaterno)}</div>
+        <div style="color: var(--color-text-secondary); font-size: var(--font-size-sm);">DNI ${escapeHtml(pedido.recipientDni)} · ${escapeHtml(pedido.phone)}</div>
+        <div style="color: var(--color-text-secondary); font-size: var(--font-size-sm);">${escapeHtml(pedido.address)}, ${escapeHtml(pedido.district)}, ${escapeHtml(pedido.province)}, ${escapeHtml(pedido.department)}</div>
+        ${pedido.notes ? `<div style="color: var(--color-text-muted); font-size: var(--font-size-sm); margin-top:4px;">Nota: ${escapeHtml(pedido.notes)}</div>` : ''}
       </div>
       ${orderStatusBadge(pedido.status)}
     </div>

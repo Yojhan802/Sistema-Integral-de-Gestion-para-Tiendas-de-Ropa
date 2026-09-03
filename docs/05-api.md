@@ -65,7 +65,8 @@ Petición: `?page=0&size=20&sort=createdAt,desc`
 | POST | `/refresh` | público | Renueva el access token |
 | POST | `/logout` | autenticado | Revoca el refresh token |
 | GET | `/me` | autenticado | Usuario actual con sus permisos |
-| POST | `/change-password` | autenticado | Cambio de contraseña propia |
+| POST | `/change-password` | `USUARIOS_CAMBIAR_CONTRASENA` | Cambio de contraseña propia |
+| POST | `/complete-password-change` | autenticado | Completa un cambio obligatorio por contraseña temporal |
 
 **POST `/api/auth/login`**
 ```json
@@ -91,9 +92,45 @@ Petición: `?page=0&size=20&sort=createdAt,desc`
 El frontend usa `permissions` para ocultar acciones, pero **el backend vuelve a
 comprobarlas siempre** (ocultar no es proteger).
 
+`POST /api/auth/change-password` solo cambia la contraseña del usuario autenticado;
+no permite modificar la de otro usuario. El permiso
+`USUARIOS_CAMBIAR_CONTRASENA` se entrega por defecto a todos los roles.
+`POST /api/auth/complete-password-change` es la ruta controlada para el primer
+ingreso después de un alta o reseteo: solo funciona mientras la cuenta tenga
+`mustChangePassword=true`, y únicamente permite definir la propia contraseña.
+El administrador puede restablecer la contraseña de otros usuarios mediante
+`/api/users/{id}/reset-password`, operación separada que genera una contraseña
+temporal y exige `USUARIOS_RESETEAR_CONTRASENA`.
+
 ---
 
-## 3. Usuarios, roles y permisos
+## 3. Empresas de la plataforma — `/api/platform/tenants`
+
+Estas rutas están reservadas al usuario interno marcado como operador de la
+plataforma. No dependen del subdominio del tenant actual y no se bloquean si una
+empresa está suspendida.
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/api/platform/tenants` | Lista empresas; acepta `search` y `status` |
+| POST | `/api/platform/tenants` | Crea empresa, roles, usuario administrador, sucursal, almacén, caja y correlativos |
+| PUT | `/api/platform/tenants/{tenantId}` | Actualiza identidad básica, plan y estado de suscripción |
+
+`POST` genera una contraseña temporal y la devuelve una sola vez en la
+respuesta. El administrador de la nueva empresa debe cambiarla al iniciar
+sesión. El `slug` queda reservado como subdominio y no se cambia desde la
+edición normal para no romper los enlaces del negocio.
+
+El usuario operador recibe la autoridad sintética
+`PLATAFORMA_EMPRESAS_GESTIONAR`; esta no es un permiso asignable desde los
+roles de una empresa.
+
+El alta recibe `name`, `slug`, `businessVertical` (`CLOTHING` o `GENERAL`),
+`plan`, los datos de contacto y los datos del administrador inicial. La edición
+permite actualizar también el rubro, plan, estado de suscripción y fecha del
+próximo pago.
+
+## 4. Usuarios, roles y permisos
 
 | Método | Ruta | Permiso |
 |---|---|---|
@@ -102,7 +139,7 @@ comprobarlas siempre** (ocultar no es proteger).
 | POST | `/api/users` | `USUARIOS_CREAR` |
 | PUT | `/api/users/{id}` | `USUARIOS_EDITAR` |
 | PATCH | `/api/users/{id}/status` | `USUARIOS_BLOQUEAR` |
-| POST | `/api/users/{id}/reset-password` | `USUARIOS_EDITAR` |
+| POST | `/api/users/{id}/reset-password` | `USUARIOS_RESETEAR_CONTRASENA` |
 | GET | `/api/roles` | `ROLES_GESTIONAR`, `USUARIOS_CREAR` o `USUARIOS_EDITAR` |
 | GET | `/api/roles/{id}` | `ROLES_GESTIONAR`, `USUARIOS_CREAR` o `USUARIOS_EDITAR` |
 | POST | `/api/roles` | `ROLES_GESTIONAR` |
@@ -153,6 +190,11 @@ Mismo patrón para `/api/categories`, `/api/subcategories`, `/api/brands`,
 | PUT | `/api/products/{id}` | `PRODUCTOS_EDITAR` | |
 | PATCH | `/api/products/{id}/status` | `PRODUCTOS_EDITAR` | Activar / desactivar |
 | POST | `/api/products/{id}/image` | `PRODUCTOS_EDITAR` | Subir imagen |
+| GET | `/api/products/{id}/images` | `PRODUCTOS_CONSULTAR` | Listar galería del producto |
+| POST | `/api/products/{id}/images` | `PRODUCTOS_EDITAR` | Agregar imagen (`file`, `altText`, `sortOrder`, `primary`) |
+| PATCH | `/api/products/{id}/images/{imageId}/primary` | `PRODUCTOS_EDITAR` | Marcar portada |
+| PATCH | `/api/products/{id}/images/{imageId}` | `PRODUCTOS_EDITAR` | Actualizar texto alternativo y orden |
+| DELETE | `/api/products/{id}/images/{imageId}` | `PRODUCTOS_EDITAR` | Retirar imagen |
 | POST | `/api/products/{id}/size-guide` | `PRODUCTOS_EDITAR` | Subir imagen de guía de tallas (tienda online) |
 
 `material` y `fit` (texto libre, ej. "100% Algodón" / "True to size") viajan
@@ -281,7 +323,7 @@ compras, última compra, productos comprados) calculados en consulta.
 | GET | `/api/sales/{id}` | `VENTAS_CONSULTAR` | Detalle completo |
 | GET | `/api/sales/{id}/ticket` | `VENTAS_CONSULTAR` | Ticket imprimible |
 | POST | `/api/sales` | `VENTAS_CREAR` | **Registrar venta** |
-| POST | `/api/sales/{id}/cancel` | `VENTAS_ANULAR` | Anular con motivo |
+| POST | `/api/sales/{id}/cancel` | `VENTAS_ANULAR` | Anular con motivo; si existe un CPE aceptado, genera y exige aceptar una nota de crédito |
 
 Un vendedor sin `VENTAS_CONSULTAR` global solo ve sus propias ventas: el filtro
 lo aplica el service, no el cliente.
@@ -437,6 +479,8 @@ Todos aceptan `?from=2026-08-01&to=2026-08-19` y requieren `REPORTES_CONSULTAR`.
 | `/api/reports/sales/by-seller` | Ventas por vendedor |
 | `/api/reports/sales/by-promoter` | Ventas por promotor (conteo + total, para comisión) |
 | `/api/reports/sales/by-payment-method` | Distribución de cobros |
+| `/api/reports/payments/online` | Pagos online agrupados por proveedor y estado, con cantidad y monto |
+| `/api/reports/billing/documents` | Comprobantes electrónicos agrupados por proveedor y estado, con cantidad y monto |
 | `/api/reports/products/top-selling` | Más vendidos |
 | `/api/reports/products/no-movement` | Sin rotación |
 | `/api/reports/inventory/valuation` | Valorización del stock |
@@ -655,6 +699,7 @@ menor, incluso el catálogo público responde 403.
 | GET | `/api/store/catalog/categories` | Solo categorías activas |
 | GET | `/api/store/catalog/brands` | Solo marcas activas |
 | GET | `/api/store/catalog/payment-methods` | Métodos activos que **no** afecten caja (`affectsCash = false`), con QR/cuenta para pagar. Incluye `code` (ej. `CONTRAENTREGA`) para que el checkout decida cuándo mostrar cada opción |
+| GET | `/api/store/catalog/payment-providers` | Pasarelas online activas y listas para el tenant actual; no expone credenciales privadas |
 | GET | `/api/store/catalog/shipping-info` | `{ flatRate, freeShippingDistrict }` — tarifa de envío vigente y el distrito con envío gratis (Huacho) |
 
 Las respuestas usan DTOs propios (`Public*Response`) que **nunca** exponen
@@ -756,6 +801,62 @@ informativo, no una reserva).
 ```
 Devuelve el pedido completo con `paymentProofUrl` actualizado. El staff lo ve
 en `GET /api/orders/{id}` (§18) al revisar el pedido antes de confirmar.
+
+---
+
+### Pasarelas y transacciones online
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/api/store/catalog/payment-providers` | Lista solo proveedores activados, configurados y listos para la empresa |
+| POST | `/api/store/orders/{orderId}/payment-transactions` | Crea un intento idempotente; el monto y tenant se resuelven en servidor |
+| GET | `/api/store/payment-transactions/{id}` | Consulta un intento propio |
+| GET | `/api/store/payment-transactions/{id}/checkout` | Inicializa el checkout desacoplado del proveedor |
+| POST | `/api/store/payment-transactions/{id}/charge` | Procesa token/cargo server-side cuando el proveedor lo requiere |
+
+El frontend nunca puede aprobar una transacción. Niubiz y Culqi pueden
+resolver el cargo en la respuesta backend; Izipay queda `PENDING` hasta su
+IPN firmado.
+
+Configuración staff:
+
+| Método | Ruta | Permiso |
+|---|---|---|
+| GET | `/api/settings/payment-providers` | `CONFIGURACION_PAGOS` |
+| PUT | `/api/settings/payment-providers/{provider}` | `CONFIGURACION_PAGOS` |
+
+Las credenciales se guardan cifradas y nunca se devuelven completas.
+
+### Facturación electrónica
+
+| Método | Ruta | Permiso | Descripción |
+|---|---|---|---|
+| GET | `/api/sales/{saleId}/electronic-documents` | `VENTAS_CONSULTAR` | Lista comprobantes de una venta |
+| POST | `/api/sales/{saleId}/electronic-documents` | `VENTAS_CREAR` | Crea borrador idempotente de boleta, factura, nota de crédito o nota de débito |
+| POST | `/api/electronic-documents/{id}/submit` | `VENTAS_CREAR` | Envía al proveedor configurado por el tenant (Verifac o NubeFact) |
+| GET | `/api/electronic-documents/{id}/status` | `VENTAS_CONSULTAR` | Consulta estado en el proveedor del comprobante |
+| POST | `/api/electronic-documents/{id}/retry` | `VENTAS_CREAR` | Reintenta un documento rechazado o con error |
+| GET | `/api/electronic-documents/{id}/pdf` | `VENTAS_CONSULTAR` | Descarga PDF |
+| GET | `/api/electronic-documents/{id}/xml` | `VENTAS_CONSULTAR` | Descarga XML |
+| GET | `/api/electronic-documents/{id}/cdr` | `VENTAS_CONSULTAR` | Descarga CDR |
+
+Para una nota, el cuerpo incluye:
+
+```json
+{
+  "documentType": "NOTA_CREDITO",
+  "sourceDocumentId": 10,
+  "reasonCode": "06",
+  "reasonDescription": "Devolución total",
+  "items": null
+}
+```
+
+El comprobante de origen debe pertenecer a la misma venta y tenant, estar
+aceptado por el proveedor configurado y ser una boleta o factura. Para una devolución parcial
+(`reasonCode = "07"`), `items` contiene objetos `{ "variantId": 12,
+"quantity": 1 }`; las cantidades se validan contra la venta original y se
+recalculan en el servidor.
 
 ---
 

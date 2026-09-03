@@ -14,6 +14,7 @@ import com.freestyleperu.aplicacion.promocion.repository.PromocionRepository;
 import com.freestyleperu.aplicacion.shared.domain.EstadoGeneral;
 import com.freestyleperu.aplicacion.shared.exception.RecursoNoEncontradoException;
 import com.freestyleperu.aplicacion.shared.exception.ReglaDeNegocioException;
+import com.freestyleperu.aplicacion.tienda.service.StoreCatalogSyncService;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
@@ -29,13 +30,16 @@ public class PromocionService {
     private final CategoryRepository categoryRepository;
     private final ProductRepository productRepository;
     private final ProductVariantRepository variantRepository;
+    private final StoreCatalogSyncService storeCatalogSyncService;
 
     public PromocionService(PromocionRepository promocionRepository, CategoryRepository categoryRepository,
-            ProductRepository productRepository, ProductVariantRepository variantRepository) {
+            ProductRepository productRepository, ProductVariantRepository variantRepository,
+            StoreCatalogSyncService storeCatalogSyncService) {
         this.promocionRepository = promocionRepository;
         this.categoryRepository = categoryRepository;
         this.productRepository = productRepository;
         this.variantRepository = variantRepository;
+        this.storeCatalogSyncService = storeCatalogSyncService;
     }
 
     public List<PromocionResponse> listar() {
@@ -126,7 +130,9 @@ public class PromocionService {
         }
         Promocion promo = new Promocion();
         aplicarCampos(promo, request);
-        return toResponse(promocionRepository.save(promo));
+        PromocionResponse response = toResponse(promocionRepository.save(promo));
+        storeCatalogSyncService.requestRefresh();
+        return response;
     }
 
     @Transactional
@@ -136,14 +142,18 @@ public class PromocionService {
             throw new ReglaDeNegocioException("Ya existe una promoción con el código " + request.code());
         }
         aplicarCampos(promo, request);
-        return toResponse(promo);
+        PromocionResponse response = toResponse(promo);
+        storeCatalogSyncService.requestRefresh();
+        return response;
     }
 
     @Transactional
     public PromocionResponse cambiarEstado(Long id, EstadoGeneral status) {
         Promocion promo = buscarOFallar(id);
         promo.setStatus(status);
-        return toResponse(promo);
+        PromocionResponse response = toResponse(promo);
+        storeCatalogSyncService.requestRefresh();
+        return response;
     }
 
     private void aplicarCampos(Promocion promo, PromocionRequest request) {

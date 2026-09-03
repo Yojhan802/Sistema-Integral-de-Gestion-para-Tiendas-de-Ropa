@@ -10,6 +10,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,10 +27,10 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "combos")
+@Table(name = "combos", uniqueConstraints = @UniqueConstraint(columnNames = { "tenant_id", "code" }))
 public class Combo extends BaseEntity {
 
-    @Column(name = "code", nullable = false, unique = true, length = 30)
+    @Column(name = "code", nullable = false, length = 30)
     private String code;
 
     @Column(name = "name", nullable = false, length = 150)

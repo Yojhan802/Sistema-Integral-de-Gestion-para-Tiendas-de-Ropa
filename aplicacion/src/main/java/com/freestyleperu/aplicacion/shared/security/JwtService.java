@@ -22,6 +22,7 @@ public class JwtService {
 
     private static final String CLAIM_USERNAME = "username";
     private static final String CLAIM_AUTHORITIES = "authorities";
+    private static final String CLAIM_TENANT_ID = "tenantId";
 
     private final JwtProperties properties;
     private final SecureRandom secureRandom = new SecureRandom();
@@ -41,13 +42,14 @@ public class JwtService {
         this.key = Keys.hmacShaKeyFor(properties.getSecret().getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generateAccessToken(Long userId, String username, Set<String> authorities) {
+    public String generateAccessToken(Long userId, String username, Set<String> authorities, Long tenantId) {
         Instant now = Instant.now();
         Instant expiry = now.plus(properties.getAccessTokenMinutes(), ChronoUnit.MINUTES);
         return Jwts.builder()
                 .subject(String.valueOf(userId))
                 .claim(CLAIM_USERNAME, username)
                 .claim(CLAIM_AUTHORITIES, authorities)
+                .claim(CLAIM_TENANT_ID, String.valueOf(tenantId))
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(expiry))
                 .signWith(key)
@@ -82,7 +84,8 @@ public class JwtService {
             Set<String> authoritySet = authorities == null
                     ? Set.of()
                     : authorities.stream().collect(Collectors.toUnmodifiableSet());
-            return new AuthenticatedUser(userId, username, authoritySet);
+            Long tenantId = Long.valueOf(claims.get(CLAIM_TENANT_ID, String.class));
+            return new AuthenticatedUser(userId, username, authoritySet, tenantId);
         } catch (JwtException | IllegalArgumentException ex) {
             return null;
         }

@@ -1,0 +1,97 @@
+/* Superficies dinámicas propias de MINIMAL. El contenido puede llegar de API,
+   pero su presentación pertenece a esta plantilla. */
+body[data-store-template='MINIMAL'] .store-cart-item,
+body[data-store-template='MINIMAL'] .store-summary,
+body[data-store-template='MINIMAL'] .store-checkout-form,
+body[data-store-template='MINIMAL'] .store-form-panel,
+body[data-store-template='MINIMAL'] .store-checkout-summary,
+body[data-store-template='MINIMAL'] .store-auth-form,
+body[data-store-template='MINIMAL'] .store-order-card,
+body[data-store-template='MINIMAL'] .store-order-drawer-panel {
+  border-color: var(--minimal-border, #dfe0db);
+  border-radius: var(--minimal-radius-md, 5px);
+  background: var(--minimal-surface, #fff);
+  color: var(--minimal-text, #151515);
+  box-shadow: none;
+}
+body[data-store-template='MINIMAL'] .store-cart-item { border-width: 1px; padding: 1rem; }
+body[data-store-template='MINIMAL'] .store-cart-item img,
+body[data-store-template='MINIMAL'] .store-qr-box,
+body[data-store-template='MINIMAL'] .store-payment-option,
+body[data-store-template='MINIMAL'] .store-payment-account,
+body[data-store-template='MINIMAL'] .store-proof-image { border-color: var(--minimal-border, #dfe0db); border-radius: var(--minimal-radius-sm, 2px); }
+body[data-store-template='MINIMAL'] .store-cart-item img,
+body[data-store-template='MINIMAL'] .store-cart-controls,
+body[data-store-template='MINIMAL'] .store-payment-account,
+body[data-store-template='MINIMAL'] .store-qr-box { background: var(--minimal-surface-subtle, #eeeeea); }
+body[data-store-template='MINIMAL'] .store-cart-product-name,
+body[data-store-template='MINIMAL'] .store-cart-line-total,
+body[data-store-template='MINIMAL'] .store-summary-row,
+body[data-store-template='MINIMAL'] .store-summary-total,
+body[data-store-template='MINIMAL'] .store-form-panel h2,
+body[data-store-template='MINIMAL'] .store-checkout-summary h2,
+body[data-store-template='MINIMAL'] .store-order-card { color: var(--minimal-text, #151515); }
+body[data-store-template='MINIMAL'] .store-cart-variant,
+body[data-store-template='MINIMAL'] .store-cart-unit-price,
+body[data-store-template='MINIMAL'] .store-summary-note,
+body[data-store-template='MINIMAL'] .store-checkout-intro,
+body[data-store-template='MINIMAL'] .field-hint,
+body[data-store-template='MINIMAL'] .store-order-card small,
+body[data-store-template='MINIMAL'] .store-order-detail-meta { color: var(--minimal-text-muted, #70736f); }
+body[data-store-template='MINIMAL'] .store-summary,
+body[data-store-template='MINIMAL'] .store-checkout-summary { border-top-color: var(--minimal-primary, #151515); }
+body[data-store-template='MINIMAL'] .store-payment-option { background: var(--minimal-surface, #fff); }
+body[data-store-template='MINIMAL'] .store-payment-option[data-selected='true'] { border-color: var(--minimal-primary, #151515); background: color-mix(in srgb, var(--minimal-primary, #151515) 11%, var(--minimal-surface, #fff)); }
+body[data-store-template='MINIMAL'] .store-payment-provider,
+body[data-store-template='MINIMAL'] .store-order-proof-section { border-color: var(--minimal-border, #dfe0db); }
+body[data-store-template='MINIMAL'] .store-form-panel .input,
+body[data-store-template='MINIMAL'] .store-form-panel .select,
+body[data-store-template='MINIMAL'] .store-checkout-summary .input,
+body[data-store-template='MINIMAL'] .store-checkout-summary .select,
+body[data-store-template='MINIMAL'] .store-auth-form .input { border-color: var(--minimal-border, #dfe0db); border-radius: var(--minimal-radius-sm, 2px); background: var(--minimal-surface, #fff); color: var(--minimal-text, #151515); }
+body[data-store-template='MINIMAL'] .store-form-panel .input:focus-visible,
+body[data-store-template='MINIMAL'] .store-form-panel .select:focus-visible,
+body[data-store-template='MINIMAL'] .store-checkout-summary .input:focus-visible,
+body[data-store-template='MINIMAL'] .store-checkout-summary .select:focus-visible,
+body[data-store-template='MINIMAL'] .store-auth-form .input:focus-visible { outline: 2px solid var(--minimal-primary, #151515); outline-offset: 2px; }
+body[data-store-template='MINIMAL'] .store-summary-total { border-top-color: var(--minimal-border, #dfe0db); }
+body[data-store-template='MINIMAL'] .store-summary-action,
+body[data-store-template='MINIMAL'] .store-auth-form .btn { border-radius: var(--minimal-radius-sm, 2px); }
+@media (max-width: 760px) {
+  body[data-store-template='MINIMAL'] .store-cart-item { padding: .85rem; }
+  body[data-store-template='MINIMAL'] .store-checkout-form { border-radius: var(--minimal-radius-sm, 2px); }
+}
+/* Checkout nativo React de MINIMAL: estos nodos son la plantilla que recibe los datos. */
+body[data-store-template='MINIMAL'] .template-checkout { color: var(--template-ink); }
+body[data-store-template='MINIMAL'] .template-checkout-eyebrow { border-bottom: 1px solid var(--template-line); color: var(--template-ink); }
+body[data-store-template='MINIMAL'] .template-checkout-intro { color: var(--template-muted); }
+body[data-store-template='MINIMAL'] .template-checkout-delivery,
+body[data-store-template='MINIMAL'] .template-checkout-order { border: 1px solid var(--template-line); border-radius: var(--template-radius); background: var(--template-surface); box-shadow: var(--react-form-shadow, none); }
+body[data-store-template='MINIMAL'] .template-checkout-order { border-top: 3px solid var(--brand-accent); }
+body[data-store-template='MINIMAL'] .template-panel-kicker,
+body[data-store-template='MINIMAL'] .template-payment-title { color: var(--brand-accent); }
+body[data-store-template='MINIMAL'] .template-field > span { color: var(--template-ink); }
+body[data-store-template='MINIMAL'] .template-field > span small,
+body[data-store-template='MINIMAL'] .template-field small { color: var(--template-muted); }
+body[data-store-template='MINIMAL'] .template-field input,
+body[data-store-template='MINIMAL'] .template-field select,
+body[data-store-template='MINIMAL'] .template-field textarea { border: 1px solid var(--template-line); border-radius: var(--template-card-radius); background: var(--template-surface); color: var(--template-ink); }
+body[data-store-template='MINIMAL'] .template-field input:focus-visible,
+body[data-store-template='MINIMAL'] .template-field select:focus-visible,
+body[data-store-template='MINIMAL'] .template-field textarea:focus-visible { outline: 2px solid var(--brand-accent); outline-offset: 2px; }
+body[data-store-template='MINIMAL'] .template-order-line,
+body[data-store-template='MINIMAL'] .template-total-line { border-bottom: 1px solid var(--template-line); }
+body[data-store-template='MINIMAL'] .template-order-line,
+body[data-store-template='MINIMAL'] .template-total-line,
+body[data-store-template='MINIMAL'] .template-grand-total { color: var(--template-ink); }
+body[data-store-template='MINIMAL'] .template-grand-total { border-top: 1px solid var(--template-line); }
+body[data-store-template='MINIMAL'] .template-payment-option { border: 1px solid var(--template-line); border-radius: var(--template-card-radius); background: var(--template-surface); color: var(--template-ink); }
+body[data-store-template='MINIMAL'] .template-payment-option.is-selected { border-color: var(--brand-accent); background: color-mix(in srgb, var(--brand-accent) 11%, var(--template-surface)); }
+body[data-store-template='MINIMAL'] .template-payment-qr,
+body[data-store-template='MINIMAL'] .template-payment-account { border: 1px solid var(--template-line); border-radius: var(--template-card-radius); background: var(--template-surface-alt); color: var(--template-ink); }
+body[data-store-template='MINIMAL'] .template-payment-qr img { border-radius: var(--template-card-radius); }
+body[data-store-template='MINIMAL'] .template-provider-field { border-top: 1px solid var(--template-line); }
+body[data-store-template='MINIMAL'] .template-error { border: 1px solid #d77; background: color-mix(in srgb, #d33 8%, var(--template-surface)); color: var(--template-ink); }
+body[data-store-template='MINIMAL'] .template-submit { border-radius: var(--template-card-radius); background: var(--brand-accent); color: #fff; transition: transform .25s ease, filter .25s ease; }
+body[data-store-template='MINIMAL'] .template-submit:hover:not(:disabled) { filter: brightness(.92); transform: translateY(-2px); }
+body[data-store-template='MINIMAL'] .template-submit:focus-visible { outline: 2px solid var(--brand-accent); outline-offset: 3px; }

@@ -9,12 +9,10 @@ import com.freestyleperu.aplicacion.caja.dto.request.AbrirCajaRequest;
 import com.freestyleperu.aplicacion.caja.dto.response.SesionCajaResponse;
 import com.freestyleperu.aplicacion.caja.repository.CashRegisterRepository;
 import com.freestyleperu.aplicacion.caja.service.CajaService;
+import com.freestyleperu.aplicacion.catalogo.domain.AttributeValue;
 import com.freestyleperu.aplicacion.catalogo.domain.Category;
-import com.freestyleperu.aplicacion.catalogo.domain.Color;
-import com.freestyleperu.aplicacion.catalogo.domain.Size;
 import com.freestyleperu.aplicacion.catalogo.repository.CategoryRepository;
-import com.freestyleperu.aplicacion.catalogo.repository.ColorRepository;
-import com.freestyleperu.aplicacion.catalogo.repository.SizeRepository;
+import com.freestyleperu.aplicacion.producto.AtributoTestFixture;
 import com.freestyleperu.aplicacion.cliente.domain.Customer;
 import com.freestyleperu.aplicacion.cliente.domain.TipoDocumento;
 import com.freestyleperu.aplicacion.cliente.repository.CustomerRepository;
@@ -60,8 +58,7 @@ class BusquedaFlujoIntegrationTest {
 
     @Autowired private BusquedaService busquedaService;
     @Autowired private CategoryRepository categoryRepository;
-    @Autowired private ColorRepository colorRepository;
-    @Autowired private SizeRepository sizeRepository;
+    @Autowired private AtributoTestFixture atributos;
     @Autowired private PaymentMethodRepository paymentMethodRepository;
     @Autowired private ProductoService productoService;
     @Autowired private VarianteService varianteService;
@@ -91,7 +88,7 @@ class BusquedaFlujoIntegrationTest {
                 List.of(new PagoVentaRequest(efectivo.getId(), new BigDecimal("100.00"), null)));
         VentaResponse venta = ventaService.registrarVenta(ventaRequest, staffId, Set.of());
 
-        AuthenticatedUser usuarioConTodo = new AuthenticatedUser(staffId, "busqueda.staff", TODOS_LOS_PERMISOS);
+        AuthenticatedUser usuarioConTodo = new AuthenticatedUser(staffId, "busqueda.staff", TODOS_LOS_PERMISOS, 1L);
 
         // Producto: por nombre.
         SearchResponse porNombre = busquedaService.buscar("Casaca Búsqueda", usuarioConTodo);
@@ -117,7 +114,7 @@ class BusquedaFlujoIntegrationTest {
     @Test
     void cadaCategoriaSoloApareceSiElUsuarioTieneElPermisoDeConsultarla() {
         nuevoCliente("Cliente Sin Permiso", "78912345");
-        AuthenticatedUser sinPermisos = new AuthenticatedUser(999L, "sin.permisos", Set.of());
+        AuthenticatedUser sinPermisos = new AuthenticatedUser(999L, "sin.permisos", Set.of(), 1L);
 
         SearchResponse resultado = busquedaService.buscar("Cliente Sin Permiso", sinPermisos);
 
@@ -126,7 +123,7 @@ class BusquedaFlujoIntegrationTest {
         assertThat(resultado.sales()).isEmpty();
         assertThat(resultado.users()).isEmpty();
 
-        AuthenticatedUser soloClientes = new AuthenticatedUser(999L, "solo.clientes", Set.of(Permisos.CLIENTES_CONSULTAR));
+        AuthenticatedUser soloClientes = new AuthenticatedUser(999L, "solo.clientes", Set.of(Permisos.CLIENTES_CONSULTAR), 1L);
         SearchResponse conPermiso = busquedaService.buscar("Cliente Sin Permiso", soloClientes);
         assertThat(conPermiso.customers()).extracting("title").contains("Cliente Sin Permiso");
     }
@@ -158,20 +155,13 @@ class BusquedaFlujoIntegrationTest {
         categoria.setSlug((producto + "-cat").toLowerCase());
         categoryRepository.save(categoria);
 
-        Color colorEntity = new Color();
-        colorEntity.setName(color + "-" + producto);
-        colorEntity.setHexCode("#000000");
-        colorRepository.save(colorEntity);
-
-        Size sizeEntity = new Size();
-        sizeEntity.setName(talla + "-" + producto);
-        sizeEntity.setSortOrder((short) 1);
-        sizeRepository.save(sizeEntity);
+        AttributeValue colorEntity = atributos.color(color + "-" + producto);
+        AttributeValue sizeEntity = atributos.talla(talla + "-" + producto, (short) 1);
 
         ProductoDetalleResponse productoCreado = productoService.crear(new CrearProductoRequest(
                 null, null, producto, categoria.getId(), null, null, null, null, null, precio, null));
         return varianteService.crear(productoCreado.id(),
-                new CrearVarianteRequest(colorEntity.getId(), sizeEntity.getId(), null, null, stock, 1, false));
+                new CrearVarianteRequest(List.of(colorEntity.getId(), sizeEntity.getId()), null, null, stock, 1, false));
     }
 
     private PaymentMethod metodoPago(String code) {

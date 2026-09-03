@@ -7,6 +7,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,10 +16,10 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "brands")
+@Table(name = "brands", uniqueConstraints = @UniqueConstraint(columnNames = { "tenant_id", "name" }))
 public class Brand extends BaseEntity {
 
-    @Column(name = "name", nullable = false, unique = true, length = 80)
+    @Column(name = "name", nullable = false, length = 80)
     private String name;
 
     @Enumerated(EnumType.STRING)

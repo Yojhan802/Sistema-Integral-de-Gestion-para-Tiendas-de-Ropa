@@ -3,11 +3,13 @@ package com.freestyleperu.aplicacion.pedido.service;
 import com.freestyleperu.aplicacion.cliente.domain.Customer;
 import com.freestyleperu.aplicacion.cliente.repository.CustomerRepository;
 import com.freestyleperu.aplicacion.configuracion.service.ConfiguracionService;
+import com.freestyleperu.aplicacion.facturacion.service.BillingConfigurationService;
 import com.freestyleperu.aplicacion.inventario.service.InventarioService;
 import com.freestyleperu.aplicacion.notificacion.service.NotificacionService;
 import com.freestyleperu.aplicacion.pago.domain.PaymentMethod;
 import com.freestyleperu.aplicacion.pago.service.PagoService;
 import com.freestyleperu.aplicacion.pedido.domain.Pedido;
+import com.freestyleperu.aplicacion.pedido.domain.PedidoBillingDocumentType;
 import com.freestyleperu.aplicacion.pedido.domain.PedidoDetail;
 import com.freestyleperu.aplicacion.pedido.domain.PedidoStatus;
 import com.freestyleperu.aplicacion.pedido.dto.request.CancelarPedidoRequest;
@@ -29,6 +31,7 @@ import com.freestyleperu.aplicacion.shared.exception.ReglaDeNegocioException;
 import com.freestyleperu.aplicacion.shared.exception.StockInsuficienteException;
 import com.freestyleperu.aplicacion.shared.util.ImageUploadService;
 import com.freestyleperu.aplicacion.shared.util.SequenceService;
+import com.freestyleperu.aplicacion.shared.validation.RucValidator;
 import com.freestyleperu.aplicacion.usuario.domain.Usuario;
 import com.freestyleperu.aplicacion.usuario.repository.UsuarioRepository;
 import com.freestyleperu.aplicacion.venta.domain.Payment;
@@ -52,13 +55,16 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
- * Pedidos de la tienda online. El stock no se toca al crear el pedido, solo
- * se valida como referencia — recién se descuenta cuando el staff confirma
- * el pago (ver docs/03-modelo-datos.md, Fase 2): el pago es manual, así que
- * "pedido creado" todavía no significa "pago recibido". Al confirmar, además
- * de descontar stock, se genera una {@link Sale} real (sin sesión de caja)
- * para que el pedido entre en el mismo historial/reportes de Ventas y pueda
- * imprimirse el mismo ticket que usa el POS.
+ * Pedidos de la tienda online. El stock se retiene al crear el pedido (RN corregida —
+ * ver ALTA PED-07 en la auditoría: antes no se tocaba hasta confirmar el pago, lo que
+ * permitía que dos pedidos concurrentes por la última unidad pasaran ambos a "pendiente
+ * de pago"), igual que hace una separación física. El pago sigue siendo manual (ver
+ * docs/03-modelo-datos.md, Fase 2): "pedido creado" no significa "pago recibido", pero
+ * "pedido creado" sí significa que esa unidad ya no está disponible para nadie más. Al
+ * confirmar, el stock ya está retenido — solo se genera la {@link Sale} real (sin sesión
+ * de caja) para que el pedido entre en el mismo historial/reportes de Ventas y pueda
+ * imprimirse el mismo ticket que usa el POS. Si el pedido se anula antes de confirmarse,
+ * el stock retenido se libera.
  */
 @Service
 @Transactional(readOnly = true)
@@ -72,6 +78,7 @@ public class PedidoService {
     private final InventarioService inventarioService;
     private final PagoService pagoService;
     private final ConfiguracionService configuracionService;
+    private final BillingConfigurationService billingConfigurationService;
     private final PromocionService promocionService;
     private final SequenceService sequenceService;
     private final AuditService auditService;
@@ -83,6 +90,7 @@ public class PedidoService {
 
     private static final String DISTRITO_CONTRAENTREGA = "Huacho";
     private static final String CODIGO_CONTRAENTREGA = "CONTRAENTREGA";
+    private static final String USUARIO_SISTEMA = "sistema_tienda";
 
     public PedidoService(PedidoRepository pedidoRepository, PedidoDetailRepository pedidoDetailRepository,
             ProductVariantRepository variantRepository, CustomerRepository customerRepository,
@@ -90,7 +98,7 @@ public class PedidoService {
             ConfiguracionService configuracionService, PromocionService promocionService, SequenceService sequenceService,
             AuditService auditService, ImageUploadService imageUploadService, SaleRepository saleRepository,
             SaleDetailRepository saleDetailRepository, PaymentRepository paymentRepository,
-            NotificacionService notificacionService) {
+            NotificacionService notificacionService, BillingConfigurationService billingConfigurationService) {
         this.pedidoRepository = pedidoRepository;
         this.pedidoDetailRepository = pedidoDetailRepository;
         this.variantRepository = variantRepository;
@@ -100,6 +108,7 @@ public class PedidoService {
         this.pagoService = pagoService;
         this.promocionService = promocionService;
         this.configuracionService = configuracionService;
+        this.billingConfigurationService = billingConfigurationService;
         this.sequenceService = sequenceService;
         this.auditService = auditService;
         this.imageUploadService = imageUploadService;
@@ -151,7 +160,7 @@ public class PedidoService {
             if (variant.getStock() < item.quantity()) {
                 throw new StockInsuficienteException(
                         "Solo quedan " + variant.getStock() + " unidades de " + variant.getProduct().getName()
-                                + " (" + variant.getColor().getName() + " / " + variant.getSize().getName() + ")");
+                                + " (" + variant.getVariantLabel() + ")");
             }
             BigDecimal unitPrice = promocionService.precioEfectivoOnline(variant.getProduct());
             BigDecimal subtotal = unitPrice.multiply(BigDecimal.valueOf(item.quantity()));
@@ -160,12 +169,16 @@ public class PedidoService {
 
         BigDecimal subtotal = detalles.stream().map(DetalleCalculado::subtotal).reduce(BigDecimal.ZERO, BigDecimal::add);
         BigDecimal shippingCost = resolverCostoEnvio(paymentMethod, request.district());
+        DatosComprobante datosComprobante = normalizarComprobante(request, subtotal.add(shippingCost));
 
         Pedido pedido = new Pedido();
         pedido.setOrderNumber(sequenceService.next("PEDIDO", "PED", 8));
         pedido.setCustomer(customer);
         pedido.setPaymentMethod(paymentMethod);
         pedido.setPaymentReference(request.paymentReference());
+        pedido.setBillingDocumentType(datosComprobante.type());
+        pedido.setBillingDocumentNumber(datosComprobante.number());
+        pedido.setBillingName(datosComprobante.name());
         pedido.setSubtotal(subtotal);
         pedido.setShippingCost(shippingCost);
         pedido.setTotal(subtotal.add(shippingCost));
@@ -181,6 +194,10 @@ public class PedidoService {
         pedido.setDistrict(request.district());
         pedido.setNotes(request.notes());
         pedido.setCreatedAt(LocalDateTime.now());
+        // Se sella junto al pedido: la aceptación vale para las condiciones vigentes al
+        // comprar, no para las que estén publicadas cuando alguien revise el pedido.
+        pedido.setTermsAcceptedAt(LocalDateTime.now());
+        pedido.setTermsVersion(request.termsVersion());
         Pedido guardado = pedidoRepository.save(pedido);
 
         List<PedidoDetail> detallesGuardados = new ArrayList<>();
@@ -193,9 +210,17 @@ public class PedidoService {
             detail.setSubtotal(dc.subtotal());
             detail.setProductName(dc.variant().getProduct().getName());
             detail.setVariantSku(dc.variant().getSku());
-            detail.setColorName(dc.variant().getColor().getName());
-            detail.setSizeName(dc.variant().getSize().getName());
+            detail.setVariantLabel(dc.variant().getVariantLabel());
             detallesGuardados.add(pedidoDetailRepository.save(detail));
+        }
+
+        // Retiene el stock de inmediato (detalles ya viene en orden por variant_id, mismo
+        // criterio de concurrencia que Ventas/Reservas — ver docs/04-reglas-negocio.md).
+        // Si no hay stock suficiente, ajustarStock() lanza StockInsuficienteException y
+        // toda la transacción se revierte, incluyendo el pedido recién guardado.
+        Long sistemaId = resolverUsuarioSistema();
+        for (DetalleCalculado dc : detalles) {
+            inventarioService.registrarReservaPorPedido(dc.variant().getId(), dc.quantity(), guardado.getId(), sistemaId);
         }
 
         auditService.log("PEDIDO_CREADO", "PEDIDO", guardado.getId(), null,
@@ -208,23 +233,24 @@ public class PedidoService {
 
     @Transactional
     public PedidoResponse confirmarPago(Long id, Long staffUserId) {
+        return confirmarPagoConUsuario(id, staffUserId);
+    }
+
+    /** Confirma un pedido desde un cobro online aprobado usando el usuario tÃ©cnico de la tienda. */
+    @Transactional
+    public PedidoResponse confirmarPagoOnline(Long id) {
+        return confirmarPagoConUsuario(id, resolverUsuarioSistema());
+    }
+
+    private PedidoResponse confirmarPagoConUsuario(Long id, Long staffUserId) {
         Pedido pedido = buscarOFallar(id);
         if (pedido.getStatus() != PedidoStatus.PENDING_PAYMENT) {
             throw new ReglaDeNegocioException("Solo se puede confirmar un pedido pendiente de pago");
         }
 
+        // El stock ya quedó retenido al crear el pedido (ver crear()) — confirmar el pago
+        // no vuelve a tocar inventario, solo materializa la venta a partir de lo ya reservado.
         List<PedidoDetail> detalles = pedidoDetailRepository.findAllByPedidoId(id);
-        for (PedidoDetail detail : detalles) {
-            if (detail.getVariant().getStock() < detail.getQuantity()) {
-                throw new StockInsuficienteException(
-                        "Ya no hay stock suficiente de " + detail.getProductName() + " para confirmar este pedido");
-            }
-        }
-        // Orden global por variant_id — evita deadlocks entre confirmaciones/ventas
-        // concurrentes que comparten variantes (ver docs/04-reglas-negocio.md, concurrencia).
-        for (PedidoDetail detail : detalles.stream().sorted(Comparator.comparing(d -> d.getVariant().getId())).toList()) {
-            inventarioService.registrarPorPedido(detail.getVariant().getId(), detail.getQuantity(), pedido.getId(), staffUserId);
-        }
 
         Usuario staff = usuarioRepository.findById(staffUserId)
                 .orElseThrow(() -> RecursoNoEncontradoException.de("Usuario", staffUserId));
@@ -236,6 +262,9 @@ public class PedidoService {
         sale.setSubtotal(pedido.getSubtotal());
         sale.setDiscountAmount(BigDecimal.ZERO);
         sale.setShippingAmount(pedido.getShippingCost());
+        sale.setBillingDocumentType(pedido.getBillingDocumentType());
+        sale.setBillingDocumentNumber(pedido.getBillingDocumentNumber());
+        sale.setBillingName(pedido.getBillingName());
         sale.setTotal(pedido.getTotal());
         sale.setStatus(SaleStatus.COMPLETED);
         sale.setNotes("Pedido online " + pedido.getOrderNumber()
@@ -253,8 +282,7 @@ public class PedidoService {
             saleDetail.setSubtotal(detail.getSubtotal());
             saleDetail.setProductName(detail.getProductName());
             saleDetail.setVariantSku(detail.getVariantSku());
-            saleDetail.setColorName(detail.getColorName());
-            saleDetail.setSizeName(detail.getSizeName());
+            saleDetail.setVariantLabel(detail.getVariantLabel());
             saleDetailRepository.save(saleDetail);
         }
 
@@ -288,9 +316,17 @@ public class PedidoService {
         }
 
         List<PedidoDetail> detalles = pedidoDetailRepository.findAllByPedidoId(id);
-        if (pedido.getStatus() == PedidoStatus.CONFIRMED) {
-            // Orden global por variant_id — mismo criterio de concurrencia que confirmarPago().
-            for (PedidoDetail detail : detalles.stream().sorted(Comparator.comparing(d -> d.getVariant().getId())).toList()) {
+        // Orden global por variant_id en ambos casos — mismo criterio de concurrencia que
+        // confirmarPago()/crear() (ver docs/04-reglas-negocio.md, concurrencia).
+        List<PedidoDetail> detallesOrdenados = detalles.stream().sorted(Comparator.comparing(d -> d.getVariant().getId())).toList();
+        if (pedido.getStatus() == PedidoStatus.PENDING_PAYMENT) {
+            // El stock se retuvo al crear el pedido (ver crear()) — anular antes de confirmar el
+            // pago libera esa retención, igual que cancelar una separación física.
+            for (PedidoDetail detail : detallesOrdenados) {
+                inventarioService.registrarLiberacionReservaPorPedido(detail.getVariant().getId(), detail.getQuantity(), pedido.getId(), staffUserId);
+            }
+        } else if (pedido.getStatus() == PedidoStatus.CONFIRMED) {
+            for (PedidoDetail detail : detallesOrdenados) {
                 inventarioService.registrarPorCancelacionPedido(detail.getVariant().getId(), detail.getQuantity(), pedido.getId(), staffUserId);
             }
             // La venta generada al confirmar se marca cancelada tal cual, sin volver a tocar
@@ -347,6 +383,14 @@ public class PedidoService {
         return configuracionService.obtenerTarifaEnvio();
     }
 
+    /** Usuario técnico al que se atribuyen los movimientos de inventario que dispara la tienda online sin un cajero de por medio (ver V37 migration). */
+    private Long resolverUsuarioSistema() {
+        return usuarioRepository.findByUsername(USUARIO_SISTEMA)
+                .orElseThrow(() -> new IllegalStateException(
+                        "Falta el usuario técnico '" + USUARIO_SISTEMA + "' — ¿se ejecutó la migración V37?"))
+                .getId();
+    }
+
     private Map<Long, ProductVariant> cargarVariantes(List<ItemPedidoRequest> items) {
         Map<Long, ProductVariant> resultado = new HashMap<>();
         for (ItemPedidoRequest item : items) {
@@ -373,7 +417,7 @@ public class PedidoService {
     private PedidoResponse toResponse(Pedido pedido, List<PedidoDetail> detalles) {
         List<PedidoItemResponse> items = detalles.stream()
                 .map(d -> new PedidoItemResponse(
-                        d.getVariant().getId(), d.getProductName(), d.getVariantSku(), d.getColorName(), d.getSizeName(),
+                        d.getVariant().getId(), d.getProductName(), d.getVariantSku(), d.getVariantLabel(),
                         d.getQuantity(), d.getUnitPrice(), d.getSubtotal()))
                 .toList();
         return new PedidoResponse(
@@ -405,9 +449,87 @@ public class PedidoService {
                 pedido.getCancelledAt(),
                 pedido.getCancellationReason(),
                 pedido.getSale() != null ? pedido.getSale().getId() : null,
-                items);
+                items,
+                pedido.getBillingDocumentType() == null ? PedidoBillingDocumentType.TICKET : pedido.getBillingDocumentType(),
+                pedido.getBillingDocumentNumber(),
+                pedido.getBillingName(),
+                pedido.getTermsAcceptedAt(),
+                pedido.getTermsVersion());
+    }
+
+    private DatosComprobante normalizarComprobante(CrearPedidoRequest request, BigDecimal total) {
+        PedidoBillingDocumentType type = request.billingDocumentType() == null
+                ? PedidoBillingDocumentType.TICKET : request.billingDocumentType();
+        String number = blankToNull(request.billingDocumentNumber());
+        String name = blankToNull(request.billingName());
+
+        if (type == PedidoBillingDocumentType.TICKET) {
+            if (number != null || name != null) {
+                throw new ReglaDeNegocioException("El ticket interno no requiere datos de facturaciÃ³n");
+            }
+            return new DatosComprobante(type, null, null);
+        }
+        var company = configuracionService.obtener();
+        if (!company.electronicInvoicingEnabled() || !RucValidator.isValid(company.ruc())) {
+            throw new ReglaDeNegocioException(
+                    "La facturaciÃ³n electrÃ³nica no estÃ¡ habilitada para esta tienda");
+        }
+
+        var billing = billingConfigurationService.obtener();
+        if (!billing.enabled() || !billing.configured()) {
+            throw new ReglaDeNegocioException(
+                    "La facturacion electronica no esta lista: configura el proveedor antes de solicitar un comprobante");
+        }
+
+        if (type == PedidoBillingDocumentType.FACTURA) {
+            if (!esRucValido(number)) {
+                throw new ReglaDeNegocioException(
+                        "La factura requiere un RUC vÃ¡lido de 11 dÃ­gitos y dÃ­gito verificador correcto");
+            }
+            if (name == null || !name.matches("[\\p{L}\\p{N} .,'&()\\-/]+")) {
+                throw new ReglaDeNegocioException(
+                        "La factura requiere una razÃ³n social vÃ¡lida");
+            }
+            if (billing.invoiceSeries() == null || billing.invoiceSeries().isBlank()) {
+                throw new ReglaDeNegocioException("Configura la serie de factura antes de solicitarla");
+            }
+            return new DatosComprobante(type, number, name);
+        }
+
+        if (number != null && !number.matches("[A-Za-z0-9]{1,15}")) {
+            throw new ReglaDeNegocioException(
+                    "El documento de la boleta solo admite hasta 15 caracteres alfanumÃ©ricos");
+        }
+        // La regla SUNAT para importes mayores exige identificar al adquirente.
+        // El DNI del destinatario ya es obligatorio para registrar el envÃ­o, por
+        // eso se reutiliza como dato de boleta solo en ese caso.
+        if (total.compareTo(BigDecimal.valueOf(700)) > 0 && number == null) {
+            number = request.recipientDni();
+        }
+        if (billing.receiptSeries() == null || billing.receiptSeries().isBlank()) {
+            throw new ReglaDeNegocioException("Configura la serie de boleta antes de solicitarla");
+        }
+        return new DatosComprobante(type, number, name);
+    }
+
+    private String blankToNull(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
+    }
+
+    private boolean esRucValido(String value) {
+        if (value == null || !value.matches("\\d{11}")) return false;
+        int[] weights = {5, 4, 3, 2, 7, 6, 5, 4, 3, 2};
+        int sum = 0;
+        for (int index = 0; index < weights.length; index++) {
+            sum += Character.digit(value.charAt(index), 10) * weights[index];
+        }
+        int expected = (11 - (sum % 11)) % 10;
+        return expected == Character.digit(value.charAt(10), 10);
     }
 
     private record DetalleCalculado(ProductVariant variant, int quantity, BigDecimal unitPrice, BigDecimal subtotal) {
+    }
+
+    private record DatosComprobante(PedidoBillingDocumentType type, String number, String name) {
     }
 }

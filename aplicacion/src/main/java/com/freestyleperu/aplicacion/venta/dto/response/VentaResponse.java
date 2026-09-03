@@ -1,5 +1,6 @@
 package com.freestyleperu.aplicacion.venta.dto.response;
 
+import com.freestyleperu.aplicacion.pedido.domain.PedidoBillingDocumentType;
 import com.freestyleperu.aplicacion.venta.domain.SaleStatus;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -25,5 +26,8 @@ public record VentaResponse(
         String cancelledByUsername,
         String cancellationReason,
         List<VentaItemResponse> items,
-        List<PagoResponse> payments) {
+        List<PagoResponse> payments,
+        PedidoBillingDocumentType billingDocumentType,
+        String billingDocumentNumber,
+        String billingName) {
 }

@@ -6,7 +6,9 @@ import com.freestyleperu.aplicacion.tienda.dto.response.PublicMarcaResponse;
 import com.freestyleperu.aplicacion.tienda.dto.response.PublicMetodoPagoResponse;
 import com.freestyleperu.aplicacion.tienda.dto.response.PublicProductoDetalleResponse;
 import com.freestyleperu.aplicacion.tienda.dto.response.PublicProductoResumenResponse;
+import com.freestyleperu.aplicacion.tienda.dto.response.PublicSearchSuggestionResponse;
 import com.freestyleperu.aplicacion.tienda.dto.response.PublicShippingInfoResponse;
+import com.freestyleperu.aplicacion.tienda.dto.response.PublicStorefrontBannerResponse;
 import com.freestyleperu.aplicacion.tienda.service.TiendaCatalogoService;
 import java.util.List;
 import org.springframework.data.domain.Pageable;
@@ -23,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
  * endpoint público: no exige estar autenticado, solo evalúa la expresión.
  */
 @RestController
-@PreAuthorize("@planGate.tienePlan('ECOMMERCE')")
+@PreAuthorize("@modulos.activo('TIENDA')")
 public class TiendaCatalogoController {
 
     private final TiendaCatalogoService catalogoService;
@@ -64,5 +66,25 @@ public class TiendaCatalogoController {
     @GetMapping("/api/store/catalog/shipping-info")
     public PublicShippingInfoResponse obtenerInfoEnvio() {
         return catalogoService.obtenerInfoEnvio();
+    }
+
+    @GetMapping("/api/store/catalog/billing-options")
+    public com.freestyleperu.aplicacion.tienda.dto.response.PublicBillingOptionsResponse obtenerOpcionesFacturacion() {
+        return catalogoService.obtenerOpcionesFacturacion();
+    }
+
+    @GetMapping("/api/store/catalog/config")
+    public com.freestyleperu.aplicacion.tienda.dto.response.PublicStorefrontConfigResponse obtenerConfiguracion() {
+        return catalogoService.obtenerConfiguracionTienda();
+    }
+
+    @GetMapping("/api/store/catalog/banners")
+    public List<PublicStorefrontBannerResponse> listarBanners() {
+        return catalogoService.listarBanners();
+    }
+
+    @GetMapping("/api/store/catalog/search-suggestions")
+    public List<PublicSearchSuggestionResponse> sugerencias(@RequestParam("q") String query) {
+        return catalogoService.sugerencias(query);
     }
 }

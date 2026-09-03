@@ -28,26 +28,26 @@ public class PromotorController {
     }
 
     @GetMapping("/api/promoters")
-    @PreAuthorize("hasAuthority('" + Permisos.PROMOTORES_CONSULTAR + "') and @planGate.tienePlan('PROFESIONAL')")
+    @PreAuthorize("hasAuthority('" + Permisos.PROMOTORES_CONSULTAR + "') and @modulos.activo('PROMOTORES')")
     public List<PromoterResponse> listar() {
         return promoterService.listar();
     }
 
     @PostMapping("/api/promoters")
-    @PreAuthorize("hasAuthority('" + Permisos.PROMOTORES_GESTIONAR + "') and @planGate.tienePlan('PROFESIONAL')")
+    @PreAuthorize("hasAuthority('" + Permisos.PROMOTORES_GESTIONAR + "') and @modulos.activo('PROMOTORES')")
     public ResponseEntity<PromoterResponse> crear(@Valid @RequestBody PromoterRequest request) {
         PromoterResponse creado = promoterService.crear(request);
         return ResponseEntity.created(URI.create("/api/promoters/" + creado.id())).body(creado);
     }
 
     @PutMapping("/api/promoters/{id}")
-    @PreAuthorize("hasAuthority('" + Permisos.PROMOTORES_GESTIONAR + "') and @planGate.tienePlan('PROFESIONAL')")
+    @PreAuthorize("hasAuthority('" + Permisos.PROMOTORES_GESTIONAR + "') and @modulos.activo('PROMOTORES')")
     public PromoterResponse actualizar(@PathVariable Long id, @Valid @RequestBody PromoterRequest request) {
         return promoterService.actualizar(id, request);
     }
 
     @PatchMapping("/api/promoters/{id}/status")
-    @PreAuthorize("hasAuthority('" + Permisos.PROMOTORES_GESTIONAR + "') and @planGate.tienePlan('PROFESIONAL')")
+    @PreAuthorize("hasAuthority('" + Permisos.PROMOTORES_GESTIONAR + "') and @modulos.activo('PROMOTORES')")
     public PromoterResponse cambiarEstado(@PathVariable Long id, @Valid @RequestBody CambiarEstadoRequest request) {
         return promoterService.cambiarEstado(id, request.status());
     }

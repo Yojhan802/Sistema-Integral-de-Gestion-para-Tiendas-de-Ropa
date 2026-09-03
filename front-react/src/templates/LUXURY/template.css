@@ -1,0 +1,27 @@
+body[data-store-template='LUXURY'] {
+  --template-ink: #211b16;
+  --template-muted: #877b6b;
+  --template-surface-alt: #f4f0e8;
+  --template-line: #d9cdb8;
+  --template-radius: 2px;
+  --template-card-radius: 2px;
+  --template-heading: Georgia, 'Times New Roman', serif;
+  --template-container: 1280px;
+}
+
+body[data-store-template='LUXURY'] .store-promo-bar { background:#211b16; color:#d9cdb8; text-transform:uppercase; letter-spacing:.2em; font-size:9px; }
+body[data-store-template='LUXURY'] .store-header { background:#211b16; border-bottom:1px solid #8d7655; }
+body[data-store-template='LUXURY'] .store-brand, body[data-store-template='LUXURY'] .store-nav a { color:#f4f0e8; font-family:Georgia,serif; }
+body[data-store-template='LUXURY'] .store-brand-logobox { border-radius:0; background:#b39254; color:#211b16; }
+body[data-store-template='LUXURY'] .store-icon-btn { background:transparent; color:#d9cdb8; border-color:#6d5a43; border-radius:0; }
+body[data-store-template='LUXURY'] .store-hero { border-radius:0; background:linear-gradient(120deg,#211b16,#594c3e); min-height:600px; }
+body[data-store-template='LUXURY'] .store-hero::after { content:''; position:absolute; inset:28px; border:1px solid rgba(217,205,184,.45); }
+body[data-store-template='LUXURY'] .store-hero h1 { font-family:Georgia,serif; font-weight:400; letter-spacing:-.06em; }
+body[data-store-template='LUXURY'] .store-hero-badge { border:0; padding:0; color:#d9cdb8; text-transform:uppercase; letter-spacing:.3em; }
+body[data-store-template='LUXURY'] .store-hero .btn-primary { background:#d9cdb8; color:#211b16; border-radius:0; text-transform:uppercase; letter-spacing:.12em; }
+body[data-store-template='LUXURY'] .store-product-card { background:transparent; box-shadow:none; }
+body[data-store-template='LUXURY'] .store-product-card:hover { transform:none; box-shadow:none; }
+body[data-store-template='LUXURY'] .store-product-image { border-radius:0; background:#eee8dc; }
+body[data-store-template='LUXURY'] .store-product-body { padding-left:0; padding-right:0; }
+body[data-store-template='LUXURY'] .store-product-name { font-family:Georgia,serif; font-weight:400; }
+body[data-store-template='LUXURY'] .store-footer { background:#211b16; }

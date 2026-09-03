@@ -28,6 +28,11 @@ export function requireSession() {
     window.location.href = 'login.html';
     return null;
   }
+  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+  if (session.user?.mustChangePassword && currentPage !== 'cambiar-contrasena.html') {
+    window.location.href = 'cambiar-contrasena.html';
+    return null;
+  }
   return session;
 }
 

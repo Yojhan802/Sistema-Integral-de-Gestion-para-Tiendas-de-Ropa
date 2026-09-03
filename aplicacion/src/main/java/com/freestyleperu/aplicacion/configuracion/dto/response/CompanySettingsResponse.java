@@ -1,7 +1,9 @@
 package com.freestyleperu.aplicacion.configuracion.dto.response;
 
+import com.freestyleperu.aplicacion.configuracion.domain.BusinessVertical;
 import com.freestyleperu.aplicacion.configuracion.domain.Plan;
 import com.freestyleperu.aplicacion.configuracion.domain.SubscriptionStatus;
+import com.freestyleperu.aplicacion.configuracion.domain.StoreTemplate;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -18,6 +20,8 @@ public record CompanySettingsResponse(
         String phone,
         String email,
         String logoUrl,
+        BusinessVertical businessVertical,
+        String businessDescription,
         String currencyCode,
         String currencySymbol,
         BigDecimal igvRate,
@@ -28,6 +32,12 @@ public record CompanySettingsResponse(
         Plan plan,
         SubscriptionStatus subscriptionStatus,
         LocalDate nextPaymentDue,
+        boolean onlinePaymentsEnabled,
+        boolean electronicInvoicingEnabled,
         LocalDateTime updatedAt,
-        String updatedByUsername) {
+        String updatedByUsername,
+        StoreTemplate storeTemplate,
+        String storePrimaryColor,
+        String storeAccentColor,
+        String storeBackgroundColor) {
 }

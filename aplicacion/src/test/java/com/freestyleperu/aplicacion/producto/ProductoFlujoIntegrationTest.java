@@ -3,12 +3,9 @@ package com.freestyleperu.aplicacion.producto;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.freestyleperu.aplicacion.catalogo.domain.AttributeValue;
 import com.freestyleperu.aplicacion.catalogo.domain.Category;
-import com.freestyleperu.aplicacion.catalogo.domain.Color;
-import com.freestyleperu.aplicacion.catalogo.domain.Size;
 import com.freestyleperu.aplicacion.catalogo.repository.CategoryRepository;
-import com.freestyleperu.aplicacion.catalogo.repository.ColorRepository;
-import com.freestyleperu.aplicacion.catalogo.repository.SizeRepository;
 import com.freestyleperu.aplicacion.producto.dto.request.CrearProductoRequest;
 import com.freestyleperu.aplicacion.producto.dto.request.CrearVarianteRequest;
 import com.freestyleperu.aplicacion.producto.dto.request.GenerarVariantesRequest;
@@ -34,9 +31,7 @@ class ProductoFlujoIntegrationTest {
     @Autowired
     private CategoryRepository categoryRepository;
     @Autowired
-    private ColorRepository colorRepository;
-    @Autowired
-    private SizeRepository sizeRepository;
+    private AtributoTestFixture atributos;
     @Autowired
     private ProductoService productoService;
     @Autowired
@@ -45,10 +40,10 @@ class ProductoFlujoIntegrationTest {
     @Test
     void generaSkuInternalCodeYPermiteVariantesConCodigoDeBarrasValido() {
         Category categoria = nuevaCategoria("Polos");
-        Color negro = nuevoColor("Negro");
-        Color blanco = nuevoColor("Blanco");
-        Size talleM = nuevaTalla("M", (short) 3);
-        Size talleL = nuevaTalla("L", (short) 4);
+        AttributeValue negro = atributos.color("Negro");
+        AttributeValue blanco = atributos.color("Blanco");
+        AttributeValue talleM = atributos.talla("M", (short) 3);
+        AttributeValue talleL = atributos.talla("L", (short) 4);
 
         CrearProductoRequest request = new CrearProductoRequest(
                 null, null, "Polo Oversize", categoria.getId(), null, null,
@@ -61,9 +56,11 @@ class ProductoFlujoIntegrationTest {
         assertThat(producto.sku()).isNotEqualTo(producto.internalCode());
 
         VarianteResponse variante = varianteService.crear(producto.id(),
-                new CrearVarianteRequest(negro.getId(), talleM.getId(), null, null, 12, 3, true));
+                new CrearVarianteRequest(List.of(negro.getId(), talleM.getId()), null, null, 12, 3, true));
 
-        assertThat(variante.sku()).isEqualTo(producto.sku() + "-M-NEG");
+        // Orden de segmentos = orden de posición del producto (Color, Talla) — igual que el
+        // orden de exhibición, ya no un formato aparte "talla-color" como antes del rediseño.
+        assertThat(variante.sku()).isEqualTo(producto.sku() + "-NEG-M");
         assertThat(variante.barcode()).hasSize(13);
         assertThat(esEan13Valido(variante.barcode())).isTrue();
 
@@ -72,11 +69,12 @@ class ProductoFlujoIntegrationTest {
         assertThat(encontrada.stock()).isEqualTo(12);
 
         assertThatThrownBy(() -> varianteService.crear(producto.id(),
-                new CrearVarianteRequest(negro.getId(), talleM.getId(), null, null, 5, 1, false)))
+                new CrearVarianteRequest(List.of(negro.getId(), talleM.getId()), null, null, 5, 1, false)))
                 .isInstanceOf(RecursoDuplicadoException.class);
 
         List<VarianteResponse> generadas = varianteService.generarMatriz(producto.id(),
-                new GenerarVariantesRequest(List.of(negro.getId(), blanco.getId()), List.of(talleM.getId(), talleL.getId()), 2, false));
+                new GenerarVariantesRequest(
+                        List.of(List.of(negro.getId(), blanco.getId()), List.of(talleM.getId(), talleL.getId())), 2, false));
 
         // Negro/M ya existía: la matriz 2x2 debe crear solo las 3 combinaciones que faltaban.
         assertThat(generadas).hasSize(3);
@@ -85,7 +83,8 @@ class ProductoFlujoIntegrationTest {
         assertThat(todas).hasSize(4);
 
         List<VarianteResponse> segundaVez = varianteService.generarMatriz(producto.id(),
-                new GenerarVariantesRequest(List.of(negro.getId(), blanco.getId()), List.of(talleM.getId(), talleL.getId()), 2, false));
+                new GenerarVariantesRequest(
+                        List.of(List.of(negro.getId(), blanco.getId()), List.of(talleM.getId(), talleL.getId())), 2, false));
         assertThat(segundaVez).isEmpty();
     }
 
@@ -106,17 +105,4 @@ class ProductoFlujoIntegrationTest {
         return categoryRepository.save(category);
     }
 
-    private Color nuevoColor(String nombre) {
-        Color color = new Color();
-        color.setName(nombre);
-        color.setHexCode("#000000");
-        return colorRepository.save(color);
-    }
-
-    private Size nuevaTalla(String nombre, short orden) {
-        Size size = new Size();
-        size.setName(nombre);
-        size.setSortOrder(orden);
-        return sizeRepository.save(size);
-    }
 }
